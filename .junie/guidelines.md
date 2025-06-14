@@ -22,6 +22,8 @@ FossBadge est une plateforme libre et open source pour créer, gérer et partage
 
 ```
 fossbadge/
+├── cdc.md                 # Cahier des charges, important
+├── roadmap.md             # roadmap du projet, important
 ├── core/                  # Application principale
 │   ├── migrations/        # Migrations de base de données
 │   ├── templates/         # Templates spécifiques à l'application

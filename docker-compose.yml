@@ -1,11 +1,11 @@
 services:
-  fossbadge_memcached:
-    image: memcached:1.6
-    container_name: fossbadge_memcached
-    hostname: fossbadge_memcached
-    restart: always
-    networks:
-      - fossbadge_backend
+#  fossbadge_memcached:
+#    image: memcached:1.6
+#    container_name: fossbadge_memcached
+#    hostname: fossbadge_memcached
+#    restart: always
+#    networks:
+#      - fossbadge_backend
 
   fossbadge_django:
 #    image: tibillet/fedow:latest
@@ -33,30 +33,30 @@ services:
 #      - "demo.tibillet.localhost:172.17.0.1"
 #      - "billetistan.tibillet.localhost:172.17.0.1"
 #      - "cashless.tibillet.localhost:172.17.0.1"
-
-  fossbadge_nginx:
-    image: nginx
-    restart: always
-    container_name: fossbadge_nginx
-    hostname: fossbadge_nginx
-    volumes:
-      - ./www:/www
-      - ./logs:/logs
-      - ./nginx:/etc/nginx/conf.d
-    depends_on:
-      - fossbadge_django
-    links:
-      - fossbadge_django:fossbadge_django
-    labels:
-      - traefik.enable=true
-      - traefik.docker.network=frontend
-      - traefik.http.routers.fossbadge_nginx.tls.certresolver=myresolver
-      - traefik.http.routers.fossbadge_nginx.rule=Host(`$DOMAIN`)
-      - traefik.http.services.fossbadge_nginx.loadbalancer.server.port=80
-
-    networks:
-      - frontend
-      - fossbadge_backend
+#
+#  fossbadge_nginx:
+#    image: nginx
+#    restart: always
+#    container_name: fossbadge_nginx
+#    hostname: fossbadge_nginx
+#    volumes:
+#      - ./www:/www
+#      - ./logs:/logs
+#      - ./nginx:/etc/nginx/conf.d
+#    depends_on:
+#      - fossbadge_django
+#    links:
+#      - fossbadge_django:fossbadge_django
+#    labels:
+#      - traefik.enable=true
+#      - traefik.docker.network=frontend
+#      - traefik.http.routers.fossbadge_nginx.tls.certresolver=myresolver
+#      - traefik.http.routers.fossbadge_nginx.rule=Host(`$DOMAIN`)
+#      - traefik.http.services.fossbadge_nginx.loadbalancer.server.port=80
+#
+#    networks:
+#      - frontend
+#      - fossbadge_backend
 
 
 volumes:

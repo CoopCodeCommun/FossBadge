@@ -1,0 +1,115 @@
+{% extends 'base.html' %}
+
+{% block title %}Créer une Structure / Entreprise{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-12">
+        <h1 class="display-4 mb-4">Créer une Structure / Entreprise</h1>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-10 mx-auto">
+        <div class="card">
+            <div class="card-body">
+                <h2 class="card-title mb-4">Informations de la structure</h2>
+
+                <!-- Structure Creation Form -->
+                <form hx-post="/structures/create/" hx-swap="outerHTML">
+                    {% csrf_token %}
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <!-- Structure Information -->
+                            <h3 class="mb-3">Informations générales</h3>
+
+                            <!-- Structure Name -->
+                            <div class="mb-4">
+                                <label for="structure_name" class="form-label fw-bold">Nom de la structure/entreprise</label>
+                                <input type="text" class="form-control form-control-lg" id="structure_name" name="structure_name" placeholder="Ex: Structure Python" required>
+                            </div>
+
+                            <!-- Structure Address -->
+                            <div class="mb-4">
+                                <label for="structure_address" class="form-label fw-bold">Adresse</label>
+                                <textarea class="form-control" id="structure_address" name="structure_address" rows="3" placeholder="Adresse complète" required></textarea>
+                            </div>
+
+                            <!-- Structure SIREN/SIRET -->
+                            <div class="mb-4">
+                                <label for="structure_siret" class="form-label fw-bold">Numéro SIREN/SIRET</label>
+                                <input type="text" class="form-control" id="structure_siret" name="structure_siret" placeholder="Ex: 123 456 789 00012">
+                                <div class="form-text">Format libre, la validation sera effectuée par le système</div>
+                            </div>
+
+                            <!-- Structure Description -->
+                            <div class="mb-4">
+                                <label for="structure_description" class="form-label fw-bold">Description de la mission / lieu</label>
+                                <textarea class="form-control" id="structure_description" name="structure_description" rows="5" placeholder="Décrivez la mission de votre structure..." required></textarea>
+                            </div>
+
+                            <!-- Structure Logo -->
+                            <div class="mb-4">
+                                <label for="structure_logo" class="form-label fw-bold">Logo</label>
+                                <input type="file" class="form-control" id="structure_logo" name="structure_logo" accept="image/*">
+                            </div>
+                        </div>
+
+                        <div class="col-md-6">
+                            <!-- Referent Person Information -->
+                            <h3 class="mb-3">Personne référente</h3>
+
+
+                            <!-- Referent Last Name -->
+                            <div class="mb-4">
+                                <label for="referent_lastname" class="form-label fw-bold">Nom</label>
+                                <input type="text" class="form-control" id="referent_lastname" name="referent_lastname" required>
+                            </div>
+
+                            <!-- Referent First Name -->
+                            <div class="mb-4">
+                                <label for="referent_firstname" class="form-label fw-bold">Prénom</label>
+                                <input type="text" class="form-control" id="referent_firstname" name="referent_firstname" required>
+                            </div>
+
+                            <!-- Referent Position -->
+                            <div class="mb-4">
+                                <label for="referent_position" class="form-label fw-bold">Poste</label>
+                                <input type="text" class="form-control" id="referent_position" name="referent_position" placeholder="Ex: Président, Directeur, etc." required>
+                            </div>
+
+                            <!-- Logo Preview -->
+                            <div class="text-center mt-5">
+                                <img src="https://via.placeholder.com/200" alt="Aperçu du logo" class="img-fluid mb-2" style="max-width: 200px;" id="logo_preview">
+                                <p class="form-text">Aperçu du logo</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Submit Button -->
+                    <div class="text-center mt-4">
+                        <button type="submit" class="btn btn-primary btn-lg">Créer la structure / entreprise</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Simple preview for uploaded logo
+    document.getElementById('structure_logo').addEventListener('change', function(event) {
+        const file = event.target.files[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                document.getElementById('logo_preview').src = e.target.result;
+            }
+            reader.readAsDataURL(file);
+        }
+    });
+</script>
+{% endblock %}

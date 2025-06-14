@@ -1,0 +1,107 @@
+{% extends 'base.html' %}
+
+{% block title %}Détails du Badge{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-12">
+        <h1 class="display-4 mb-4">Détails du Badge</h1>
+    </div>
+</div>
+
+<div class="row mb-5">
+    <!-- Badge Information Section -->
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-body text-center">
+                <!-- Badge Icon -->
+                <img src="https://via.placeholder.com/150" alt="Icône du badge" class="badge-icon mb-3" style="width: 150px; height: 150px;">
+                <h2 class="card-title">Python</h2>
+
+                <!-- Badge Level -->
+                <div class="mb-3">
+                    <span class="badge bg-success p-2 fs-5">Expert</span>
+                </div>
+
+                <!-- Issuing Structure -->
+                <div class="mb-3">
+                    <p class="mb-1 fw-bold">Structure émettrice:</p>
+                    <div class="d-flex align-items-center justify-content-center">
+                        <img src="https://via.placeholder.com/50" alt="Logo Structure" class="img-fluid me-2" style="width: 50px;">
+                        <span>Structure Python</span>
+                    </div>
+                </div>
+
+                <!-- Download QR Code -->
+                <div class="mb-3">
+                    <p class="mb-1 fw-bold">QR Code:</p>
+                    <img src="https://via.placeholder.com/200" alt="QR Code du badge" class="img-fluid mb-2" style="max-width: 200px;">
+                    <div>
+                        <a href="#" class="btn btn-primary">Télécharger le QR Code</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Valid Structures and Other Badge Holders -->
+    <div class="col-md-6">
+        <!-- Valid Structures -->
+        <div class="card mb-4">
+            <div class="card-body">
+                <h3 class="card-title">Structures où ce badge est valable</h3>
+                <div class="row">
+                    <!-- Structure 1 -->
+                    <div class="col-4 text-center mb-3">
+                        <img src="https://via.placeholder.com/80" alt="Logo Structure 1" class="img-fluid mb-2" style="max-width: 80px;">
+                        <p>Tech Company</p>
+                    </div>
+
+                    <!-- Structure 2 -->
+                    <div class="col-4 text-center mb-3">
+                        <img src="https://via.placeholder.com/80" alt="Logo Structure 2" class="img-fluid mb-2" style="max-width: 80px;">
+                        <p>Coding School</p>
+                    </div>
+
+                    <!-- Structure 3 -->
+                    <div class="col-4 text-center mb-3">
+                        <img src="https://via.placeholder.com/80" alt="Logo Structure 3" class="img-fluid mb-2" style="max-width: 80px;">
+                        <p>Dev Studio</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Other Badge Holders -->
+        <div class="card">
+            <div class="card-body">
+                <h3 class="card-title">Ce badge est rattaché à d'autres personnes</h3>
+                <ul class="list-group list-group-flush">
+                    <li class="list-group-item">Marie Durand</li>
+                    <li class="list-group-item">Pierre Martin</li>
+                    <li class="list-group-item">Sophie Lefebvre</li>
+                    <li class="list-group-item">Lucas Bernard</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Badge Description -->
+<div class="row">
+    <div class="col-md-12">
+        <div class="card">
+            <div class="card-body">
+                <h3 class="card-title">Description du badge</h3>
+                <p class="card-text">
+                    Ce badge certifie une expertise en programmation Python. Il atteste de la capacité à concevoir, 
+                    développer et maintenir des applications complexes en utilisant Python et ses frameworks associés. 
+                    Les compétences validées incluent la maîtrise des concepts avancés comme la programmation orientée objet, 
+                    la gestion des exceptions, les générateurs, et l'utilisation de bibliothèques comme Django, Flask, 
+                    Pandas et NumPy.
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

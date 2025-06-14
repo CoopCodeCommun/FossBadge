@@ -1,0 +1,131 @@
+{% extends 'base.html' %}
+
+{% block title %}Profil Utilisateur{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-12">
+        <h1 class="display-4 mb-4">Profil Utilisateur</h1>
+    </div>
+</div>
+
+<!-- User Information Section -->
+<div class="row mb-5">
+    <div class="col-md-4 text-center">
+        <!-- User Avatar -->
+        <img src="https://via.placeholder.com/150" alt="Avatar utilisateur" class="img-fluid rounded-circle mb-3" style="width: 150px; height: 150px;">
+    </div>
+    <div class="col-md-8">
+        <!-- User Details -->
+        <div class="card">
+            <div class="card-body">
+                <h2 class="card-title">Informations personnelles</h2>
+                <div class="row mb-2">
+                    <div class="col-md-4 fw-bold">Nom:</div>
+                    <div class="col-md-8">Dupont</div>
+                </div>
+                <div class="row mb-2">
+                    <div class="col-md-4 fw-bold">Prénom:</div>
+                    <div class="col-md-8">Jean</div>
+                </div>
+                <div class="row mb-2">
+                    <div class="col-md-4 fw-bold">Adresse:</div>
+                    <div class="col-md-8">123 Rue de la République, 75001 Paris</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Badges Section -->
+<div class="row mb-5">
+    <div class="col-md-12">
+        <div class="card">
+            <div class="card-body">
+                <h2 class="card-title">Mes badges</h2>
+                <div class="badge-grid">
+                    <!-- Badge 1 -->
+                    <div class="card text-center">
+                        <div class="card-body">
+                            <img src="https://via.placeholder.com/100" alt="Badge Python" class="badge-icon">
+                            <h5 class="card-title">Python</h5>
+                            <p class="card-text"><span class="badge bg-success">Expert</span></p>
+                            <a href="#" class="btn btn-primary">Voir le badge</a>
+                        </div>
+                    </div>
+
+                    <!-- Badge 2 -->
+                    <div class="card text-center">
+                        <div class="card-body">
+                            <img src="https://via.placeholder.com/100" alt="Badge HTML" class="badge-icon">
+                            <h5 class="card-title">HTML</h5>
+                            <p class="card-text"><span class="badge bg-success">Expert</span></p>
+                            <a href="#" class="btn btn-primary">Voir le badge</a>
+                        </div>
+                    </div>
+
+                    <!-- Badge 3 -->
+                    <div class="card text-center">
+                        <div class="card-body">
+                            <img src="https://via.placeholder.com/100" alt="Badge CSS" class="badge-icon">
+                            <h5 class="card-title">CSS</h5>
+                            <p class="card-text"><span class="badge bg-warning text-dark">Intermédiaire</span></p>
+                            <a href="#" class="btn btn-primary">Voir le badge</a>
+                        </div>
+                    </div>
+
+                    <!-- Badge 4 -->
+                    <div class="card text-center">
+                        <div class="card-body">
+                            <img src="https://via.placeholder.com/100" alt="Badge JavaScript" class="badge-icon">
+                            <h5 class="card-title">JavaScript</h5>
+                            <p class="card-text"><span class="badge bg-primary">Débutant</span></p>
+                            <a href="#" class="btn btn-primary">Voir le badge</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Structures Section -->
+<div class="row">
+    <div class="col-md-12">
+        <div class="card">
+            <div class="card-body">
+                <h2 class="card-title">Mes structures</h2>
+                <div class="row">
+                    <!-- Structure 1 -->
+                    <div class="col-md-3 col-sm-6 text-center mb-4">
+                        <img src="https://via.placeholder.com/100" alt="Logo Structure 1" class="img-fluid mb-2" style="max-width: 100px;">
+                        <h5>Structure Python</h5>
+                        <a href="#" class="btn btn-outline-primary">Voir</a>
+                    </div>
+
+                    <!-- Structure 2 -->
+                    <div class="col-md-3 col-sm-6 text-center mb-4">
+                        <img src="https://via.placeholder.com/100" alt="Logo Structure 2" class="img-fluid mb-2" style="max-width: 100px;">
+                        <h5>Club Web</h5>
+                        <a href="#" class="btn btn-outline-primary">Voir</a>
+                    </div>
+
+                    <!-- Structure 3 -->
+                    <div class="col-md-3 col-sm-6 text-center mb-4">
+                        <img src="https://via.placeholder.com/100" alt="Logo Structure 3" class="img-fluid mb-2" style="max-width: 100px;">
+                        <h5>Tech Company</h5>
+                        <a href="#" class="btn btn-outline-primary">Voir</a>
+                    </div>
+
+                    <!-- Structure 4 -->
+                    <div class="col-md-3 col-sm-6 text-center mb-4">
+                        <img src="https://via.placeholder.com/100" alt="Logo Structure 4" class="img-fluid mb-2" style="max-width: 100px;">
+                        <h5>Coding School</h5>
+                        <a href="#" class="btn btn-outline-primary">Voir</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

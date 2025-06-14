@@ -1,0 +1,33 @@
+<!-- Footer -->
+<footer class="bg-light py-4 mt-5">
+    <div class="container">
+        <div class="row">
+            <div class="col-md-4">
+                <h5>FossBadge</h5>
+                <p>Un système de badges pour valoriser les compétences et les contributions.</p>
+            </div>
+            <div class="col-md-4">
+                <h5>Liens rapides</h5>
+                <ul class="list-unstyled">
+                    <li><a href="{% url 'core:home' %}">Accueil</a></li>
+                    <li><a href="{% url 'core:user_list' %}">Profils</a></li>
+                    <li><a href="{% url 'core:user_profile' %}">Mon Profil</a></li>
+                    <li><a href="{% url 'core:badge_list' %}">Badges</a></li>
+                    <li><a href="{% url 'core:structure_list' %}">Structures</a></li>
+                </ul>
+            </div>
+            <div class="col-md-4">
+                <h5>Créer</h5>
+                <ul class="list-unstyled">
+                    <li><a href="{% url 'core:create_badge' %}">Forger un Badge</a></li>
+                    <li><a href="{% url 'core:create_association' %}">Créer une Structure</a></li>
+                </ul>
+            </div>
+        </div>
+        <div class="row mt-3">
+            <div class="col-12 text-center">
+                <p>&copy; {% now "Y" %} FossBadge - Tous droits réservés</p>
+            </div>
+        </div>
+    </div>
+</footer>

@@ -1,0 +1,109 @@
+{% extends 'base.html' %}
+
+{% block title %}Forger un Badge{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-12">
+        <h1 class="display-4 mb-4">Forger un nouveau Badge</h1>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-8 mx-auto">
+        <div class="card">
+            <div class="card-body">
+                <h2 class="card-title mb-4">Informations du badge</h2>
+                
+                <!-- Badge Creation Form -->
+                <form hx-post="/badges/create/" hx-swap="outerHTML">
+                    {% csrf_token %}
+                    
+                    <!-- Badge Icon -->
+                    <div class="mb-4">
+                        <label for="badge_icon" class="form-label fw-bold">Icône du badge</label>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <input type="file" class="form-control" id="badge_icon" name="badge_icon" accept="image/*">
+                                    <div class="form-text">Téléchargez une image pour l'icône du badge</div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="text-center">
+                                    <img src="https://via.placeholder.com/100" alt="Aperçu de l'icône" class="img-fluid badge-icon" id="icon_preview">
+                                    <p class="form-text">Aperçu</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Badge Name -->
+                    <div class="mb-4">
+                        <label for="badge_name" class="form-label fw-bold">Nom du badge</label>
+                        <input type="text" class="form-control form-control-lg" id="badge_name" name="badge_name" placeholder="Ex: Python Débutant" required>
+                    </div>
+                    
+                    <!-- Badge Level -->
+                    <div class="mb-4">
+                        <label class="form-label fw-bold">Niveau</label>
+                        <div class="row">
+                            <div class="col-md-4">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="radio" name="badge_level" id="level_beginner" value="beginner" checked>
+                                    <label class="form-check-label" for="level_beginner">
+                                        <span class="badge bg-primary">Débutant</span>
+                                    </label>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="radio" name="badge_level" id="level_intermediate" value="intermediate">
+                                    <label class="form-check-label" for="level_intermediate">
+                                        <span class="badge bg-warning text-dark">Intermédiaire</span>
+                                    </label>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="radio" name="badge_level" id="level_expert" value="expert">
+                                    <label class="form-check-label" for="level_expert">
+                                        <span class="badge bg-success">Expert</span>
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Badge Description -->
+                    <div class="mb-4">
+                        <label for="badge_description" class="form-label fw-bold">Description courte</label>
+                        <textarea class="form-control" id="badge_description" name="badge_description" rows="4" placeholder="Décrivez les compétences validées par ce badge..." required></textarea>
+                    </div>
+                    
+                    <!-- Submit Button -->
+                    <div class="text-center">
+                        <button type="submit" class="btn btn-primary btn-lg">Créer le badge</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Simple preview for uploaded image
+    document.getElementById('badge_icon').addEventListener('change', function(event) {
+        const file = event.target.files[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                document.getElementById('icon_preview').src = e.target.result;
+            }
+            reader.readAsDataURL(file);
+        }
+    });
+</script>
+{% endblock %}

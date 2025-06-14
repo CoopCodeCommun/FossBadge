@@ -1,0 +1,119 @@
+/* FossBadge Custom CSS */
+
+/* General styles for FALC (Facile à Lire et à Comprendre) */
+body {
+    font-size: 1.1rem;
+    line-height: 1.6;
+}
+
+/* Increase contrast for better readability */
+.navbar {
+    background-color: #f8f9fa !important;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.navbar-brand {
+    font-size: 1.5rem;
+    font-weight: bold;
+}
+
+/* Make buttons larger and more visible */
+.btn {
+    padding: 0.75rem 1.5rem;
+    font-size: 1.1rem;
+    border-radius: 0.5rem;
+    margin: 0.5rem 0;
+}
+
+.btn-primary {
+    background-color: #0d6efd;
+    border-color: #0d6efd;
+}
+
+.btn-primary:hover {
+    background-color: #0b5ed7;
+    border-color: #0a58ca;
+}
+
+/* Card styles */
+.card {
+    border-radius: 0.5rem;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    transition: transform 0.2s;
+    margin-bottom: 1.5rem;
+}
+
+.card:hover {
+    transform: translateY(-5px);
+}
+
+.card-title {
+    font-size: 1.4rem;
+    font-weight: bold;
+}
+
+.card-text {
+    font-size: 1.1rem;
+}
+
+/* Jumbotron styles */
+.jumbotron {
+    background-color: #f8f9fa;
+    padding: 2rem;
+    border-radius: 0.5rem;
+    margin-bottom: 2rem;
+}
+
+/* Footer styles */
+footer {
+    margin-top: 3rem;
+    padding: 2rem 0;
+    background-color: #f8f9fa;
+    border-top: 1px solid #e9ecef;
+}
+
+/* Accessibility improvements */
+a:focus, button:focus, input:focus, select:focus, textarea:focus {
+    outline: 3px solid #0d6efd;
+    outline-offset: 2px;
+}
+
+/* High contrast text */
+.high-contrast {
+    color: #000;
+    background-color: #fff;
+    border: 1px solid #000;
+    padding: 0.5rem;
+}
+
+/* Badge styles */
+.badge-icon {
+    width: 100px;
+    height: 100px;
+    object-fit: cover;
+    border-radius: 50%;
+    margin: 0 auto 1rem;
+    display: block;
+}
+
+.badge-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 1.5rem;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .container {
+        padding-left: 1.5rem;
+        padding-right: 1.5rem;
+    }
+    
+    .btn {
+        width: 100%;
+    }
+    
+    .badge-grid {
+        grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    }
+}

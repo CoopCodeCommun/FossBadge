@@ -1,0 +1,231 @@
+{% extends 'base.html' %}
+
+{% block title %}Liste des Profils{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-12">
+        <h1 class="display-4 mb-4">Liste des Profils</h1>
+        <p class="lead">Découvrez tous les utilisateurs et leurs badges.</p>
+    </div>
+</div>
+
+<div class="row mb-4">
+    <div class="col-md-6">
+        <form class="d-flex" hx-get="{% url 'core:user_list' %}" hx-target="#user-list" hx-swap="outerHTML">
+            <input class="form-control me-2" type="search" placeholder="Rechercher un utilisateur" aria-label="Rechercher" name="search">
+            <button class="btn btn-outline-primary" type="submit">Rechercher</button>
+        </form>
+    </div>
+</div>
+
+<div class="row" id="user-list">
+    <!-- Filters -->
+    <div class="col-md-3 mb-4">
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title">Filtres</h5>
+                <form hx-get="{% url 'core:user_list' %}" hx-target="#user-list" hx-swap="outerHTML">
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Badge</label>
+                        <select class="form-select" name="badge">
+                            <option value="">Tous les badges</option>
+                            <option value="1">Python</option>
+                            <option value="2">HTML</option>
+                            <option value="3">CSS</option>
+                            <option value="4">JavaScript</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Structure</label>
+                        <select class="form-select" name="structure">
+                            <option value="">Toutes les structures</option>
+                            <option value="1">Structure Python</option>
+                            <option value="2">Club Web</option>
+                            <option value="3">Tech Company</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Niveau de badge</label>
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" value="beginner" id="level_beginner" name="level">
+                            <label class="form-check-label" for="level_beginner">
+                                <span class="badge bg-primary">Débutant</span>
+                            </label>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" value="intermediate" id="level_intermediate" name="level">
+                            <label class="form-check-label" for="level_intermediate">
+                                <span class="badge bg-warning text-dark">Intermédiaire</span>
+                            </label>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" value="expert" id="level_expert" name="level">
+                            <label class="form-check-label" for="level_expert">
+                                <span class="badge bg-success">Expert</span>
+                            </label>
+                        </div>
+                    </div>
+                    <button type="submit" class="btn btn-primary w-100">Appliquer les filtres</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- User List -->
+    <div class="col-md-9">
+        <div class="row">
+            <!-- User 1 -->
+            <div class="col-md-6 mb-4">
+                <div class="card h-100">
+                    <div class="card-body">
+                        <div class="d-flex align-items-center mb-3">
+                            <img src="https://via.placeholder.com/80" alt="Avatar Jean Dupont" class="rounded-circle me-3" style="width: 80px; height: 80px;">
+                            <div>
+                                <h5 class="card-title mb-0">Jean Dupont</h5>
+                                <p class="text-muted mb-0">4 badges</p>
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <h6 class="card-subtitle mb-2">Badges</h6>
+                            <div class="d-flex flex-wrap">
+                                <span class="badge bg-success me-1 mb-1 p-2">Python Expert</span>
+                                <span class="badge bg-success me-1 mb-1 p-2">HTML Expert</span>
+                                <span class="badge bg-warning text-dark me-1 mb-1 p-2">CSS Intermédiaire</span>
+                                <span class="badge bg-primary me-1 mb-1 p-2">JavaScript Débutant</span>
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <h6 class="card-subtitle mb-2">Structures</h6>
+                            <div class="d-flex flex-wrap">
+                                <span class="badge bg-light text-dark me-1 mb-1 p-2">Structure Python</span>
+                                <span class="badge bg-light text-dark me-1 mb-1 p-2">Club Web</span>
+                                <span class="badge bg-light text-dark me-1 mb-1 p-2">Tech Company</span>
+                            </div>
+                        </div>
+                        <div class="text-end">
+                            <a href="{% url 'core:user_profile' %}" class="btn btn-primary">Voir le profil</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- User 2 -->
+            <div class="col-md-6 mb-4">
+                <div class="card h-100">
+                    <div class="card-body">
+                        <div class="d-flex align-items-center mb-3">
+                            <img src="https://via.placeholder.com/80" alt="Avatar Marie Durand" class="rounded-circle me-3" style="width: 80px; height: 80px;">
+                            <div>
+                                <h5 class="card-title mb-0">Marie Durand</h5>
+                                <p class="text-muted mb-0">3 badges</p>
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <h6 class="card-subtitle mb-2">Badges</h6>
+                            <div class="d-flex flex-wrap">
+                                <span class="badge bg-success me-1 mb-1 p-2">Python Expert</span>
+                                <span class="badge bg-warning text-dark me-1 mb-1 p-2">Django Intermédiaire</span>
+                                <span class="badge bg-warning text-dark me-1 mb-1 p-2">CSS Intermédiaire</span>
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <h6 class="card-subtitle mb-2">Structures</h6>
+                            <div class="d-flex flex-wrap">
+                                <span class="badge bg-light text-dark me-1 mb-1 p-2">Structure Python</span>
+                                <span class="badge bg-light text-dark me-1 mb-1 p-2">Coding School</span>
+                            </div>
+                        </div>
+                        <div class="text-end">
+                            <a href="{% url 'core:user_profile' %}" class="btn btn-primary">Voir le profil</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- User 3 -->
+            <div class="col-md-6 mb-4">
+                <div class="card h-100">
+                    <div class="card-body">
+                        <div class="d-flex align-items-center mb-3">
+                            <img src="https://via.placeholder.com/80" alt="Avatar Pierre Martin" class="rounded-circle me-3" style="width: 80px; height: 80px;">
+                            <div>
+                                <h5 class="card-title mb-0">Pierre Martin</h5>
+                                <p class="text-muted mb-0">2 badges</p>
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <h6 class="card-subtitle mb-2">Badges</h6>
+                            <div class="d-flex flex-wrap">
+                                <span class="badge bg-primary me-1 mb-1 p-2">Python Débutant</span>
+                                <span class="badge bg-primary me-1 mb-1 p-2">HTML Débutant</span>
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <h6 class="card-subtitle mb-2">Structures</h6>
+                            <div class="d-flex flex-wrap">
+                                <span class="badge bg-light text-dark me-1 mb-1 p-2">Coding School</span>
+                            </div>
+                        </div>
+                        <div class="text-end">
+                            <a href="{% url 'core:user_profile' %}" class="btn btn-primary">Voir le profil</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- User 4 -->
+            <div class="col-md-6 mb-4">
+                <div class="card h-100">
+                    <div class="card-body">
+                        <div class="d-flex align-items-center mb-3">
+                            <img src="https://via.placeholder.com/80" alt="Avatar Sophie Lefebvre" class="rounded-circle me-3" style="width: 80px; height: 80px;">
+                            <div>
+                                <h5 class="card-title mb-0">Sophie Lefebvre</h5>
+                                <p class="text-muted mb-0">5 badges</p>
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <h6 class="card-subtitle mb-2">Badges</h6>
+                            <div class="d-flex flex-wrap">
+                                <span class="badge bg-success me-1 mb-1 p-2">Python Expert</span>
+                                <span class="badge bg-success me-1 mb-1 p-2">JavaScript Expert</span>
+                                <span class="badge bg-success me-1 mb-1 p-2">HTML Expert</span>
+                                <span class="badge bg-success me-1 mb-1 p-2">CSS Expert</span>
+                                <span class="badge bg-warning text-dark me-1 mb-1 p-2">Django Intermédiaire</span>
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <h6 class="card-subtitle mb-2">Structures</h6>
+                            <div class="d-flex flex-wrap">
+                                <span class="badge bg-light text-dark me-1 mb-1 p-2">Structure Python</span>
+                                <span class="badge bg-light text-dark me-1 mb-1 p-2">Club Web</span>
+                                <span class="badge bg-light text-dark me-1 mb-1 p-2">Tech Company</span>
+                                <span class="badge bg-light text-dark me-1 mb-1 p-2">Dev Studio</span>
+                            </div>
+                        </div>
+                        <div class="text-end">
+                            <a href="{% url 'core:user_profile' %}" class="btn btn-primary">Voir le profil</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Pagination -->
+        <nav aria-label="Page navigation" class="mt-4">
+            <ul class="pagination justify-content-center">
+                <li class="page-item disabled">
+                    <a class="page-link" href="#" tabindex="-1" aria-disabled="true">Précédent</a>
+                </li>
+                <li class="page-item active"><a class="page-link" href="#">1</a></li>
+                <li class="page-item"><a class="page-link" href="#">2</a></li>
+                <li class="page-item"><a class="page-link" href="#">3</a></li>
+                <li class="page-item">
+                    <a class="page-link" href="#">Suivant</a>
+                </li>
+            </ul>
+        </nav>
+    </div>
+</div>
+{% endblock %}

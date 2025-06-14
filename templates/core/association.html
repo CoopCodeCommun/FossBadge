@@ -1,0 +1,134 @@
+{% extends 'base.html' %}
+
+{% block title %}Structure / Entreprise{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-12">
+        <h1 class="display-4 mb-4">Structure / Entreprise</h1>
+    </div>
+</div>
+
+<div class="row mb-5">
+    <!-- Structure Information Section -->
+    <div class="col-md-4 text-center">
+        <!-- Structure Logo -->
+        <img src="https://via.placeholder.com/200" alt="Logo de la structure" class="img-fluid mb-3" style="max-width: 200px;">
+        <h2 class="mb-3">Structure Python</h2>
+        <a href="#" class="btn btn-primary mb-4">Forger un nouveau badge</a>
+    </div>
+
+    <div class="col-md-8">
+        <!-- Structure Details -->
+        <div class="card mb-4">
+            <div class="card-body">
+                <h3 class="card-title">Informations</h3>
+                <div class="row mb-2">
+                    <div class="col-md-4 fw-bold">Adresse:</div>
+                    <div class="col-md-8">456 Avenue de l'Innovation, 75002 Paris</div>
+                </div>
+                <div class="row mb-2">
+                    <div class="col-md-4 fw-bold">SIREN/SIRET:</div>
+                    <div class="col-md-8">123 456 789 00012</div>
+                </div>
+                <div class="row mb-4">
+                    <div class="col-md-12">
+                        <h4>Description</h4>
+                        <p>
+                            La Structure Python est dédiée à la promotion et au développement du langage de programmation Python. 
+                            Nous organisons des ateliers, des conférences et des formations pour tous les niveaux, du débutant à l'expert. 
+                            Notre mission est de créer une communauté inclusive et collaborative autour de Python et de ses applications.
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Référent information -->
+                <div class="row">
+                    <div class="col-md-12">
+                        <h4>Personne référente</h4>
+                        <div class="row mb-2">
+                            <div class="col-md-4 fw-bold">Nom:</div>
+                            <div class="col-md-8">Dubois</div>
+                        </div>
+                        <div class="row mb-2">
+                            <div class="col-md-4 fw-bold">Prénom:</div>
+                            <div class="col-md-8">Claire</div>
+                        </div>
+                        <div class="row mb-2">
+                            <div class="col-md-4 fw-bold">Poste:</div>
+                            <div class="col-md-8">Présidente</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Map Section -->
+<div class="row mb-5">
+    <div class="col-md-12">
+        <div class="card">
+            <div class="card-body">
+                <h3 class="card-title">Localisation</h3>
+                <!-- Placeholder for OpenStreetMap -->
+                <div id="map" style="height: 400px; background-color: #e9ecef; display: flex; align-items: center; justify-content: center;">
+                    <p class="text-muted">Carte OpenStreetMap (sera chargée par le backend)</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Available Badges Section -->
+<div class="row">
+    <div class="col-md-12">
+        <div class="card">
+            <div class="card-body">
+                <h3 class="card-title">Badges disponibles</h3>
+                <div class="badge-grid">
+                    <!-- Badge 1 -->
+                    <div class="card text-center">
+                        <div class="card-body">
+                            <img src="https://via.placeholder.com/100" alt="Badge Python Débutant" class="badge-icon">
+                            <h5 class="card-title">Python Débutant</h5>
+                            <p class="card-text"><span class="badge bg-primary">Débutant</span></p>
+                            <a href="#" class="btn btn-primary">Voir le badge</a>
+                        </div>
+                    </div>
+
+                    <!-- Badge 2 -->
+                    <div class="card text-center">
+                        <div class="card-body">
+                            <img src="https://via.placeholder.com/100" alt="Badge Python Intermédiaire" class="badge-icon">
+                            <h5 class="card-title">Python Intermédiaire</h5>
+                            <p class="card-text"><span class="badge bg-warning text-dark">Intermédiaire</span></p>
+                            <a href="#" class="btn btn-primary">Voir le badge</a>
+                        </div>
+                    </div>
+
+                    <!-- Badge 3 -->
+                    <div class="card text-center">
+                        <div class="card-body">
+                            <img src="https://via.placeholder.com/100" alt="Badge Python Expert" class="badge-icon">
+                            <h5 class="card-title">Python Expert</h5>
+                            <p class="card-text"><span class="badge bg-success">Expert</span></p>
+                            <a href="#" class="btn btn-primary">Voir le badge</a>
+                        </div>
+                    </div>
+
+                    <!-- Badge 4 -->
+                    <div class="card text-center">
+                        <div class="card-body">
+                            <img src="https://via.placeholder.com/100" alt="Badge Django" class="badge-icon">
+                            <h5 class="card-title">Django</h5>
+                            <p class="card-text"><span class="badge bg-warning text-dark">Intermédiaire</span></p>
+                            <a href="#" class="btn btn-primary">Voir le badge</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

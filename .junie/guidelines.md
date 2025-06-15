@@ -213,7 +213,6 @@ You are an expert in Python, Django, and scalable web application development. Y
 
 ## Forms
 - Use ModelForms when working with model instances
-- Use crispy forms or similar for better form rendering
 
 ## Templates
 - Use template inheritance with base templates

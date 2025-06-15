@@ -26,13 +26,12 @@ fossbadge/
 ├── roadmap.md             # roadmap du projet, important
 ├── core/                  # Application principale
 │   ├── migrations/        # Migrations de base de données
-│   ├── templates/         # Templates spécifiques à l'application
 │   ├── admin.py           # Configuration de l'admin Django
 │   ├── apps.py            # Configuration de l'application
 │   ├── models.py          # Modèles de données
 │   ├── tests.py           # Tests unitaires
-│   ├── urls.py            # Configuration des URLs
-│   └── views.py           # Vues de l'application
+│   ├── urls.py            # Configuration des URLs avec DRF router
+│   └── views.py           # ViewSets DRF de l'application
 ├── fossbadge/             # Configuration du projet
 │   ├── settings.py        # Paramètres du projet
 │   ├── urls.py            # URLs du projet
@@ -44,7 +43,12 @@ fossbadge/
 │   └── js/                # Fichiers JavaScript personnalisés
 ├── templates/             # Templates globaux
 │   ├── base.html          # Template de base
-│   └── includes/          # Composants réutilisables
+│   ├── includes/          # Composants réutilisables
+│   └── core/              # Templates spécifiques à l'application core
+│       ├── home/          # Templates pour HomeViewSet
+│       ├── badges/        # Templates pour BadgeViewSet
+│       ├── structures/    # Templates pour StructureViewSet
+│       └── users/         # Templates pour UserViewSet
 ├── media/                 # Fichiers téléchargés par les utilisateurs
 ├── .junie/                # Configuration et documentation spécifiques
 ├── manage.py              # Script de gestion Django
@@ -54,6 +58,76 @@ fossbadge/
 ```
 
 ## Standards de Codage
+
+### Django REST Framework (DRF)
+
+- Utiliser des ViewSets pour regrouper les vues liées à une même ressource
+- Utiliser le DefaultRouter pour générer automatiquement les URLs
+- Organiser les templates par ViewSet et par action (templates/core/[viewset]/[action].html)
+- Utiliser les décorateurs @action pour les actions personnalisées
+- Documenter les ViewSets et leurs actions avec des docstrings
+
+Exemple:
+
+```python
+from rest_framework import viewsets
+from rest_framework.decorators import action
+
+class BadgeViewSet(viewsets.ViewSet):
+    """
+    ViewSet pour les opérations liées aux badges.
+    """
+    def list(self, request):
+        """
+        Liste tous les badges.
+        """
+        return render(request, 'core/badges/list.html', {
+            'title': 'FossBadge - Liste des Badges'
+        })
+
+    def retrieve(self, request, pk=None):
+        """
+        Affiche un badge spécifique.
+        """
+        return render(request, 'core/badges/detail.html', {
+            'title': 'FossBadge - Détails du Badge'
+        })
+
+    @action(detail=False, methods=['get', 'post'])
+    def create_badge(self, request):
+        """
+        Crée un nouveau badge.
+        """
+        return render(request, 'core/badges/create.html', {
+            'title': 'FossBadge - Forger un Badge'
+        })
+```
+
+### Configuration des URLs avec DRF Router
+
+```python
+from django.urls import path, include
+from rest_framework.routers import DefaultRouter
+from . import views
+
+app_name = 'core'
+
+# Créer un router et enregistrer nos viewsets
+router = DefaultRouter()
+router.register(r'', views.HomeViewSet, basename='home')
+router.register(r'badges', views.BadgeViewSet, basename='badge')
+router.register(r'structures', views.StructureViewSet, basename='structure')
+router.register(r'users', views.UserViewSet, basename='user')
+
+# Les URLs API sont maintenant déterminées automatiquement par le router
+urlpatterns = [
+    path('', include(router.urls)),
+
+    # URLs d'actions personnalisées qui ne correspondent pas au modèle standard
+    path('badge/create/', views.BadgeViewSet.as_view({'get': 'create_badge', 'post': 'create_badge'}), name='create_badge'),
+    path('structure/create/', views.StructureViewSet.as_view({'get': 'create_association', 'post': 'create_association'}), name='create_association'),
+]
+```
 
 ### Python
 
@@ -69,10 +143,10 @@ Exemple:
 def get_user_badges(user_id):
     """
     Récupère tous les badges d'un utilisateur.
-    
+
     Args:
         user_id (int): L'ID de l'utilisateur
-        
+
     Returns:
         QuerySet: Les badges de l'utilisateur
     """
@@ -99,7 +173,7 @@ Exemple:
 <div class="container">
     <h1 class="display-4">Titre Principal</h1>
     <p class="lead">Description claire et concise.</p>
-    
+
     {% include 'includes/component.html' %}
 </div>
 {% endblock %}
@@ -120,9 +194,9 @@ from django.urls import reverse
 
 class HomePageTest(TestCase):
     def test_home_page_loads_correctly(self):
-        response = self.client.get(reverse('core:home'))
+        response = self.client.get(reverse('core:home-list'))
         self.assertEqual(response.status_code, 200)
-        self.assertTemplateUsed(response, 'core/index.html')
+        self.assertTemplateUsed(response, 'core/home/index.html')
 ```
 
 ## Documentation

@@ -20,7 +20,7 @@
             <div class="card-body text-center">
                 <h5 class="card-title">Badges</h5>
                 <p class="card-text">Découvrez les différents badges disponibles.</p>
-                <a href="{% url 'core:badge_list' %}" class="btn btn-primary">Voir les badges</a>
+                <a href="{% url 'core:badge-list' %}" class="btn btn-primary">Voir les badges</a>
             </div>
         </div>
     </div>
@@ -29,7 +29,7 @@
             <div class="card-body text-center">
                 <h5 class="card-title">Structures</h5>
                 <p class="card-text">Explorez les structures et entreprises partenaires.</p>
-                <a href="{% url 'core:structure_list' %}" class="btn btn-primary">Voir les structures</a>
+                <a href="{% url 'core:structure-list' %}" class="btn btn-primary">Voir les structures</a>
             </div>
         </div>
     </div>
@@ -38,7 +38,7 @@
             <div class="card-body text-center">
                 <h5 class="card-title">Profils</h5>
                 <p class="card-text">Découvrez tous les utilisateurs et leurs badges.</p>
-                <a href="{% url 'core:user_list' %}" class="btn btn-primary">Voir les profils</a>
+                <a href="{% url 'core:user-list' %}" class="btn btn-primary">Voir les profils</a>
             </div>
         </div>
     </div>
@@ -47,7 +47,7 @@
             <div class="card-body text-center">
                 <h5 class="card-title">Mon Profil</h5>
                 <p class="card-text">Consultez et gérez vos badges personnels.</p>
-                <a href="{% url 'core:user_profile' %}" class="btn btn-primary">Voir mon profil</a>
+                <a href="{% url 'core:user-detail' pk=1 %}" class="btn btn-primary">Voir mon profil</a>
             </div>
         </div>
     </div>

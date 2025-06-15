@@ -8,18 +8,18 @@ class HomePageTest(TestCase):
 
     def test_home_page_loads_correctly(self):
         """Test that the home page loads correctly with a 200 status code"""
-        response = self.client.get(reverse('core:home'))
+        response = self.client.get(reverse('core:home-list'))
         self.assertEqual(response.status_code, 200)
 
     def test_home_page_uses_correct_template(self):
         """Test that the home page uses the correct template"""
-        response = self.client.get(reverse('core:home'))
-        self.assertTemplateUsed(response, 'core/index.html')
+        response = self.client.get(reverse('core:home-list'))
+        self.assertTemplateUsed(response, 'core/home/index.html')
         self.assertTemplateUsed(response, 'base.html')
 
     def test_home_page_contains_static_files(self):
         """Test that the home page contains references to all required static files"""
-        response = self.client.get(reverse('core:home'))
+        response = self.client.get(reverse('core:home-list'))
         content = response.content.decode('utf-8')
 
         # Check for Bootstrap CSS
@@ -40,18 +40,18 @@ class UserProfileTest(TestCase):
 
     def test_user_profile_page_loads_correctly(self):
         """Test that the user profile page loads correctly with a 200 status code"""
-        response = self.client.get(reverse('core:user_profile'))
+        response = self.client.get(reverse('core:user-detail', kwargs={'pk': 1}))
         self.assertEqual(response.status_code, 200)
 
     def test_user_profile_page_uses_correct_template(self):
         """Test that the user profile page uses the correct template"""
-        response = self.client.get(reverse('core:user_profile'))
-        self.assertTemplateUsed(response, 'core/user.html')
+        response = self.client.get(reverse('core:user-detail', kwargs={'pk': 1}))
+        self.assertTemplateUsed(response, 'core/users/detail.html')
         self.assertTemplateUsed(response, 'base.html')
 
     def test_user_profile_page_contains_expected_content(self):
         """Test that the user profile page contains expected content"""
-        response = self.client.get(reverse('core:user_profile'))
+        response = self.client.get(reverse('core:user-detail', kwargs={'pk': 1}))
         content = response.content.decode('utf-8')
 
         # Check for user profile specific content
@@ -66,18 +66,18 @@ class BadgeDetailTest(TestCase):
 
     def test_badge_detail_page_loads_correctly(self):
         """Test that the badge detail page loads correctly with a 200 status code"""
-        response = self.client.get(reverse('core:badge_detail'))
+        response = self.client.get(reverse('core:badge-detail', kwargs={'pk': 1}))
         self.assertEqual(response.status_code, 200)
 
     def test_badge_detail_page_uses_correct_template(self):
         """Test that the badge detail page uses the correct template"""
-        response = self.client.get(reverse('core:badge_detail'))
-        self.assertTemplateUsed(response, 'core/badge.html')
+        response = self.client.get(reverse('core:badge-detail', kwargs={'pk': 1}))
+        self.assertTemplateUsed(response, 'core/badges/detail.html')
         self.assertTemplateUsed(response, 'base.html')
 
     def test_badge_detail_page_contains_expected_content(self):
         """Test that the badge detail page contains expected content"""
-        response = self.client.get(reverse('core:badge_detail'))
+        response = self.client.get(reverse('core:badge-detail', kwargs={'pk': 1}))
         content = response.content.decode('utf-8')
 
         # Check for badge detail specific content
@@ -92,18 +92,18 @@ class StructureDetailTest(TestCase):
 
     def test_structure_detail_page_loads_correctly(self):
         """Test that the structure detail page loads correctly with a 200 status code"""
-        response = self.client.get(reverse('core:association_detail'))
+        response = self.client.get(reverse('core:structure-detail', kwargs={'pk': 1}))
         self.assertEqual(response.status_code, 200)
 
     def test_structure_detail_page_uses_correct_template(self):
         """Test that the structure detail page uses the correct template"""
-        response = self.client.get(reverse('core:association_detail'))
-        self.assertTemplateUsed(response, 'core/association.html')
+        response = self.client.get(reverse('core:structure-detail', kwargs={'pk': 1}))
+        self.assertTemplateUsed(response, 'core/structures/detail.html')
         self.assertTemplateUsed(response, 'base.html')
 
     def test_structure_detail_page_contains_expected_content(self):
         """Test that the structure detail page contains expected content"""
-        response = self.client.get(reverse('core:association_detail'))
+        response = self.client.get(reverse('core:structure-detail', kwargs={'pk': 1}))
         content = response.content.decode('utf-8')
 
         # Check for structure detail specific content
@@ -124,7 +124,7 @@ class CreateBadgeTest(TestCase):
     def test_create_badge_page_uses_correct_template(self):
         """Test that the badge creation page uses the correct template"""
         response = self.client.get(reverse('core:create_badge'))
-        self.assertTemplateUsed(response, 'core/create_badge.html')
+        self.assertTemplateUsed(response, 'core/badges/create.html')
         self.assertTemplateUsed(response, 'base.html')
 
     def test_create_badge_page_contains_expected_content(self):
@@ -151,7 +151,7 @@ class CreateStructureTest(TestCase):
     def test_create_structure_page_uses_correct_template(self):
         """Test that the structure creation page uses the correct template"""
         response = self.client.get(reverse('core:create_association'))
-        self.assertTemplateUsed(response, 'core/create_association.html')
+        self.assertTemplateUsed(response, 'core/structures/create.html')
         self.assertTemplateUsed(response, 'base.html')
 
     def test_create_structure_page_contains_expected_content(self):

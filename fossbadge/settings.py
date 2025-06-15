@@ -38,14 +38,13 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'core',
-    'crispy_forms',
-    'crispy_bootstrap5',
     'django_htmx',
+    'rest_framework',
 ]
 
-# Crispy Forms
-CRISPY_ALLOWED_TEMPLATE_PACKS = "bootstrap5"
-CRISPY_TEMPLATE_PACK = "bootstrap5"
+if DEBUG:
+    INSTALLED_APPS.append('django_extensions')
+
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
@@ -112,9 +111,9 @@ AUTH_PASSWORD_VALIDATORS = [
 # Internationalization
 # https://docs.djangoproject.com/en/5.2/topics/i18n/
 
-LANGUAGE_CODE = 'en-us'
+LANGUAGE_CODE = 'fr-fr'
 
-TIME_ZONE = 'UTC'
+TIME_ZONE = 'Europe/Paris'
 
 USE_I18N = True
 

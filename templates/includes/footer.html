@@ -9,11 +9,11 @@
             <div class="col-md-4">
                 <h5>Liens rapides</h5>
                 <ul class="list-unstyled">
-                    <li><a href="{% url 'core:home' %}">Accueil</a></li>
-                    <li><a href="{% url 'core:user_list' %}">Profils</a></li>
-                    <li><a href="{% url 'core:user_profile' %}">Mon Profil</a></li>
-                    <li><a href="{% url 'core:badge_list' %}">Badges</a></li>
-                    <li><a href="{% url 'core:structure_list' %}">Structures</a></li>
+                    <li><a href="{% url 'core:home-list' %}">Accueil</a></li>
+                    <li><a href="{% url 'core:user-list' %}">Profils</a></li>
+                    <li><a href="{% url 'core:user-detail' pk=1 %}">Mon Profil</a></li>
+                    <li><a href="{% url 'core:badge-list' %}">Badges</a></li>
+                    <li><a href="{% url 'core:structure-list' %}">Structures</a></li>
                 </ul>
             </div>
             <div class="col-md-4">

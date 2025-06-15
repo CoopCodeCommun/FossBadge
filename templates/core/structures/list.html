@@ -12,7 +12,7 @@
 
 <div class="row mb-4">
     <div class="col-md-6">
-        <form class="d-flex" hx-get="{% url 'core:structure_list' %}" hx-target="#structure-list" hx-swap="outerHTML">
+        <form class="d-flex" hx-get="{% url 'core:structure-list' %}" hx-target="#structure-list" hx-swap="outerHTML">
             <input class="form-control me-2" type="search" placeholder="Rechercher une structure" aria-label="Rechercher" name="search">
             <button class="btn btn-outline-primary" type="submit">Rechercher</button>
         </form>
@@ -30,7 +30,7 @@
         <div class="card">
             <div class="card-body">
                 <h5 class="card-title">Filtres</h5>
-                <form hx-get="{% url 'core:structure_list' %}" hx-target="#structure-list" hx-swap="outerHTML">
+                <form hx-get="{% url 'core:structure-list' %}" hx-target="#structure-list" hx-swap="outerHTML">
                     <div class="mb-3">
                         <label class="form-label fw-bold">Type</label>
                         <div class="form-check">
@@ -82,7 +82,7 @@
                         <p class="card-text">La Structure Python est dédiée à la promotion et au développement du langage de programmation Python. Nous organisons des ateliers, des conférences et des formations.</p>
                         <div class="d-flex justify-content-between align-items-center">
                             <small class="text-muted">3 badges disponibles</small>
-                            <a href="{% url 'core:association_detail' %}" class="btn btn-primary">Voir la structure</a>
+                            <a href="{% url 'core:structure-detail' pk=1 %}" class="btn btn-primary">Voir la structure</a>
                         </div>
                     </div>
                 </div>
@@ -99,7 +99,7 @@
                         <p class="card-text">Le Club Web est un groupe de passionnés du développement web. Nous partageons nos connaissances et expériences sur les technologies web modernes.</p>
                         <div class="d-flex justify-content-between align-items-center">
                             <small class="text-muted">2 badges disponibles</small>
-                            <a href="{% url 'core:association_detail' %}" class="btn btn-primary">Voir la structure</a>
+                            <a href="{% url 'core:structure-detail' pk=2 %}" class="btn btn-primary">Voir la structure</a>
                         </div>
                     </div>
                 </div>
@@ -116,7 +116,7 @@
                         <p class="card-text">Tech Company est une entreprise innovante spécialisée dans le développement de solutions technologiques pour les entreprises et les particuliers.</p>
                         <div class="d-flex justify-content-between align-items-center">
                             <small class="text-muted">1 badge disponible</small>
-                            <a href="{% url 'core:association_detail' %}" class="btn btn-primary">Voir la structure</a>
+                            <a href="{% url 'core:structure-detail' pk=3 %}" class="btn btn-primary">Voir la structure</a>
                         </div>
                     </div>
                 </div>
@@ -133,7 +133,7 @@
                         <p class="card-text">Coding School est une école de programmation qui propose des formations intensives pour apprendre à coder et devenir développeur web ou mobile.</p>
                         <div class="d-flex justify-content-between align-items-center">
                             <small class="text-muted">4 badges disponibles</small>
-                            <a href="{% url 'core:association_detail' %}" class="btn btn-primary">Voir la structure</a>
+                            <a href="{% url 'core:structure-detail' pk=4 %}" class="btn btn-primary">Voir la structure</a>
                         </div>
                     </div>
                 </div>
@@ -150,7 +150,7 @@
                         <p class="card-text">Dev Studio est un studio de développement spécialisé dans la création d'applications web et mobiles sur mesure pour les entreprises.</p>
                         <div class="d-flex justify-content-between align-items-center">
                             <small class="text-muted">2 badges disponibles</small>
-                            <a href="{% url 'core:association_detail' %}" class="btn btn-primary">Voir la structure</a>
+                            <a href="{% url 'core:structure-detail' pk=5 %}" class="btn btn-primary">Voir la structure</a>
                         </div>
                     </div>
                 </div>
@@ -167,7 +167,7 @@
                         <p class="card-text">L'association Data Science promeut l'utilisation des données et de l'intelligence artificielle pour résoudre des problèmes complexes.</p>
                         <div class="d-flex justify-content-between align-items-center">
                             <small class="text-muted">3 badges disponibles</small>
-                            <a href="{% url 'core:association_detail' %}" class="btn btn-primary">Voir la structure</a>
+                            <a href="{% url 'core:structure-detail' pk=6 %}" class="btn btn-primary">Voir la structure</a>
                         </div>
                     </div>
                 </div>

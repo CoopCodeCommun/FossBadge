@@ -1,74 +1,92 @@
 from django.shortcuts import render
+from rest_framework import viewsets
+from rest_framework.response import Response
+from rest_framework.decorators import action
 
 # Create your views here.
-def home(request):
+class HomeViewSet(viewsets.ViewSet):
     """
-    View function for the home page of the site.
+    ViewSet for the home page of the site.
     """
-    return render(request, 'core/index.html', {
-        'title': 'FossBadge - Accueil'
-    })
+    def list(self, request):
+        return render(request, 'core/home/index.html', {
+            'title': 'FossBadge - Accueil'
+        })
 
-def badge_list(request):
+class BadgeViewSet(viewsets.ViewSet):
     """
-    View function for the badge list page.
+    ViewSet for badge-related pages.
     """
-    return render(request, 'core/badge_list.html', {
-        'title': 'FossBadge - Liste des Badges'
-    })
+    def list(self, request):
+        """
+        List all badges.
+        """
+        return render(request, 'core/badges/list.html', {
+            'title': 'FossBadge - Liste des Badges'
+        })
 
-def structure_list(request):
-    """
-    View function for the structure list page.
-    """
-    return render(request, 'core/structure_list.html', {
-        'title': 'FossBadge - Liste des Structures'
-    })
+    def retrieve(self, request, pk=None):
+        """
+        Display a specific badge.
+        """
+        return render(request, 'core/badges/detail.html', {
+            'title': 'FossBadge - Détails du Badge'
+        })
 
-def user_list(request):
-    """
-    View function for the user list page.
-    """
-    return render(request, 'core/user_list.html', {
-        'title': 'FossBadge - Liste des Profils'
-    })
+    @action(detail=False, methods=['get', 'post'])
+    def create_badge(self, request):
+        """
+        Create a new badge.
+        """
+        return render(request, 'core/badges/create.html', {
+            'title': 'FossBadge - Forger un Badge'
+        })
 
-def user_profile(request):
+class StructureViewSet(viewsets.ViewSet):
     """
-    View function for the user profile page.
+    ViewSet for structure/company-related pages.
     """
-    return render(request, 'core/user.html', {
-        'title': 'FossBadge - Profil Utilisateur'
-    })
+    def list(self, request):
+        """
+        List all structures.
+        """
+        return render(request, 'core/structures/list.html', {
+            'title': 'FossBadge - Liste des Structures'
+        })
 
-def badge_detail(request):
-    """
-    View function for the badge detail page.
-    """
-    return render(request, 'core/badge.html', {
-        'title': 'FossBadge - Détails du Badge'
-    })
+    def retrieve(self, request, pk=None):
+        """
+        Display a specific structure.
+        """
+        return render(request, 'core/structures/detail.html', {
+            'title': 'FossBadge - Structure / Entreprise'
+        })
 
-def association_detail(request):
-    """
-    View function for the structure/company detail page.
-    """
-    return render(request, 'core/association.html', {
-        'title': 'FossBadge - Structure / Entreprise'
-    })
+    @action(detail=False, methods=['get', 'post'])
+    def create_association(self, request):
+        """
+        Create a new structure/company.
+        """
+        return render(request, 'core/structures/create.html', {
+            'title': 'FossBadge - Créer une Structure / Entreprise'
+        })
 
-def create_badge(request):
+class UserViewSet(viewsets.ViewSet):
     """
-    View function for the badge creation page.
+    ViewSet for user-related pages.
     """
-    return render(request, 'core/create_badge.html', {
-        'title': 'FossBadge - Forger un Badge'
-    })
+    def list(self, request):
+        """
+        List all users.
+        """
+        return render(request, 'core/users/list.html', {
+            'title': 'FossBadge - Liste des Profils'
+        })
 
-def create_association(request):
-    """
-    View function for the structure/company creation page.
-    """
-    return render(request, 'core/create_association.html', {
-        'title': 'FossBadge - Créer une Structure / Entreprise'
-    })
+    def retrieve(self, request, pk=None):
+        """
+        Display a specific user profile.
+        """
+        return render(request, 'core/users/detail.html', {
+            'title': 'FossBadge - Profil Utilisateur'
+        })

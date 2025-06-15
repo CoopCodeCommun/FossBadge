@@ -12,7 +12,7 @@
 
 <div class="row mb-4">
     <div class="col-md-6">
-        <form class="d-flex" hx-get="{% url 'core:user_list' %}" hx-target="#user-list" hx-swap="outerHTML">
+        <form class="d-flex" hx-get="{% url 'core:user-list' %}" hx-target="#user-list" hx-swap="outerHTML">
             <input class="form-control me-2" type="search" placeholder="Rechercher un utilisateur" aria-label="Rechercher" name="search">
             <button class="btn btn-outline-primary" type="submit">Rechercher</button>
         </form>
@@ -25,7 +25,7 @@
         <div class="card">
             <div class="card-body">
                 <h5 class="card-title">Filtres</h5>
-                <form hx-get="{% url 'core:user_list' %}" hx-target="#user-list" hx-swap="outerHTML">
+                <form hx-get="{% url 'core:user-list' %}" hx-target="#user-list" hx-swap="outerHTML">
                     <div class="mb-3">
                         <label class="form-label fw-bold">Badge</label>
                         <select class="form-select" name="badge">
@@ -104,7 +104,7 @@
                             </div>
                         </div>
                         <div class="text-end">
-                            <a href="{% url 'core:user_profile' %}" class="btn btn-primary">Voir le profil</a>
+                            <a href="{% url 'core:user-detail' pk=1 %}" class="btn btn-primary">Voir le profil</a>
                         </div>
                     </div>
                 </div>
@@ -137,7 +137,7 @@
                             </div>
                         </div>
                         <div class="text-end">
-                            <a href="{% url 'core:user_profile' %}" class="btn btn-primary">Voir le profil</a>
+                            <a href="{% url 'core:user-detail' pk=2 %}" class="btn btn-primary">Voir le profil</a>
                         </div>
                     </div>
                 </div>
@@ -168,7 +168,7 @@
                             </div>
                         </div>
                         <div class="text-end">
-                            <a href="{% url 'core:user_profile' %}" class="btn btn-primary">Voir le profil</a>
+                            <a href="{% url 'core:user-detail' pk=3 %}" class="btn btn-primary">Voir le profil</a>
                         </div>
                     </div>
                 </div>
@@ -205,7 +205,7 @@
                             </div>
                         </div>
                         <div class="text-end">
-                            <a href="{% url 'core:user_profile' %}" class="btn btn-primary">Voir le profil</a>
+                            <a href="{% url 'core:user-detail' pk=4 %}" class="btn btn-primary">Voir le profil</a>
                         </div>
                     </div>
                 </div>

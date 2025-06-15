@@ -12,7 +12,7 @@
 
 <div class="row mb-4">
     <div class="col-md-6">
-        <form class="d-flex" hx-get="{% url 'core:badge_list' %}" hx-target="#badge-list" hx-swap="outerHTML">
+        <form class="d-flex" hx-get="{% url 'core:badge-list' %}" hx-target="#badge-list" hx-swap="outerHTML">
             <input class="form-control me-2" type="search" placeholder="Rechercher un badge" aria-label="Rechercher" name="search">
             <button class="btn btn-outline-primary" type="submit">Rechercher</button>
         </form>
@@ -30,7 +30,7 @@
         <div class="card">
             <div class="card-body">
                 <h5 class="card-title">Filtres</h5>
-                <form hx-get="{% url 'core:badge_list' %}" hx-target="#badge-list" hx-swap="outerHTML">
+                <form hx-get="{% url 'core:badge-list' %}" hx-target="#badge-list" hx-swap="outerHTML">
                     <div class="mb-3">
                         <label class="form-label fw-bold">Niveau</label>
                         <div class="form-check">
@@ -77,7 +77,7 @@
                     <h5 class="card-title">Python Débutant</h5>
                     <p class="card-text"><span class="badge bg-primary">Débutant</span></p>
                     <p class="card-text text-muted">Structure Python</p>
-                    <a href="{% url 'core:badge_detail' %}" class="btn btn-primary">Voir le badge</a>
+                    <a href="{% url 'core:badge-detail' pk=1 %}" class="btn btn-primary">Voir le badge</a>
                 </div>
             </div>
 
@@ -88,7 +88,7 @@
                     <h5 class="card-title">Python Intermédiaire</h5>
                     <p class="card-text"><span class="badge bg-warning text-dark">Intermédiaire</span></p>
                     <p class="card-text text-muted">Structure Python</p>
-                    <a href="{% url 'core:badge_detail' %}" class="btn btn-primary">Voir le badge</a>
+                    <a href="{% url 'core:badge-detail' pk=2 %}" class="btn btn-primary">Voir le badge</a>
                 </div>
             </div>
 
@@ -99,7 +99,7 @@
                     <h5 class="card-title">Python Expert</h5>
                     <p class="card-text"><span class="badge bg-success">Expert</span></p>
                     <p class="card-text text-muted">Structure Python</p>
-                    <a href="{% url 'core:badge_detail' %}" class="btn btn-primary">Voir le badge</a>
+                    <a href="{% url 'core:badge-detail' pk=3 %}" class="btn btn-primary">Voir le badge</a>
                 </div>
             </div>
 
@@ -110,7 +110,7 @@
                     <h5 class="card-title">HTML</h5>
                     <p class="card-text"><span class="badge bg-success">Expert</span></p>
                     <p class="card-text text-muted">Club Web</p>
-                    <a href="{% url 'core:badge_detail' %}" class="btn btn-primary">Voir le badge</a>
+                    <a href="{% url 'core:badge-detail' pk=4 %}" class="btn btn-primary">Voir le badge</a>
                 </div>
             </div>
 
@@ -121,7 +121,7 @@
                     <h5 class="card-title">CSS</h5>
                     <p class="card-text"><span class="badge bg-warning text-dark">Intermédiaire</span></p>
                     <p class="card-text text-muted">Club Web</p>
-                    <a href="{% url 'core:badge_detail' %}" class="btn btn-primary">Voir le badge</a>
+                    <a href="{% url 'core:badge-detail' pk=5 %}" class="btn btn-primary">Voir le badge</a>
                 </div>
             </div>
 
@@ -132,7 +132,7 @@
                     <h5 class="card-title">JavaScript</h5>
                     <p class="card-text"><span class="badge bg-primary">Débutant</span></p>
                     <p class="card-text text-muted">Tech Company</p>
-                    <a href="{% url 'core:badge_detail' %}" class="btn btn-primary">Voir le badge</a>
+                    <a href="{% url 'core:badge-detail' pk=6 %}" class="btn btn-primary">Voir le badge</a>
                 </div>
             </div>
         </div>

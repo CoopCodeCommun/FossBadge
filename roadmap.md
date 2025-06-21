@@ -32,84 +32,84 @@ Ce document détaille les étapes nécessaires pour implémenter le système de 
 
 ## 3. Modèles de données
 
-- [ ] Créer les modèles Django suivants:
-  - [ ] Utilisateur (extension du modèle User de Django)
+- [x] Créer les modèles Django suivants:
+  - [x] Utilisateur (extension du modèle User de Django)
     - Champs: avatar, genre, nom, prénom, adresse
-  - [ ] Badge
+  - [x] Badge
     - Champs: icône, nom, niveau (débutant/intermédiaire/expert), description
-  - [ ] Association/Entreprise
+  - [x] Association/Entreprise
     - Champs: logo, nom, adresse, SIREN/SIRET, description, coordonnées géographiques
-  - [ ] Personne référente
+  - [x] Personne référente
     - Champs: genre, nom, prénom, poste, association liée
-  - [ ] Relations entre modèles
+  - [x] Relations entre modèles
     - Utilisateur-Badge (ManyToMany)
     - Utilisateur-Association (ManyToMany)
     - Badge-Association (ForeignKey)
-- [ ] Créer et exécuter les migrations
-- [ ] Configurer l'interface d'administration Django
+- [x] Créer et exécuter les migrations
+- [x] Configurer l'interface d'administration Django
 
 ## 4. Développement Backend
 
-- [ ] Créer les vues Django pour:
-  - [ ] Page utilisateur
-  - [ ] Page badge
-  - [ ] Page association/entreprise
-  - [ ] Page création de badge
-  - [ ] Page création d'association/entreprise
-- [ ] Implémenter les formulaires Django
-  - [ ] Formulaire de création de badge
-  - [ ] Formulaire de création d'association/entreprise
-- [ ] Configurer les URLs
-- [ ] Implémenter la logique HTMX pour les interactions dynamiques
-- [ ] Générer des QR codes pour les badges
+- [x] Créer les vues Django pour:
+  - [x] Page utilisateur
+  - [x] Page badge
+  - [x] Page association/entreprise
+  - [x] Page création de badge
+  - [x] Page création d'association/entreprise
+- [x] Implémenter les formulaires Django
+  - [x] Formulaire de création de badge
+  - [x] Formulaire de création d'association/entreprise
+- [x] Configurer les URLs
+- [x] Implémenter la logique HTMX pour les interactions dynamiques
+- [x] Générer des QR codes pour les badges
 
 ## 5. Développement Frontend
 
-- [ ] Structure HTML de base
-  - [ ] Template de base avec Bootstrap 5
-  - [ ] Navbar et footer communs
-- [ ] Développer les templates HTML pour chaque page:
-  - [ ] Page utilisateur
-    - [ ] Section informations personnelles
-    - [ ] Grille de badges (4x4 max)
-    - [ ] Liste des associations
-  - [ ] Page badge
-    - [ ] Affichage des détails du badge
-    - [ ] QR Code
-    - [ ] Structures où le badge est valable
-  - [ ] Page association/entreprise
-    - [ ] Informations de l'association
-    - [ ] Liste des badges disponibles
-    - [ ] Carte OpenStreetMap
-  - [ ] Formulaire de création de badge
-  - [ ] Formulaire de création d'association/entreprise
-- [ ] Styles CSS (Bootstrap 5)
-  - [ ] Styles responsives
-  - [ ] Éléments larges et contrastés (FALC)
-  - [ ] Adaptation mobile-first
+- [x] Structure HTML de base
+  - [x] Template de base avec Bootstrap 5
+  - [x] Navbar et footer communs
+- [x] Développer les templates HTML pour chaque page:
+  - [x] Page utilisateur
+    - [x] Section informations personnelles
+    - [x] Grille de badges (4x4 max)
+    - [x] Liste des associations
+  - [x] Page badge
+    - [x] Affichage des détails du badge
+    - [x] QR Code
+    - [x] Structures où le badge est valable
+  - [x] Page association/entreprise
+    - [x] Informations de l'association
+    - [x] Liste des badges disponibles
+    - [x] Carte OpenStreetMap
+  - [x] Formulaire de création de badge
+  - [x] Formulaire de création d'association/entreprise
+- [x] Styles CSS (Bootstrap 5)
+  - [x] Styles responsives
+  - [x] Éléments larges et contrastés (FALC)
+  - [x] Adaptation mobile-first
 
 ## 6. Accessibilité et FALC
 
-- [ ] Vérifier la conformité FALC
-  - [ ] Textes courts et simples
-  - [ ] Contraste élevé
-  - [ ] Éléments visuels clairs
-- [ ] Implémenter les attributs d'accessibilité HTML
-- [ ] Tester avec des outils d'accessibilité
-- [ ] Optimiser pour les lecteurs d'écran
+- [x] Vérifier la conformité FALC
+  - [x] Textes courts et simples
+  - [x] Contraste élevé
+  - [x] Éléments visuels clairs
+- [x] Implémenter les attributs d'accessibilité HTML
+- [x] Tester avec des outils d'accessibilité
+- [x] Optimiser pour les lecteurs d'écran
 
 ## 7. Intégration HTMX
 
-- [ ] Configurer HTMX pour les interactions sans JavaScript complexe
-- [ ] Implémenter les endpoints pour les requêtes HTMX
-- [ ] Tester les interactions dynamiques
+- [x] Configurer HTMX pour les interactions sans JavaScript complexe
+- [x] Implémenter les endpoints pour les requêtes HTMX
+- [x] Tester les interactions dynamiques
 
 ## 8. Tests
 
-- [ ] Écrire des tests unitaires pour les modèles
-- [ ] Écrire des tests pour les vues
-- [ ] Écrire des tests pour les formulaires
-- [ ] Tests d'intégration
+- [x] Écrire des tests unitaires pour les modèles
+- [x] Écrire des tests pour les vues
+- [x] Écrire des tests pour les formulaires
+- [x] Tests d'intégration
 - [ ] Tests d'accessibilité
 
 ## 9. Documentation

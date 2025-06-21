@@ -1,0 +1,665 @@
+{% extends 'base.html' %}
+{% load pictures %}
+{% load humanize %}
+{% load custom_filters %}
+
+{% block title %}CV de {{ user_profile.get_full_name|default:user_profile.username }}{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* Material Design Colors */
+    :root {
+        --md-primary: #6200ee;
+        --md-primary-variant: #3700b3;
+        --md-secondary: #03dac6;
+        --md-secondary-variant: #018786;
+        --md-background: #ffffff;
+        --md-surface: #ffffff;
+        --md-error: #b00020;
+        --md-on-primary: #ffffff;
+        --md-on-secondary: #000000;
+        --md-on-background: #000000;
+        --md-on-surface: #000000;
+        --md-on-error: #ffffff;
+    }
+
+    /* Print styles */
+    @media print {
+        body {
+            margin: 0;
+            padding: 0;
+            background: white;
+        }
+
+        .page-break {
+            display: block;
+            page-break-before: always;
+        }
+
+        .no-print {
+            display: none !important;
+        }
+
+        .md-card {
+            box-shadow: none !important;
+            margin-bottom: 20px !important;
+        }
+    }
+
+    /* Material Design Styles */
+    body {
+        background-color: #f5f5f5;
+        color: var(--md-on-background);
+    }
+
+    .md-container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 20px;
+    }
+
+    .md-card {
+        background-color: var(--md-surface);
+        border-radius: 8px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1), 0 4px 8px rgba(0,0,0,0.1);
+        margin-bottom: 24px;
+        overflow: hidden;
+        transition: box-shadow 0.3s ease;
+    }
+
+    .md-card:hover {
+        box-shadow: 0 8px 16px rgba(0,0,0,0.1), 0 16px 32px rgba(0,0,0,0.1);
+    }
+
+    .md-card-header {
+        background-color: var(--md-primary);
+        color: var(--md-on-primary);
+        padding: 24px;
+        position: relative;
+    }
+
+    .md-card-content {
+        padding: 24px;
+    }
+
+    .md-card-title {
+        font-size: 1.5rem;
+        font-weight: 500;
+        margin-bottom: 16px;
+        color: var(--md-primary);
+        display: flex;
+        align-items: center;
+    }
+
+    .md-card-title i {
+        margin-right: 12px;
+        color: var(--md-primary);
+    }
+
+    .md-divider {
+        height: 1px;
+        background-color: rgba(0,0,0,0.12);
+        margin: 16px 0;
+    }
+
+    .md-avatar {
+        width: 120px;
+        height: 120px;
+        border-radius: 50%;
+        overflow: hidden;
+        margin: 0 auto;
+        border: 4px solid white;
+        box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+    }
+
+    .md-chip {
+        display: inline-block;
+        padding: 6px 12px;
+        border-radius: 16px;
+        background-color: #e0e0e0;
+        margin-right: 8px;
+        margin-bottom: 8px;
+        font-size: 0.875rem;
+    }
+
+    .md-chip.primary {
+        background-color: var(--md-primary);
+        color: var(--md-on-primary);
+    }
+
+    .md-chip.secondary {
+        background-color: var(--md-secondary);
+        color: var(--md-on-secondary);
+    }
+
+    .md-chip.success {
+        background-color: #4caf50;
+        color: white;
+    }
+
+    .md-chip.warning {
+        background-color: #ff9800;
+        color: black;
+    }
+
+    .md-timeline {
+        position: relative;
+        padding-left: 40px;
+    }
+
+    .md-timeline::before {
+        content: '';
+        position: absolute;
+        left: 8px;
+        top: 0;
+        height: 100%;
+        width: 2px;
+        background-color: var(--md-primary);
+    }
+
+    .md-timeline-item {
+        position: relative;
+        margin-bottom: 24px;
+    }
+
+    .md-timeline-item::before {
+        content: '';
+        position: absolute;
+        left: -40px;
+        top: 0;
+        width: 16px;
+        height: 16px;
+        border-radius: 50%;
+        background-color: var(--md-primary);
+        border: 2px solid white;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+    }
+
+    .md-timeline-content {
+        background-color: #f9f9f9;
+        border-radius: 4px;
+        padding: 16px;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    }
+
+    .md-timeline-title {
+        font-weight: 500;
+        margin-bottom: 8px;
+    }
+
+    .md-timeline-subtitle {
+        color: rgba(0,0,0,0.6);
+        font-size: 0.875rem;
+        margin-bottom: 8px;
+    }
+
+    .md-skill-bar {
+        height: 8px;
+        background-color: #e0e0e0;
+        border-radius: 4px;
+        margin-bottom: 24px;
+        overflow: hidden;
+    }
+
+    .md-skill-progress {
+        height: 100%;
+        background-color: var(--md-primary);
+        border-radius: 4px;
+    }
+
+    .md-btn {
+        display: inline-block;
+        padding: 8px 16px;
+        border-radius: 4px;
+        text-decoration: none;
+        font-weight: 500;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        transition: background-color 0.3s ease;
+        border: none;
+        cursor: pointer;
+        margin-right: 8px;
+    }
+
+    .md-btn-primary {
+        background-color: var(--md-primary);
+        color: var(--md-on-primary);
+    }
+
+    .md-btn-primary:hover {
+        background-color: var(--md-primary-variant);
+        color: var(--md-on-primary);
+    }
+
+    .md-btn-secondary {
+        background-color: var(--md-secondary);
+        color: var(--md-on-secondary);
+    }
+
+    .md-btn-secondary:hover {
+        background-color: var(--md-secondary-variant);
+        color: white;
+    }
+
+    .md-btn-outline {
+        background-color: transparent;
+        color: var(--md-primary);
+        border: 1px solid var(--md-primary);
+    }
+
+    .md-btn-outline:hover {
+        background-color: rgba(98, 0, 238, 0.1);
+        color: var(--md-primary);
+    }
+
+    .md-contact-item {
+        display: flex;
+        align-items: center;
+        margin-bottom: 12px;
+    }
+
+    .md-contact-item i {
+        color: var(--md-primary);
+        margin-right: 12px;
+        width: 24px;
+        text-align: center;
+    }
+
+    .md-interest-item {
+        text-align: center;
+        margin-bottom: 16px;
+    }
+
+    .md-interest-icon {
+        font-size: 2rem;
+        color: var(--md-primary);
+        margin-bottom: 8px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Navigation buttons -->
+<div class="container mb-4 no-print">
+    <div class="row">
+        <div class="col-12">
+            <a href="{% url 'core:user-detail' pk=user_profile.id %}" class="md-btn md-btn-secondary">
+                <i class="fas fa-arrow-left"></i> Retour au profil
+            </a>
+            <a href="{% url 'core:user-cv' pk=user_profile.id %}?template=classic" class="md-btn md-btn-outline">
+                <i class="fas fa-file-alt"></i> Version classique
+            </a>
+            <a href="{% url 'core:user-cv' pk=user_profile.id %}?template=bootstrap" class="md-btn md-btn-outline">
+                <i class="fas fa-file-alt"></i> Version Bootstrap
+            </a>
+            <a href="{% url 'core:user-cv' pk=user_profile.id %}?template=liquid_glass" class="md-btn md-btn-outline">
+                <i class="fas fa-file-alt"></i> Version Apple Liquid Glass
+            </a>
+            <button class="md-btn md-btn-primary" onclick="window.print()">
+                <i class="fas fa-print"></i> Imprimer le CV
+            </button>
+        </div>
+    </div>
+</div>
+
+{% if badges %}
+    {% regroup badges by issuing_structure as structure_badges %}
+{% endif %}
+
+<!-- CV Content -->
+<div class="md-container">
+    <!-- Header Section -->
+    <div class="md-card">
+        <div class="md-card-header">
+            <div class="row align-items-center">
+                <div class="col-md-3 text-center">
+                    {% if user_profile.profile and user_profile.profile.avatar %}
+                        <div class="md-avatar">
+                            {% picture user_profile.profile.avatar img_alt="Avatar de {{ user_profile.get_full_name|default:user_profile.username }}" img_class="img-fluid" ratio="1/1" %}
+                        </div>
+                    {% else %}
+                        <div class="md-avatar d-flex align-items-center justify-content-center bg-light">
+                            <i class="fas fa-user-circle fa-5x text-primary"></i>
+                        </div>
+                    {% endif %}
+                </div>
+                <div class="col-md-9">
+                    <h1 class="display-4">{{ user_profile.get_full_name|default:user_profile.username }}</h1>
+                    <h3 class="text-white-50">Développeur Open Source</h3>
+                    <div class="row mt-3">
+                        <div class="col-md-6">
+                            <div class="md-contact-item">
+                                <i class="fas fa-phone"></i>
+                                <span>{% if user_profile.profile and user_profile.profile.phone %}{{ user_profile.profile.phone }}{% else %}123-456-7890{% endif %}</span>
+                            </div>
+                            <div class="md-contact-item">
+                                <i class="fas fa-envelope"></i>
+                                <span>{{ user_profile.email }}</span>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="md-contact-item">
+                                <i class="fas fa-map-marker-alt"></i>
+                                <span>{% if user_profile.profile and user_profile.profile.address %}{{ user_profile.profile.address }}{% else %}Paris, France{% endif %}</span>
+                            </div>
+                            <div class="md-contact-item">
+                                <i class="fas fa-globe"></i>
+                                <span>{% if user_profile.profile and user_profile.profile.website %}{{ user_profile.profile.website }}{% else %}monsite.com{% endif %}</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- About Me Section -->
+    <div class="md-card">
+        <div class="md-card-content">
+            <h2 class="md-card-title"><i class="fas fa-user"></i>À propos de moi</h2>
+            <div class="md-divider"></div>
+            <p>
+                {% if user_profile.profile and user_profile.profile.bio %}
+                    {{ user_profile.profile.bio }}
+                {% else %}
+                    Je suis un développeur passionné par l'open source et les technologies web. J'aime contribuer à des projets qui ont un impact positif sur la communauté.
+                {% endif %}
+            </p>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Experience Section -->
+        <div class="col-md-6">
+            <div class="md-card h-100">
+                <div class="md-card-content">
+                    <h2 class="md-card-title"><i class="fas fa-briefcase"></i>Expérience</h2>
+                    <div class="md-divider"></div>
+                    <div class="md-timeline">
+                        {% if badges %}
+                            {% for badge in badges|slice:":5" %}
+                                {% with assignment=badge_assignment_dict|get_item:badge.id %}
+                                    {% if assignment %}
+                                        <div class="md-timeline-item">
+                                            <div class="md-timeline-content">
+                                                <h5 class="md-timeline-title">{{ badge.name }}</h5>
+                                                <p class="md-timeline-subtitle">{{ badge.issuing_structure.name }}</p>
+                                                <p class="small">{{ assignment.assigned_date|date:"M Y" }} - Présent</p>
+                                                <p>{{ badge.description|truncatewords:20 }}</p>
+                                            </div>
+                                        </div>
+                                    {% endif %}
+                                {% endwith %}
+                            {% endfor %}
+                        {% else %}
+                            <div class="md-timeline-item">
+                                <div class="md-timeline-content">
+                                    <h5 class="md-timeline-title">Développeur Web</h5>
+                                    <p class="md-timeline-subtitle">Entreprise XYZ</p>
+                                    <p class="small">Jan 2020 - Présent</p>
+                                    <p>Développement d'applications web avec les dernières technologies.</p>
+                                </div>
+                            </div>
+                            <div class="md-timeline-item">
+                                <div class="md-timeline-content">
+                                    <h5 class="md-timeline-title">Stagiaire Développeur</h5>
+                                    <p class="md-timeline-subtitle">Startup ABC</p>
+                                    <p class="small">Jun 2019 - Dec 2019</p>
+                                    <p>Participation au développement de fonctionnalités clés.</p>
+                                </div>
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Education Section -->
+        <div class="col-md-6">
+            <div class="md-card h-100">
+                <div class="md-card-content">
+                    <h2 class="md-card-title"><i class="fas fa-graduation-cap"></i>Éducation</h2>
+                    <div class="md-divider"></div>
+                    <div class="md-timeline">
+                        <div class="md-timeline-item">
+                            <div class="md-timeline-content">
+                                <h5 class="md-timeline-title">Master en Informatique</h5>
+                                <p class="md-timeline-subtitle">Université de Paris</p>
+                                <p class="small">2018 - 2020</p>
+                                <p>Spécialisation en développement web et applications mobiles.</p>
+                            </div>
+                        </div>
+                        <div class="md-timeline-item">
+                            <div class="md-timeline-content">
+                                <h5 class="md-timeline-title">Licence en Informatique</h5>
+                                <p class="md-timeline-subtitle">Université de Lyon</p>
+                                <p class="small">2015 - 2018</p>
+                                <p>Formation générale en informatique et programmation.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Skills Section -->
+    <div class="md-card">
+        <div class="md-card-content">
+            <h2 class="md-card-title"><i class="fas fa-code"></i>Compétences</h2>
+            <div class="md-divider"></div>
+            <div class="row">
+                {% if badges %}
+                    {% for badge in badges|slice:":8" %}
+                        <div class="col-md-6 mb-3">
+                            <div class="d-flex align-items-center justify-content-between mb-1">
+                                <span>{{ badge.name }}</span>
+                                <span class="md-chip {% if badge.level == 'beginner' %}primary{% elif badge.level == 'intermediate' %}warning{% elif badge.level == 'expert' %}success{% endif %}">
+                                    {{ badge.get_level_display }}
+                                </span>
+                            </div>
+                            <div class="md-skill-bar">
+                                <div class="md-skill-progress" style="width: {% if badge.level == 'beginner' %}60%{% elif badge.level == 'intermediate' %}80%{% elif badge.level == 'expert' %}95%{% else %}70%{% endif %}"></div>
+                            </div>
+                        </div>
+                    {% endfor %}
+                {% else %}
+                    <div class="col-md-6 mb-3">
+                        <div class="d-flex align-items-center justify-content-between mb-1">
+                            <span>HTML5</span>
+                            <span class="md-chip success">Expert</span>
+                        </div>
+                        <div class="md-skill-bar">
+                            <div class="md-skill-progress" style="width: 95%"></div>
+                        </div>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <div class="d-flex align-items-center justify-content-between mb-1">
+                            <span>CSS3 & SCSS</span>
+                            <span class="md-chip success">Expert</span>
+                        </div>
+                        <div class="md-skill-bar">
+                            <div class="md-skill-progress" style="width: 90%"></div>
+                        </div>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <div class="d-flex align-items-center justify-content-between mb-1">
+                            <span>JavaScript</span>
+                            <span class="md-chip warning">Intermédiaire</span>
+                        </div>
+                        <div class="md-skill-bar">
+                            <div class="md-skill-progress" style="width: 80%"></div>
+                        </div>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <div class="d-flex align-items-center justify-content-between mb-1">
+                            <span>Python</span>
+                            <span class="md-chip success">Expert</span>
+                        </div>
+                        <div class="md-skill-bar">
+                            <div class="md-skill-progress" style="width: 85%"></div>
+                        </div>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Structures Visited Section -->
+    <div class="md-card">
+        <div class="md-card-content">
+            <h2 class="md-card-title"><i class="fas fa-building"></i>Structures visitées</h2>
+            <div class="md-divider"></div>
+            <div class="row">
+                {% if structure_badges %}
+                    {% for structure_group in structure_badges|slice:":5" %}
+                        <div class="col-md-6 mb-3">
+                            <div class="md-card">
+                                <div class="md-card-content">
+                                    <h5 class="md-card-title" style="margin-bottom: 8px;">{{ structure_group.grouper.name }}</h5>
+                                    <div class="md-chip primary">{{ structure_group.list|length }} badge{% if structure_group.list|length > 1 %}s{% endif %}</div>
+                                    <p class="small text-muted mt-2">
+                                        {% with first_badge=structure_group.list.0 %}
+                                            {% with assignment=badge_assignment_dict|get_item:first_badge.id %}
+                                                {% if assignment %}
+                                                    Depuis {{ assignment.assigned_date|date:"M Y" }}
+                                                {% endif %}
+                                            {% endwith %}
+                                        {% endwith %}
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    {% endfor %}
+                {% else %}
+                    <div class="col-12">
+                        <div class="alert alert-info">
+                            Aucune structure visitée. Pas encore de badges.
+                        </div>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Interests Section -->
+    <div class="md-card">
+        <div class="md-card-content">
+            <h2 class="md-card-title"><i class="fas fa-star"></i>Centres d'intérêt</h2>
+            <div class="md-divider"></div>
+            <div class="row text-center">
+                <div class="col-md-3 col-6">
+                    <div class="md-interest-item">
+                        <i class="fas fa-code md-interest-icon"></i>
+                        <p>Programmation</p>
+                    </div>
+                </div>
+                <div class="col-md-3 col-6">
+                    <div class="md-interest-item">
+                        <i class="fas fa-book md-interest-icon"></i>
+                        <p>Lecture</p>
+                    </div>
+                </div>
+                <div class="col-md-3 col-6">
+                    <div class="md-interest-item">
+                        <i class="fas fa-music md-interest-icon"></i>
+                        <p>Musique</p>
+                    </div>
+                </div>
+                <div class="col-md-3 col-6">
+                    <div class="md-interest-item">
+                        <i class="fas fa-hiking md-interest-icon"></i>
+                        <p>Randonnée</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Second page for additional content if needed -->
+{% if badges.count > 8 or structure_badges|length > 5 %}
+<div class="page-break"></div>
+
+<div class="md-container">
+    <div class="md-card">
+        <div class="md-card-header">
+            <h2 class="mb-0">{{ user_profile.get_full_name|default:user_profile.username }} - Informations supplémentaires</h2>
+        </div>
+
+        {% if badges.count > 8 %}
+        <div class="md-card-content">
+            <h3 class="md-card-title"><i class="fas fa-code"></i>Compétences supplémentaires</h3>
+            <div class="md-divider"></div>
+            <div class="row">
+                {% for badge in badges|slice:"8:" %}
+                    <div class="col-md-6 mb-3">
+                        <div class="d-flex align-items-center justify-content-between mb-1">
+                            <span>{{ badge.name }}</span>
+                            <span class="md-chip {% if badge.level == 'beginner' %}primary{% elif badge.level == 'intermediate' %}warning{% elif badge.level == 'expert' %}success{% endif %}">
+                                {{ badge.get_level_display }}
+                            </span>
+                        </div>
+                        <div class="md-skill-bar">
+                            <div class="md-skill-progress" style="width: {% if badge.level == 'beginner' %}60%{% elif badge.level == 'intermediate' %}80%{% elif badge.level == 'expert' %}95%{% else %}70%{% endif %}"></div>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+
+        {% if badges.count > 5 %}
+        <div class="md-card-content">
+            <h3 class="md-card-title"><i class="fas fa-briefcase"></i>Expérience supplémentaire</h3>
+            <div class="md-divider"></div>
+            <div class="md-timeline">
+                {% for badge in badges|slice:"5:" %}
+                    {% with assignment=badge_assignment_dict|get_item:badge.id %}
+                        {% if assignment %}
+                            <div class="md-timeline-item">
+                                <div class="md-timeline-content">
+                                    <h5 class="md-timeline-title">{{ badge.name }}</h5>
+                                    <p class="md-timeline-subtitle">{{ badge.issuing_structure.name }}</p>
+                                    <p class="small">{{ assignment.assigned_date|date:"M Y" }} - Présent</p>
+                                    <p>{{ badge.description|truncatewords:20 }}</p>
+                                </div>
+                            </div>
+                        {% endif %}
+                    {% endwith %}
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+
+        {% if structure_badges|length > 5 %}
+        <div class="md-card-content">
+            <h3 class="md-card-title"><i class="fas fa-building"></i>Structures visitées supplémentaires</h3>
+            <div class="md-divider"></div>
+            <div class="row">
+                {% for structure_group in structure_badges|slice:"5:" %}
+                    <div class="col-md-6 mb-3">
+                        <div class="md-card">
+                            <div class="md-card-content">
+                                <h5 class="md-card-title" style="margin-bottom: 8px;">{{ structure_group.grouper.name }}</h5>
+                                <div class="md-chip primary">{{ structure_group.list|length }} badge{% if structure_group.list|length > 1 %}s{% endif %}</div>
+                                <p class="small text-muted mt-2">
+                                    {% with first_badge=structure_group.list.0 %}
+                                        {% with assignment=badge_assignment_dict|get_item:first_badge.id %}
+                                            {% if assignment %}
+                                                Depuis {{ assignment.assigned_date|date:"M Y" }}
+                                            {% endif %}
+                                        {% endwith %}
+                                    {% endwith %}
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endif %}
+{% endblock %}

@@ -203,6 +203,48 @@ class UserViewSet(viewsets.ViewSet):
     """
     ViewSet for user-related pages.
     """
+    @action(detail=True, methods=['get'])
+    def cv(self, request, pk=None):
+        """
+        Display a user's CV based on their badges.
+
+        Query Parameters:
+            template (str): The template to use. Options: 'bootstrap' or 'classic' (default).
+        """
+        user = get_object_or_404(User, pk=pk)
+
+        # Check which template to use
+        template_type = request.GET.get('template', 'classic')
+        if template_type == 'bootstrap':
+            template_name = 'core/users/cv_bootstrap.html'
+        elif template_type == 'material':
+            template_name = 'core/users/cv_material.html'
+        elif template_type == 'liquid_glass':
+            template_name = 'core/users/cv_liquid_glass.html'
+        else:
+            template_name = 'core/users/cv.html'
+
+        # Get user's badges, badge assignments, and structures
+        try:
+            profile = user.profile
+            badges = Badge.objects.filter(assignments__user=user)
+            badge_assignments = user.badge_assignments.all()
+            # Create a dictionary to easily look up assignments by badge ID
+            badge_assignment_dict = {assignment.badge_id: assignment for assignment in badge_assignments}
+        except UserProfile.DoesNotExist:
+            badges = Badge.objects.none()
+            badge_assignment_dict = {}
+        structures = user.structures.all()
+
+        return render(request, template_name, {
+            'title': f'CV de {user.get_full_name() or user.username}',
+            'user_profile': user,
+            'badges': badges,
+            'badge_assignment_dict': badge_assignment_dict,
+            'structures': structures,
+            'template_type': template_type
+        })
+
     def list(self, request):
         """
         List all users.

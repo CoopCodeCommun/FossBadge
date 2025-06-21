@@ -23,6 +23,19 @@
         {% else %}
         <img src="https://via.placeholder.com/150" alt="Avatar utilisateur" class="img-fluid rounded-circle mb-3" style="width: 150px; height: 150px;">
         {% endif %}
+
+        <!-- CV Buttons -->
+        <div class="dropdown mb-3">
+            <button class="btn btn-primary dropdown-toggle" type="button" id="cvDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                <i class="fas fa-file-alt"></i> Voir mon CV
+            </button>
+            <ul class="dropdown-menu" aria-labelledby="cvDropdown">
+                <li><a class="dropdown-item" href="{% url 'core:user-cv' pk=user_profile.id %}?template=classic">Version classique</a></li>
+                <li><a class="dropdown-item" href="{% url 'core:user-cv' pk=user_profile.id %}?template=bootstrap">Version Bootstrap</a></li>
+                <li><a class="dropdown-item" href="{% url 'core:user-cv' pk=user_profile.id %}?template=material">Version Material Design</a></li>
+                <li><a class="dropdown-item" href="{% url 'core:user-cv' pk=user_profile.id %}?template=liquid_glass">Version Apple Liquid Glass</a></li>
+            </ul>
+        </div>
     </div>
     <div class="col-md-8">
         <!-- User Details -->

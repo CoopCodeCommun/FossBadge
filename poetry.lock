@@ -81,6 +81,18 @@ argon2 = ["argon2-cffi (>=19.1.0)"]
 bcrypt = ["bcrypt"]
 
 [[package]]
+name = "django-cleanup"
+version = "9.0.0"
+description = "Deletes old files."
+optional = false
+python-versions = ">=3.8"
+groups = ["main"]
+files = [
+    {file = "django_cleanup-9.0.0-py3-none-any.whl", hash = "sha256:19f8b0e830233f9f0f683b17181f414672a0f48afe3ea3cc80ba47ae40ad880c"},
+    {file = "django_cleanup-9.0.0.tar.gz", hash = "sha256:bb9fb560aaf62959c81e31fa40885c36bbd5854d5aa21b90df2c7e4ba633531e"},
+]
+
+[[package]]
 name = "django-extensions"
 version = "4.1"
 description = "Extensions for Django"
@@ -110,6 +122,31 @@ files = [
 [package.dependencies]
 asgiref = ">=3.6"
 django = ">=4.2"
+
+[[package]]
+name = "django-pictures"
+version = "1.4.2"
+description = "Responsive cross-browser image library using modern codes like AVIF & WebP."
+optional = false
+python-versions = ">=3.9"
+groups = ["main"]
+files = [
+    {file = "django_pictures-1.4.2-py3-none-any.whl", hash = "sha256:5bd6f13cfa787c940a19a81c2852854a82bf86780fa46d1fa190e6021807e38a"},
+    {file = "django_pictures-1.4.2.tar.gz", hash = "sha256:8b62fe99d536d0bcf793e26709bc82d1b2c66c6af93ff115b4d5394a75e89129"},
+]
+
+[package.dependencies]
+django = ">=4.2.0"
+pillow = ">=9.0.0"
+
+[package.extras]
+celery = ["celery"]
+cleanup = ["django-cleanup"]
+django-rq = ["django-rq"]
+dramatiq = ["django-dramatiq"]
+drf = ["djangorestframework"]
+lint = ["bandit (==1.8.3)", "black (==25.1.0)", "flake8 (==7.2.0)", "isort (==6.0.1)", "pydocstyle[toml] (==6.3.0)"]
+test = ["pytest", "pytest-cov", "pytest-django", "redis"]
 
 [[package]]
 name = "djangorestframework"
@@ -666,4 +703,4 @@ watchdog = ["watchdog (>=2.3)"]
 [metadata]
 lock-version = "2.1"
 python-versions = ">=3.10"
-content-hash = "e51d47eab77e47482ebf4495d51e831726c40d4e6e0a50ec8e8517bd7cfa9e2c"
+content-hash = "f3b8344982ea41faf4ac3a0ec701d30ef6d9fdf8abd0d889235f1897f53edb2a"

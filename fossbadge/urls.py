@@ -24,6 +24,12 @@ urlpatterns = [
     path('', include('core.urls')),
 ]
 
+# Include django-pictures URLs for placeholders in development
+if settings.DEBUG and settings.PICTURES.get('USE_PLACEHOLDERS', False):
+    urlpatterns += [
+        path('_pictures/', include('pictures.urls')),
+    ]
+
 # Serve media files in development
 if settings.DEBUG:
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

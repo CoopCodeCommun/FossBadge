@@ -1,11 +1,14 @@
 {% extends 'base.html' %}
+{% load pictures %}
+{% load humanize %}
+{% load custom_filters %}
 
-{% block title %}Profil Utilisateur{% endblock %}
+{% block title %}Profil de {{ user_profile.get_full_name|default:user_profile.username }}{% endblock %}
 
 {% block content %}
 <div class="row">
     <div class="col-md-12">
-        <h1 class="display-4 mb-4">Profil Utilisateur</h1>
+        <h1 class="display-4 mb-4">Profil de {{ user_profile.get_full_name|default:user_profile.username }}</h1>
     </div>
 </div>
 
@@ -13,7 +16,13 @@
 <div class="row mb-5">
     <div class="col-md-4 text-center">
         <!-- User Avatar -->
+        {% if user_profile.profile and user_profile.profile.avatar %}
+        <div class="mb-3" style="width: 150px; height: 150px; margin: 0 auto;">
+            {% picture user_profile.profile.avatar img_alt="Avatar de {{ user_profile.get_full_name|default:user_profile.username }}" img_class="img-fluid rounded-circle" ratio="1/1" %}
+        </div>
+        {% else %}
         <img src="https://via.placeholder.com/150" alt="Avatar utilisateur" class="img-fluid rounded-circle mb-3" style="width: 150px; height: 150px;">
+        {% endif %}
     </div>
     <div class="col-md-8">
         <!-- User Details -->
@@ -22,15 +31,15 @@
                 <h2 class="card-title">Informations personnelles</h2>
                 <div class="row mb-2">
                     <div class="col-md-4 fw-bold">Nom:</div>
-                    <div class="col-md-8">Dupont</div>
+                    <div class="col-md-8">{{ user_profile.last_name }}</div>
                 </div>
                 <div class="row mb-2">
                     <div class="col-md-4 fw-bold">Prénom:</div>
-                    <div class="col-md-8">Jean</div>
+                    <div class="col-md-8">{{ user_profile.first_name }}</div>
                 </div>
                 <div class="row mb-2">
                     <div class="col-md-4 fw-bold">Adresse:</div>
-                    <div class="col-md-8">123 Rue de la République, 75001 Paris</div>
+                    <div class="col-md-8">{% if user_profile.profile %}{{ user_profile.profile.address }}{% endif %}</div>
                 </div>
             </div>
         </div>
@@ -44,45 +53,46 @@
             <div class="card-body">
                 <h2 class="card-title">Mes badges</h2>
                 <div class="badge-grid">
-                    <!-- Badge 1 -->
-                    <div class="card text-center">
-                        <div class="card-body">
-                            <img src="https://via.placeholder.com/100" alt="Badge Python" class="badge-icon">
-                            <h5 class="card-title">Python</h5>
-                            <p class="card-text"><span class="badge bg-success">Expert</span></p>
-                            <a href="#" class="btn btn-primary">Voir le badge</a>
+                    {% if badges %}
+                        {% for badge in badges %}
+                        <div class="card text-center">
+                            <div class="card-body">
+                                {% if badge.icon %}
+                                <div class="badge-icon-container">
+                                    {% picture badge.icon img_alt="{{ badge.name }}" img_class="badge-icon" ratio="1/1" %}
+                                </div>
+                                {% else %}
+                                <img src="https://via.placeholder.com/100" alt="{{ badge.name }}" class="badge-icon">
+                                {% endif %}
+                                <h5 class="card-title">{{ badge.name }}</h5>
+                                <p class="card-text">
+                                    {% if badge.level == 'beginner' %}
+                                    <span class="badge bg-primary">{{ badge.get_level_display }}</span>
+                                    {% elif badge.level == 'intermediate' %}
+                                    <span class="badge bg-warning text-dark">{{ badge.get_level_display }}</span>
+                                    {% elif badge.level == 'expert' %}
+                                    <span class="badge bg-success">{{ badge.get_level_display }}</span>
+                                    {% endif %}
+                                </p>
+                                {% with assignment=badge_assignment_dict|get_item:badge.id %}
+                                    {% if assignment %}
+                                    <p class="card-text small text-muted">
+                                        Assigné le {{ assignment.assigned_date|date:"d/m/Y" }}<br>
+                                        <em>({{ assignment.assigned_date|naturaltime }})</em>
+                                    </p>
+                                    {% endif %}
+                                {% endwith %}
+                                <a href="{% url 'core:badge-detail' pk=badge.id %}" class="btn btn-primary">Voir le badge</a>
+                            </div>
                         </div>
-                    </div>
-
-                    <!-- Badge 2 -->
-                    <div class="card text-center">
-                        <div class="card-body">
-                            <img src="https://via.placeholder.com/100" alt="Badge HTML" class="badge-icon">
-                            <h5 class="card-title">HTML</h5>
-                            <p class="card-text"><span class="badge bg-success">Expert</span></p>
-                            <a href="#" class="btn btn-primary">Voir le badge</a>
+                        {% endfor %}
+                    {% else %}
+                        <div class="col-12">
+                            <div class="alert alert-info">
+                                Aucun badge n'est associé à ce profil.
+                            </div>
                         </div>
-                    </div>
-
-                    <!-- Badge 3 -->
-                    <div class="card text-center">
-                        <div class="card-body">
-                            <img src="https://via.placeholder.com/100" alt="Badge CSS" class="badge-icon">
-                            <h5 class="card-title">CSS</h5>
-                            <p class="card-text"><span class="badge bg-warning text-dark">Intermédiaire</span></p>
-                            <a href="#" class="btn btn-primary">Voir le badge</a>
-                        </div>
-                    </div>
-
-                    <!-- Badge 4 -->
-                    <div class="card text-center">
-                        <div class="card-body">
-                            <img src="https://via.placeholder.com/100" alt="Badge JavaScript" class="badge-icon">
-                            <h5 class="card-title">JavaScript</h5>
-                            <p class="card-text"><span class="badge bg-primary">Débutant</span></p>
-                            <a href="#" class="btn btn-primary">Voir le badge</a>
-                        </div>
-                    </div>
+                    {% endif %}
                 </div>
             </div>
         </div>
@@ -96,33 +106,27 @@
             <div class="card-body">
                 <h2 class="card-title">Mes structures</h2>
                 <div class="row">
-                    <!-- Structure 1 -->
-                    <div class="col-md-3 col-sm-6 text-center mb-4">
-                        <img src="https://via.placeholder.com/100" alt="Logo Structure 1" class="img-fluid mb-2" style="max-width: 100px;">
-                        <h5>Structure Python</h5>
-                        <a href="#" class="btn btn-outline-primary">Voir</a>
-                    </div>
-
-                    <!-- Structure 2 -->
-                    <div class="col-md-3 col-sm-6 text-center mb-4">
-                        <img src="https://via.placeholder.com/100" alt="Logo Structure 2" class="img-fluid mb-2" style="max-width: 100px;">
-                        <h5>Club Web</h5>
-                        <a href="#" class="btn btn-outline-primary">Voir</a>
-                    </div>
-
-                    <!-- Structure 3 -->
-                    <div class="col-md-3 col-sm-6 text-center mb-4">
-                        <img src="https://via.placeholder.com/100" alt="Logo Structure 3" class="img-fluid mb-2" style="max-width: 100px;">
-                        <h5>Tech Company</h5>
-                        <a href="#" class="btn btn-outline-primary">Voir</a>
-                    </div>
-
-                    <!-- Structure 4 -->
-                    <div class="col-md-3 col-sm-6 text-center mb-4">
-                        <img src="https://via.placeholder.com/100" alt="Logo Structure 4" class="img-fluid mb-2" style="max-width: 100px;">
-                        <h5>Coding School</h5>
-                        <a href="#" class="btn btn-outline-primary">Voir</a>
-                    </div>
+                    {% if structures %}
+                        {% for structure in structures %}
+                        <div class="col-md-3 col-sm-6 text-center mb-4">
+                            {% if structure.logo %}
+                            <div class="mb-2" style="max-width: 100px; margin: 0 auto;">
+                                {% picture structure.logo img_alt="Logo {{ structure.name }}" img_class="img-fluid" ratio="1/1" %}
+                            </div>
+                            {% else %}
+                            <img src="https://via.placeholder.com/100" alt="Logo {{ structure.name }}" class="img-fluid mb-2" style="max-width: 100px;">
+                            {% endif %}
+                            <h5>{{ structure.name }}</h5>
+                            <a href="{% url 'core:structure-detail' pk=structure.id %}" class="btn btn-outline-primary">Voir</a>
+                        </div>
+                        {% endfor %}
+                    {% else %}
+                        <div class="col-12">
+                            <div class="alert alert-info">
+                                Aucune structure n'est associée à ce profil.
+                            </div>
+                        </div>
+                    {% endif %}
                 </div>
             </div>
         </div>

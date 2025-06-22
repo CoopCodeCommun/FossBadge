@@ -25,8 +25,8 @@ SECRET_KEY = 'django-insecure-&e(amkw5cizcf^2pn0v!(=ll@_z!--6f=4sg^+#j^qzl9p#zfh
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['162.19.27.108', 'localhost', '127.0.0.1']
-
+ALLOWED_HOSTS = ['localhost', '127.0.0.1', 'badge.codecommun.coop', 'badge.localhost']
+CSRF_TRUSTED_ORIGINS = ['https://badge.codecommun.coop']
 
 # Application definition
 

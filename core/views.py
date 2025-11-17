@@ -283,16 +283,28 @@ class UserViewSet(viewsets.ViewSet):
         badges = Badge.objects.all()
         structures = Structure.objects.all()
 
-        return render(request, 'core/users/list.html', {
-            'title': 'FossBadge - Liste des Profils',
-            'users': users,
-            'badges': badges,
-            'structures': structures,
-            'search_query': search_query,
-            'badge_filter': badge_filter,
-            'structure_filter': structure_filter,
-            'level_filter': level_filter
-        })
+        # Check if this is an HTMX request
+        if request.htmx:
+            # For HTMX requests, only return the user list part
+            return render(request, 'core/users/partials/user_list.html',{
+                'users': users,
+                'search_query': search_query,
+                'badge_filter': badge_filter,
+                'structure_filter': structure_filter,
+                'level_filter': level_filter,
+            })
+        else:
+            # For regular requests, return the full page
+            return render(request, 'core/users/list.html', {
+                'title': 'FossBadge - Liste des Profils',
+                'users': users,
+                'badges': badges,
+                'structures': structures,
+                'search_query': search_query,
+                'badge_filter': badge_filter,
+                'structure_filter': structure_filter,
+                'level_filter': level_filter
+            })
 
     def retrieve(self, request, pk=None):
         """

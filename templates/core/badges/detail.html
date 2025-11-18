@@ -108,9 +108,9 @@
             <div class="card">
                 <div class="card-body">
                     <h3 class="card-title">Ce badge est rattaché à d'autres personnes</h3>
-                    {% if badge.holders.all %}
+                    {% if holders %}
                         <ul class="list-group list-group-flush">
-                            {% for user in badge.holders.all %}
+                            {% for user in holders %}
                                 <li class="list-group-item">{{ user.get_full_name|default:user.username }}</li>
                             {% endfor %}
                         </ul>

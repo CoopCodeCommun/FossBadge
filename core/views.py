@@ -85,10 +85,12 @@ class BadgeViewSet(viewsets.ViewSet):
         Display a specific badge.
         """
         badge = get_object_or_404(Badge, pk=pk)
+        holders = badge.get_holders()
 
         return render(request, 'core/badges/detail.html', {
             'title': f'FossBadge - Badge {badge.name}',
-            'badge': badge
+            'badge': badge,
+            'holders': holders
         })
 
     @action(detail=False, methods=['get', 'post'])

@@ -1,0 +1,91 @@
+{% load pictures %}
+
+<div class="row">
+    {% if users %}
+        {% for user in users %}
+        <div class="col-md-6 mb-4">
+            <div class="card h-100">
+                <div class="card-body">
+                    <div class="d-flex align-items-center mb-3">
+                        {% if user.profile.avatar %}
+                        <div class="me-3" style="width: 80px; height: 80px;">
+                            {% picture user.profile.avatar img_alt="Avatar de {{ user.get_full_name|default:user.username }}" img_class="rounded-circle" ratio="1/1" %}
+                        </div>
+                        {% else %}
+                        <img src="https://via.placeholder.com/80" alt="Avatar de {{ user.get_full_name|default:user.username }}" class="rounded-circle me-3" style="width: 80px; height: 80px;">
+                        {% endif %}
+                        <div>
+                            <h5 class="card-title mb-0">{{ user.get_full_name|default:user.username }}</h5>
+                            <p class="text-muted mb-0">{{ user.badges.count }} badge{% if user.badges.count != 1 %}s{% endif %}</p>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <h6 class="card-subtitle mb-2">Badges</h6>
+                        <div class="d-flex flex-wrap">
+                            {% for badge in user.badges.all %}
+                            <span class="badge {% if badge.level == 'beginner' %}bg-primary{% elif badge.level == 'intermediate' %}bg-warning text-dark{% elif badge.level == 'expert' %}bg-success{% endif %} me-1 mb-1 p-2">{{ badge.name }}</span>
+                            {% empty %}
+                            <span class="text-muted">Aucun badge</span>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <h6 class="card-subtitle mb-2">Structures</h6>
+                        <div class="d-flex flex-wrap">
+                            {% for structure in user.structures.all %}
+                            <span class="badge bg-light text-dark me-1 mb-1 p-2">{{ structure.name }}</span>
+                            {% empty %}
+                            <span class="text-muted">Aucune structure</span>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    <div class="text-end">
+                        <a href="{% url 'core:user-detail' pk=user.id %}" class="btn btn-primary">Voir le profil</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    {% else %}
+        <div class="col-12">
+            <div class="alert alert-info">
+                Aucun utilisateur ne correspond à vos critères de recherche.
+            </div>
+        </div>
+    {% endif %}
+</div>
+
+<!-- Pagination -->
+{% if is_paginated %}
+<nav aria-label="Page navigation" class="mt-4">
+    <ul class="pagination justify-content-center">
+        {% if page_obj.has_previous %}
+        <li class="page-item">
+            <a class="page-link" href="?page={{ page_obj.previous_page_number }}{% if search_query %}&search={{ search_query }}{% endif %}" tabindex="-1">Précédent</a>
+        </li>
+        {% else %}
+        <li class="page-item disabled">
+            <a class="page-link" href="#" tabindex="-1" aria-disabled="true">Précédent</a>
+        </li>
+        {% endif %}
+
+        {% for i in paginator.page_range %}
+            {% if page_obj.number == i %}
+            <li class="page-item active"><a class="page-link" href="#">{{ i }}</a></li>
+            {% else %}
+            <li class="page-item"><a class="page-link" href="?page={{ i }}{% if search_query %}&search={{ search_query }}{% endif %}">{{ i }}</a></li>
+            {% endif %}
+        {% endfor %}
+
+        {% if page_obj.has_next %}
+        <li class="page-item">
+            <a class="page-link" href="?page={{ page_obj.next_page_number }}{% if search_query %}&search={{ search_query }}{% endif %}">Suivant</a>
+        </li>
+        {% else %}
+        <li class="page-item disabled">
+            <a class="page-link" href="#" tabindex="-1" aria-disabled="true">Suivant</a>
+        </li>
+        {% endif %}
+    </ul>
+</nav>
+{% endif %}

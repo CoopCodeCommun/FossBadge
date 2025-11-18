@@ -13,7 +13,7 @@
 
 <div class="row mb-4">
     <div class="col-md-6">
-        <form class="d-flex" hx-get="{% url 'core:structure-list' %}" hx-target="#structure-list" hx-swap="outerHTML">
+        <form class="d-flex" hx-get="{% url 'core:structure-list' %}" hx-target="#structure-list" hx-swap="innerHTML">
             <input class="form-control me-2" type="search" placeholder="Rechercher une structure" aria-label="Rechercher" name="search">
             <button class="btn btn-outline-primary" type="submit">Rechercher</button>
         </form>
@@ -25,13 +25,13 @@
     </div>
 </div>
 
-<div class="row" id="structure-list">
+<div class="row">
     <!-- Filters -->
     <div class="col-md-3 mb-4">
         <div class="card">
             <div class="card-body">
                 <h5 class="card-title">Filtres</h5>
-                <form hx-get="{% url 'core:structure-list' %}" hx-target="#structure-list" hx-swap="outerHTML">
+                <form hx-get="{% url 'core:structure-list' %}" hx-target="#structure-list" hx-swap="innerHTML">
                     <div class="mb-3">
                         <label class="form-label fw-bold">Type</label>
                         <div class="form-check">
@@ -69,7 +69,7 @@
     </div>
 
     <!-- Structure List -->
-    <div class="col-md-9">
+    <div class="col-md-9"  id="structure-list">
         <div class="row">
             {% if structures %}
                 {% for structure in structures %}

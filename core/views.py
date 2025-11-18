@@ -154,17 +154,27 @@ class StructureViewSet(viewsets.ViewSet):
                 Q(valid_badges__id=badge_filter)
             ).distinct()
 
-        # Get all badges for the filter dropdown
-        badges = Badge.objects.all()
-
-        return render(request, 'core/structures/list.html', {
-            'title': 'FossBadge - Liste des Structures',
-            'structures': structures,
-            'badges': badges,
-            'search_query': search_query,
-            'type_filter': type_filter,
-            'badge_filter': badge_filter
-        })
+        # Check if this is an HTMX request
+        if request.htmx:
+            # For HTMX requests, only return the badge list part
+            return render(request, 'core/structures/partials/structure_list.html', {
+                'structures': structures,
+                'search_query': search_query,
+                'type_filter': type_filter,
+                'badge_filter': badge_filter
+            })
+        else:
+            # Get all badges for the filter dropdown
+            badges = Badge.objects.all()
+            # For regular requests, return the full page
+            return render(request, 'core/structures/list.html', {
+                'title': 'FossBadge - Liste des Structures',
+                'structures': structures,
+                'badges': badges,
+                'search_query': search_query,
+                'type_filter': type_filter,
+                'badge_filter': badge_filter
+            })
 
     def retrieve(self, request, pk=None):
         """

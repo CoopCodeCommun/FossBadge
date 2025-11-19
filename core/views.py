@@ -7,7 +7,7 @@ from rest_framework.response import Response
 from rest_framework.decorators import action
 
 from .models import Structure, Badge, UserProfile
-from .forms import BadgeForm, StructureForm
+from .forms import BadgeForm, StructureForm, UserForm, UserProfileForm
 
 # Create your views here.
 class HomeViewSet(viewsets.ViewSet):
@@ -342,4 +342,33 @@ class UserViewSet(viewsets.ViewSet):
             'badges': badges,
             'badge_assignment_dict': badge_assignment_dict,
             'structures': structures
+        })
+
+    @action(detail=False, methods=['get', 'post'])
+    def create_user(self, request):
+
+        if request.method == 'POST':
+            user_form = UserForm(request.POST, request.FILES)
+            user_profile_form = UserProfileForm(request.POST, request.FILES)
+            if user_form.is_valid() and user_profile_form.is_valid():
+                user = user_form.save(commit=False)
+                user.username = f"{user_form.cleaned_data["first_name"].lower()}.{user_form.cleaned_data["last_name"].lower()}"
+                user.set_password(user_form.cleaned_data['password'])
+                user.save()
+
+                user_profile = user_profile_form.save(commit=False)
+                user_profile.user_id = user.id
+                user_profile.save()
+
+                return redirect(reverse('core:user-detail', kwargs={'pk': user.pk}))
+        else:
+            user_form = UserForm()
+            user_profile_form = UserProfileForm()
+
+        badges = Badge.objects.all()
+        return render(request, 'core/users/create.html', {
+            'title': 'FossBadge - Créer un utilisateur',
+            'badges': badges,
+            'user_form': user_form,
+            'user_profile_form': user_profile_form
         })

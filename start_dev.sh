@@ -15,8 +15,6 @@ echo "Poetry install ok"
 sqlite3 ./db.sqlite3 'PRAGMA journal_mode=WAL;'
 sqlite3 ./db.sqlite3 'PRAGMA synchronous=normal;'
 
-sleep infinity
-
 if [[ "$GUNICORN" == "1" ]]; then
     echo "→ Gunicorn activé, démarrage…"
     poetry run python3 manage.py collectstatic --noinput

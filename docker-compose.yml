@@ -46,7 +46,7 @@ services:
       - traefik.http.routers.fossbadge_nginx.tls.certresolver=myresolver
       - traefik.http.routers.fossbadge_nginx.rule=Host(`$DOMAIN`)
       - traefik.http.services.fossbadge_nginx.loadbalancer.server.port=80
-
+      - traefik.http.routers.fossbadge_nginx.middlewares=crowdsec@file
     networks:
       - frontend
       - fossbadge_backend

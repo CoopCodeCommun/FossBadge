@@ -19,6 +19,13 @@ sqlite3 ./db.sqlite3 'PRAGMA synchronous=normal;'
 
 sleep infinity
 
+if [[ "$GUNICORN" == "1" ]]; then
+    echo "→ Gunicorn activé, démarrage…"
+    poetry run gunicorn fossbadge.wsgi --log-level=info --log-file /home/fossbadge/FossBadge/logs/gunicorn.logs -w 3 -b 0.0.0.0:8000
+else
+    echo "→ Gunicorn désactivé, on sleep…"
+    sleep infinity
+fi
 #echo "Run GUNICORN"
 #echo "You should be able to see the Fedow dashbord at :"
 #echo "https://$DOMAIN/dashboard/"

@@ -12,8 +12,6 @@ echo "Poetry install ok"
 # New static for nginx ?
 #poetry run python3 manage.py collectstatic --noinput
 
-echo "Dev mode : sleep infinity"
-echo "To start the server : rsp"
 sqlite3 ./db.sqlite3 'PRAGMA journal_mode=WAL;'
 sqlite3 ./db.sqlite3 'PRAGMA synchronous=normal;'
 
@@ -25,6 +23,7 @@ if [[ "$GUNICORN" == "1" ]]; then
     poetry run gunicorn fossbadge.wsgi --log-level=info --log-file /home/fossbadge/FossBadge/logs/gunicorn.logs -w 3 -b 0.0.0.0:8000
 else
     echo "→ Gunicorn désactivé, on sleep…"
+	echo "To start the server : rsp"
     sleep infinity
 fi
 #echo "Run GUNICORN"

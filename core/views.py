@@ -346,7 +346,9 @@ class UserViewSet(viewsets.ViewSet):
 
     @action(detail=False, methods=['get', 'post'])
     def create_user(self, request):
-
+        """
+        Create a new user.
+        """
         if request.method == 'POST':
             user_form = UserForm(request.POST, request.FILES)
             user_profile_form = UserProfileForm(request.POST, request.FILES)
@@ -365,10 +367,8 @@ class UserViewSet(viewsets.ViewSet):
             user_form = UserForm()
             user_profile_form = UserProfileForm()
 
-        badges = Badge.objects.all()
         return render(request, 'core/users/create.html', {
             'title': 'FossBadge - Créer un utilisateur',
-            'badges': badges,
             'user_form': user_form,
             'user_profile_form': user_profile_form
         })

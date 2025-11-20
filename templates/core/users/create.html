@@ -1,0 +1,163 @@
+{% extends 'base.html' %}
+
+{% block title %}Créer un utilisateur{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-12">
+        <h1 class="display-4 mb-4">Créer un utilisateur</h1>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-8 mx-auto">
+        <div class="card">
+            <div class="card-body">
+                <h2 class="card-title mb-4">Informations de l'utilisateur</h2>
+
+                <!-- User Creation Form -->
+                <form method="post" enctype="multipart/form-data">
+                    {% csrf_token %}
+
+                    {% if user_form.non_field_errors or user_profile_form.non_field_errors %}
+                    <div class="alert alert-danger">
+                        {% for error in user_form.non_field_errors %}
+                            {{ error }}<br>
+                        {% endfor %}
+                        {% for error in user_profile_form.non_field_errors %}
+                            {{ error }}<br>
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+
+                    <!-- User Icon -->
+                    <div class="mb-4">
+                        <label for="{{ user_profile_form.avatar.id_for_label }}" class="form-label fw-bold">{{ user_profile_form.avatar.label }}</label>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    {{ user_profile_form.avatar }}
+                                    {% if user_profile_form.avatar.errors %}
+                                    <div class="invalid-feedback d-block">
+                                        {% for error in user_profile_form.avatar.errors %}
+                                            {{ error }}
+                                        {% endfor %}
+                                    </div>
+                                    {% endif %}
+                                    <div class="form-text">Téléchargez une image pour l'avatar de l'utilisateur</div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="text-center">
+                                    <img src="https://via.placeholder.com/100" alt="Aperçu de l'avatar" class="img-fluid badge-icon" id="icon_preview">
+                                    <p class="form-text">Aperçu</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- User first name -->
+                    <div class="mb-4">
+                        <label for="{{ user_form.first_name.id_for_label }}" class="form-label fw-bold">{{ user_form.first_name.label }}</label>
+                        {{ user_form.first_name }}
+                        {% if user_form.first_name.errors %}
+                        <div class="invalid-feedback d-block">
+                            {% for error in user_form.first_name.errors %}
+                                {{ error }}
+                            {% endfor %}
+                        </div>
+                        {% endif %}
+                    </div>
+                
+                    <!-- User last name -->
+                    <div class="mb-4">
+                        <label for="{{ user_form.last_name.id_for_label }}" class="form-label fw-bold">{{ user_form.last_name.label }}</label>
+                        {{ user_form.last_name }}
+                        {% if user_form.last_name.errors %}
+                        <div class="invalid-feedback d-block">
+                            {% for error in user_form.last_name.errors %}
+                                {{ error }}
+                            {% endfor %}
+                        </div>
+                        {% endif %}
+                    </div>
+                
+                    <!-- User email -->
+                    <div class="mb-4">
+                        <label for="{{ user_form.email.id_for_label }}" class="form-label fw-bold">{{ user_form.email.label }}</label>
+                        {{ user_form.email }}
+                        {% if user_form.email.errors %}
+                        <div class="invalid-feedback d-block">
+                            {% for error in user_form.email.errors %}
+                                {{ error }}
+                            {% endfor %}
+                        </div>
+                        {% endif %}
+                    </div>
+                
+                    <!-- User password -->
+                    <div class="mb-4">
+                        <label for="{{ user_form.password.id_for_label }}" class="form-label fw-bold">{{ user_form.password.label }}</label>
+                        {{ user_form.password }}
+                        {% if user_form.password.errors %}
+                        <div class="invalid-feedback d-block">
+                            {% for error in user_form.password.errors %}
+                                {{ error }}
+                            {% endfor %}
+                        </div>
+                        {% endif %}
+                    </div>
+                
+                    <!-- User password confirm -->
+                    <div class="mb-4">
+                        <label for="{{ user_form.password_confirm.id_for_label }}" class="form-label fw-bold">{{ user_form.password_confirm.label }}</label>
+                        {{ user_form.password_confirm }}
+                        {% if user_form.password_confirm.errors %}
+                        <div class="invalid-feedback d-block">
+                            {% for error in user_form.password_confirm.errors %}
+                                {{ error }}
+                            {% endfor %}
+                        </div>
+                        {% endif %}
+                    </div>
+
+                    <!-- User address -->
+                    <div class="mb-4">
+                        <label for="{{ user_profile_form.address.id_for_label }}" class="form-label fw-bold">{{ user_profile_form.address.label }}</label>
+                        {{ user_profile_form.address }}
+                        {% if user_profile_form.address.errors %}
+                        <div class="invalid-feedback d-block">
+                            {% for error in user_profile_form.address.errors %}
+                                {{ error }}
+                            {% endfor %}
+                        </div>
+                        {% endif %}
+                    </div>
+
+
+                    <!-- Submit Button -->
+                    <div class="text-center">
+                        <button type="submit" class="btn btn-primary btn-lg">Créer l'utilisateur</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Simple preview for uploaded image
+    document.getElementById('{{ user_profile_form.avatar.auto_id }}').addEventListener('change', function(event) {
+        const file = event.target.files[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                document.getElementById('icon_preview').src = e.target.result;
+            }
+            reader.readAsDataURL(file);
+        }
+    });
+</script>
+{% endblock %}

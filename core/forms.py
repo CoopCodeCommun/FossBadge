@@ -1,5 +1,6 @@
 from django import forms
-from .models import Badge, Structure
+from django.contrib.auth.models import User
+from .models import Badge, Structure, UserProfile
 
 class BadgeForm(forms.ModelForm):
     """
@@ -92,5 +93,74 @@ class StructureForm(forms.ModelForm):
                 'class': 'form-control',
                 'placeholder': 'Ex: 2.3522',
                 'step': 'any'
+            }),
+        }
+
+class UserForm(forms.ModelForm):
+    """
+    Form for creating and updating users
+    """
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['first_name'].required = True
+        self.fields['last_name'].required = True
+        self.fields['email'].required = True
+        self.fields['password'].required = True
+        self.fields['password_confirm'].required = True
+
+    class Meta:
+        model = User
+        fields = ["first_name","last_name","email","password"]
+        widgets = {
+            'first_name': forms.TextInput(attrs={
+                'class': 'form-control form-control-lg',
+                'placeholder': 'Prénom'
+            }),
+            'last_name': forms.TextInput(attrs={
+                'class': 'form-control form-control-lg',
+                'placeholder': 'Nom de famille'
+            }),
+            'email': forms.TextInput(attrs={
+                'class': 'form-control form-control-lg',
+                'placeholder': 'Email'
+            }),
+            'password': forms.PasswordInput(attrs={
+                'class': 'form-control form-control-lg',
+                'placeholder': 'Mot de passe'
+            }),
+        }
+
+    password_confirm = forms.CharField(widget=forms.PasswordInput(
+        attrs={
+            'class': 'form-control form-control-lg',
+            'placeholder': 'Confirmation du mot de passe'
+        }), label='Confirmation du mot de passe')
+
+    def clean(self):
+        """Check if password and password_confirm are matching"""
+        cleaned_data = super().clean()
+        password = cleaned_data.get('password')
+        password_confirm = cleaned_data.get('password_confirm')
+        if password != password_confirm:
+            self.add_error(None, 'Les mots de passes ne correspondent pas')
+
+        return cleaned_data
+
+class UserProfileForm(forms.ModelForm):
+    """
+    Form for creating and updating users profiles
+    """
+    class Meta:
+        model = UserProfile
+        fields = ["avatar", "address"]
+        widgets = {
+            'address': forms.TextInput(attrs={
+                'class': 'form-control form-control-lg',
+                'placeholder': 'Adresse ...'
+            }),
+            'avatar': forms.FileInput(attrs={
+                'class': 'form-control',
+                'accept': 'image/*'
             }),
         }

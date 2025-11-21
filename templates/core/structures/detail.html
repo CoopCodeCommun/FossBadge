@@ -20,7 +20,7 @@
         <!-- Structure Logo -->
         {% if structure.logo %}
         <div class="mb-3" style="max-width: 200px; margin: 0 auto;">
-            {% picture structure.logo img_alt="Logo de {{ structure.name }}" img_class="img-fluid" ratio="1/1" %}
+            {% picture structure.logo img_alt="Logo de "|add:structure.name img_class="img-fluid" ratio="1/1" %}
         </div>
         {% else %}
         <img src="https://via.placeholder.com/200" alt="Logo de {{ structure.name }}" class="img-fluid mb-3" style="max-width: 200px;">
@@ -115,7 +115,7 @@
                             <div class="card-body">
                                 {% if badge.icon %}
                                 <div class="badge-icon-container">
-                                    {% picture badge.icon img_alt="{{ badge.name }}" img_class="badge-icon" ratio="1/1" %}
+                                    {% picture badge.icon img_alt=badge.name img_class="badge-icon" ratio="1/1" %}
                                 </div>
                                 {% else %}
                                 <img src="https://via.placeholder.com/100" alt="{{ badge.name }}" class="badge-icon">

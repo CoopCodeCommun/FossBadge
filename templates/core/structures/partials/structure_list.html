@@ -9,7 +9,7 @@
                     <div class="d-flex align-items-center mb-3">
                         {% if structure.logo %}
                         <div class="me-3" style="width: 80px; height: 80px;">
-                            {% picture structure.logo img_alt="Logo {{ structure.name }}" ratio="1/1" %}
+                            {% picture structure.logo img_alt="Logo "|add:structure.name ratio="1/1" %}
                         </div>
                         {% else %}
                             <img src="https://via.placeholder.com/80" alt="Logo {{ structure.name }}" class="me-3" style="width: 80px; height: 80px;">

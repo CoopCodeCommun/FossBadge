@@ -7,7 +7,7 @@
             <div class="card-body">
                 {% if badge.icon %}
                 <div class="badge-icon-container">
-                    {% picture badge.icon img_alt="{{ badge.name }}" img_class="badge-icon" ratio="1/1" %}
+                    {% picture badge.icon img_alt=badge.name img_class="badge-icon" ratio="1/1" %}
                 </div>
                 {% else %}
                 <img src="https://via.placeholder.com/100" alt="{{ badge.name }}" class="badge-icon">

@@ -129,7 +129,7 @@
                 <div class="col-md-3 text-center">
                     {% if user_profile.profile and user_profile.profile.avatar %}
                         <div class="mb-3" style="width: 150px; height: 150px; margin: 0 auto;">
-                            {% picture user_profile.profile.avatar img_alt="Avatar de {{ user_profile.get_full_name|default:user_profile.username }}" img_class="img-fluid rounded-circle" ratio="1/1" %}
+                            {% picture user_profile.profile.avatar img_alt="Avatar de "|add:user_profile.get_full_name|default:user_profile.username img_class="img-fluid rounded-circle" ratio="1/1" %}
                         </div>
                     {% else %}
                         <i class="fas fa-user-circle fa-8x text-primary"></i>

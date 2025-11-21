@@ -41,7 +41,7 @@
                         <div class="d-flex align-items-center justify-content-center">
                             {% if badge.issuing_structure.logo %}
                                 <div class="me-2" style="width: 50px;">
-                                    {% picture badge.issuing_structure.logo img_alt="Logo {{ badge.issuing_structure.name }}" img_class="img-fluid" ratio="1/1" %}
+                                    {% picture badge.issuing_structure.logo img_alt="Logo "|add:badge.issuing_structure.name img_class="img-fluid" ratio="1/1" %}
                                 </div>
                             {% else %}
                                 <img src="https://via.placeholder.com/50" alt="Logo {{ badge.issuing_structure.name }}"
@@ -86,7 +86,7 @@
                                 <div class="col-4 text-center mb-3">
                                     {% if structure.logo %}
                                         <div class="mb-2" style="max-width: 80px; margin: 0 auto;">
-                                            {% picture structure.logo img_alt="Logo {{ structure.name }}" img_class="img-fluid" ratio="1/1" %}
+                                            {% picture structure.logo img_alt="Logo "|add:structure.name img_class="img-fluid" ratio="1/1" %}
                                         </div>
                                     {% else %}
                                         <img src="https://via.placeholder.com/80" alt="Logo {{ structure.name }}"

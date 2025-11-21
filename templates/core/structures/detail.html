@@ -5,8 +5,12 @@
 
 {% block content %}
 <div class="row">
-    <div class="col-md-12">
+    <div class="col-md-8">
         <h1 class="display-4 mb-4">{{ structure.name }}</h1>
+    </div>
+    <div class="col-md-4">
+        <a class="btn btn-success mb-4" href="{% url 'core:structure-edit' pk=structure.pk %}"> Éditer </a>
+        <a class="btn btn-danger mb-4" href="{% url 'core:structure-delete' pk=structure.pk %}"> Supprimer </a>
     </div>
 </div>
 

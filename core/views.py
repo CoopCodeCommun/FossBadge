@@ -193,6 +193,39 @@ class StructureViewSet(viewsets.ViewSet):
             'issued_badges': issued_badges
         })
 
+    @action(detail=True, methods=["get","post"])
+    def edit(self, request, pk=None):
+        """
+        Edit an existing structure.
+        """
+        structure = get_object_or_404(Structure, pk=pk)
+        if request.method == 'POST':
+            form = StructureForm(request.POST, request.FILES, instance=structure)
+            if form.is_valid():
+                form.save()
+                return redirect(reverse('core:structure-detail', kwargs={'pk': structure.pk}))
+        else:
+            form = StructureForm(instance=structure)
+
+        logo = None
+        if structure.logo:
+            logo = structure.logo.url
+
+        return render(request,"core/structures/edit.html",{"form":form,"logo":logo})
+
+    @action(detail=True, methods=["get","post"])
+    def delete(self, request, pk=None):
+        """
+        Delete an existing structure.
+        """
+        structure = get_object_or_404(Structure, pk=pk)
+        if request.method == 'POST':
+            structure.delete()
+            return redirect(reverse('core:structure-list'))
+
+        issued_badges = structure.issued_badges.all()
+        return render(request, 'core/structures/delete.html', {"structure": structure,"badges": issued_badges})
+
     @action(detail=False, methods=['get', 'post'])
     def create_association(self, request):
         """

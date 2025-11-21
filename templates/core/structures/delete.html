@@ -1,0 +1,79 @@
+{% extends 'base.html' %}
+{% load pictures %}
+
+{% block title %}Supprimer une structure{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-12">
+        <h1 class="display-4 mb-4">Supprimer une structure</h1>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-10 mx-auto">
+        <div class="card">
+            <div class="card-body">
+                <h2 class="card-title mb-4">Êtes-vous sûr de vouloir supprimer la structure "{{ structure.name }}" ?</h2>
+                <!-- Issued badge liste-->
+                {% if badges %}
+                    <p>Si vous supprimez la structure, les badges associés seront également supprimés : </p>
+                    <div class="badge-grid">
+                        {% for badge in badges %}
+                        <div class="card text-center">
+                            <div class="card-body">
+                                {% if badge.icon %}
+                                <div class="badge-icon-container">
+                                    {% picture badge.icon img_alt=badge.name img_class="badge-icon" ratio="1/1" %}
+                                </div>
+                                {% else %}
+                                <img src="https://via.placeholder.com/100" alt="{{ badge.name }}" class="badge-icon">
+                                {% endif %}
+                                <h5 class="card-title">{{ badge.name }}</h5>
+                                <p class="card-text">
+                                    {% if badge.level == 'beginner' %}
+                                    <span class="badge bg-primary">{{ badge.get_level_display }}</span>
+                                    {% elif badge.level == 'intermediate' %}
+                                    <span class="badge bg-warning text-dark">{{ badge.get_level_display }}</span>
+                                    {% elif badge.level == 'expert' %}
+                                    <span class="badge bg-success">{{ badge.get_level_display }}</span>
+                                    {% endif %}
+                                </p>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+
+
+
+                <!-- Structure Deletion Form -->
+                <form method="post">
+                    {% csrf_token %}
+                    <!-- Submit Button -->
+                    <div class=" mt-4">
+                        <button type="submit" class="btn btn-danger btn-lg">Supprimer la structure</button>
+                        <a class="btn btn-primary btn-lg" href="{% url 'core:structure-detail' pk=structure.pk %}"> Revenir en arrière</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Simple preview for uploaded logo
+    document.getElementById('{{ form.logo.auto_id }}').addEventListener('change', function(event) {
+        const file = event.target.files[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                document.getElementById('logo_preview').src = e.target.result;
+            }
+            reader.readAsDataURL(file);
+        }
+    });
+</script>
+{% endblock %}

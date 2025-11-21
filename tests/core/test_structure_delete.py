@@ -2,14 +2,15 @@ from django.test import TestCase
 from django.urls import reverse
 from core.models import Structure
 
+
 class DeleteStructureTest(TestCase):
-    """Test the structure creation page view"""
+    """Test the structure deletion page view"""
 
     def setUp(self):
         """Set up test data"""
 
         structure = Structure(
-            name='Test Structure Created From Form',
+            name='Test Structure For Deletion',
             type='association',
             address='123 Test Street, Test City',
             siret='123 456 789 00012',
@@ -22,10 +23,11 @@ class DeleteStructureTest(TestCase):
         )
         structure.save()
 
+        # Attributes to avoid code repetition
         self.template_name = 'core:structure-delete'
         self.redirect_args = {
-            "viewname":self.template_name,
-            "kwargs":{'pk': structure.pk}
+            "viewname": self.template_name,
+            "kwargs": {'pk': structure.pk}
         }
 
     def test_delete_structure_page_loads_correctly(self):
@@ -40,11 +42,11 @@ class DeleteStructureTest(TestCase):
         self.assertTemplateUsed(response, 'base.html')
 
     def test_delete_structure_page_contains_expected_content(self):
-        """Test that the structure edition page contains expected content"""
+        """Test that the structure deletion page contains expected content"""
         response = self.client.get(reverse(**self.redirect_args))
         content = response.content.decode('utf-8')
 
-        # Check for structure creation specific content
+        # Check for structure deletion specific content
         self.assertIn('Supprimer une structure', content)
         self.assertIn('Êtes-vous sûr de vouloir supprimer la structure ', content)
         self.assertIn('Supprimer la structure', content)
@@ -53,21 +55,25 @@ class DeleteStructureTest(TestCase):
     def test_delete_structure_form_submission(self):
         """Test submitting the structure deletion form"""
 
+        # Check if structure is in the database
+        structure = Structure.objects.filter(name='Test Structure For Deletion').first()
+        self.assertIsNotNone(structure)
+
         # Submit the form
         response = self.client.post(
             reverse(**self.redirect_args),
             follow=True  # Follow redirects
         )
 
-        # Check that the form submission was successful (should redirect to structure detail)
+        # Check that the form submission was successful (should redirect to structure list)
         self.assertEqual(response.status_code, 200)
         self.assertTemplateUsed(response, 'core/structures/list.html')
 
-        # Verify the structure was created in the database
-        structure = Structure.objects.filter(name='Test Structure Created From Form').first()
+        # Verify that the structure is not present in the database
+        structure = Structure.objects.filter(name='Test Structure For Deletion').first()
         self.assertIsNone(structure)
 
-        # Check that the structure appears in the list view
+        # Check that the structure not appears in the list view
         list_response = self.client.get(reverse('core:structure-list'))
         list_content = list_response.content.decode('utf-8')
-        self.assertNotIn('Test Structure Created From Form', list_content)
+        self.assertNotIn('Test Structure For Deletion', list_content)

@@ -4,6 +4,7 @@ from django.core.files.uploadedfile import SimpleUploadedFile
 from pathlib import Path
 from core.models import Structure
 
+
 class EditStructureTest(TestCase):
     """Test the structure edition page view"""
 
@@ -31,10 +32,11 @@ class EditStructureTest(TestCase):
         )
         structure.save()
 
+        # Attributes to avoid code repetition
         self.template_name = 'core:structure-edit'
         self.redirect_args = {
-            "viewname":self.template_name,
-            "kwargs":{'pk': structure.pk}
+            "viewname": self.template_name,
+            "kwargs": {'pk': structure.pk}
         }
 
     def test_edit_structure_page_loads_correctly(self):

@@ -415,7 +415,7 @@
                 <div class="col-md-3 text-center">
                     {% if user_profile.profile and user_profile.profile.avatar %}
                         <div class="glass-avatar floating">
-                            {% picture user_profile.profile.avatar img_alt="Avatar de {{ user_profile.get_full_name|default:user_profile.username }}" img_class="img-fluid" ratio="1/1" %}
+                            {% picture user_profile.profile.avatar img_alt="Avatar de "|add:user_profile.get_full_name|default:user_profile.username img_class="img-fluid" ratio="1/1" %}
                         </div>
                     {% else %}
                         <div class="glass-avatar floating d-flex align-items-center justify-content-center bg-light">

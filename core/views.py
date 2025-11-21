@@ -324,10 +324,6 @@ class UserViewSet(viewsets.ViewSet):
         if level_filter:
             users = users.filter(badge_assignments__badge__level__in=level_filter).distinct()
 
-        # Get all badges and structures for the filter dropdowns
-        badges = Badge.objects.all()
-        structures = Structure.objects.all()
-
         # Check if this is an HTMX request
         if request.htmx:
             # For HTMX requests, only return the user list part
@@ -339,6 +335,10 @@ class UserViewSet(viewsets.ViewSet):
                 'level_filter': level_filter,
             })
         else:
+            # Get all badges and structures for the filter dropdowns
+            badges = Badge.objects.all()
+            structures = Structure.objects.all()
+
             # For regular requests, return the full page
             return render(request, 'core/users/list.html', {
                 'title': 'FossBadge - Liste des Profils',
@@ -387,7 +387,7 @@ class UserViewSet(viewsets.ViewSet):
             user_profile_form = UserProfileForm(request.POST, request.FILES)
             if user_form.is_valid() and user_profile_form.is_valid():
                 user = user_form.save(commit=False)
-                user.username = f"{user_form.cleaned_data["first_name"].lower()}.{user_form.cleaned_data["last_name"].lower()}"
+                user.username = f"{user_form.cleaned_data['first_name']}.{user_form.cleaned_data['last_name']}".lower()
                 user.set_password(user_form.cleaned_data['password'])
                 user.save()
 

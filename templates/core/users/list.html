@@ -13,7 +13,7 @@
 
 <div class="row mb-4">
     <div class="col-md-6">
-        <form class="d-flex" hx-get="{% url 'core:user-list' %}" hx-target="#user-list" hx-swap="innerHTML">
+        <form class="d-flex" hx-get="{% url 'core:user-list' %}" hx-target="#user-list" hx-swap="innerHTML" hx-push-url="true">
             <input class="form-control me-2" type="search" placeholder="Rechercher un utilisateur" aria-label="Rechercher" name="search">
             <button class="btn btn-outline-primary" type="submit">Rechercher</button>
         </form>
@@ -31,7 +31,7 @@
         <div class="card">
             <div class="card-body">
                 <h5 class="card-title">Filtres</h5>
-                <form hx-get="{% url 'core:user-list' %}" hx-target="#user-list" hx-swap="innerHTML">
+                <form hx-get="{% url 'core:user-list' %}" hx-target="#user-list" hx-swap="innerHTML" hx-push-url="true">
                     <div class="mb-3">
                         <label class="form-label fw-bold">Badge</label>
                         <select class="form-select" name="badge">
@@ -88,7 +88,7 @@
                             <div class="d-flex align-items-center mb-3">
                                 {% if user.profile.avatar %}
                                 <div class="me-3" style="width: 80px; height: 80px;">
-                                    {% picture user.profile.avatar img_alt="Avatar de {{ user.get_full_name|default:user.username }}" img_class="rounded-circle" ratio="1/1" %}
+                                    {% picture user.profile.avatar img_alt="Avatar de "|add:user.get_full_name|default:user.username img_class="rounded-circle" ratio="1/1" %}
                                 </div>
                                 {% else %}
                                 <img src="https://via.placeholder.com/80" alt="Avatar de {{ user.get_full_name|default:user.username }}" class="rounded-circle me-3" style="width: 80px; height: 80px;">

@@ -13,7 +13,7 @@
 
 <div class="row mb-4">
     <div class="col-md-6">
-        <form class="d-flex" hx-get="{% url 'core:badge-list' %}" hx-target="#badge-list" hx-swap="innerHTML">
+        <form class="d-flex" hx-get="{% url 'core:badge-list' %}" hx-target="#badge-list" hx-swap="innerHTML" hx-push-url="true">
             <input class="form-control me-2" type="search" placeholder="Rechercher un badge" aria-label="Rechercher" name="search">
             <button class="btn btn-outline-primary" type="submit">Rechercher</button>
         </form>
@@ -31,7 +31,7 @@
         <div class="card">
             <div class="card-body">
                 <h5 class="card-title">Filtres</h5>
-                <form hx-get="{% url 'core:badge-list' %}" hx-target="#badge-list" hx-swap="innerHTML">
+                <form hx-get="{% url 'core:badge-list' %}" hx-target="#badge-list" hx-swap="innerHTML" hx-push-url="true">
                     <div class="mb-3">
                         <label class="form-label fw-bold">Niveau</label>
                         <div class="form-check">
@@ -77,7 +77,7 @@
                     <div class="card-body">
                         {% if badge.icon %}
                         <div class="badge-icon-container">
-                            {% picture badge.icon img_alt="{{ badge.name }}" img_class="badge-icon" ratio="1/1" %}
+                            {% picture badge.icon img_alt=badge.name img_class="badge-icon" ratio="1/1" %}
                         </div>
                         {% else %}
                         <img src="https://via.placeholder.com/100" alt="{{ badge.name }}" class="badge-icon">

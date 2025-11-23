@@ -5,8 +5,12 @@
 
 {% block content %}
     <div class="row">
-        <div class="col-md-12">
+        <div class="col-md-8">
             <h1 class="display-4 mb-4">Badge: {{ badge.name }}</h1>
+        </div>
+        <div class="col-md-4">
+            <a class="btn btn-success mb-4" href="{% url 'core:badge-edit' pk=badge.pk %}"> Éditer </a>
+            <a class="btn btn-danger mb-4" href="{% url 'core:badge-delete' pk=badge.pk %}"> Supprimer </a>
         </div>
     </div>
 
@@ -17,7 +21,7 @@
                 <div class="card-body text-center">
                     <!-- Badge Icon -->
                     {% if badge.icon %}
-                    {{ badge.icon.url }} {% picture badge.icon img_alt=badge.name img_class="badge-icon mb-3" ratio="1/1" picture_class="text-center" %}
+                        {{ badge.icon.url }} {% picture badge.icon img_alt=badge.name img_class="badge-icon mb-3" ratio="1/1" picture_class="text-center" %}
                     {% else %}
                         <img src="https://via.placeholder.com/150" alt="{{ badge.name }}" class="badge-icon mb-3"
                              style="width: 150px; height: 150px;">
@@ -37,7 +41,7 @@
 
                     <!-- Issuing Structure -->
                     <div class="mb-3">
-                        <p class="mb-1 fw-bold">Structure émettrice:</p>
+                        <p class="mb-1 fw-bold">Structure émettrice :</p>
                         <div class="d-flex align-items-center justify-content-center">
                             {% if badge.issuing_structure.logo %}
                                 <div class="me-2" style="width: 50px;">

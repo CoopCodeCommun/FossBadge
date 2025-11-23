@@ -93,6 +93,39 @@ class BadgeViewSet(viewsets.ViewSet):
             'holders': holders
         })
 
+    @action(detail=True, methods=["get","post"])
+    def edit(self, request, pk=None):
+        """
+        Edit an existing badge.
+        """
+        badge = get_object_or_404(Badge, pk=pk)
+        if request.method == 'POST':
+            form = BadgeForm(request.POST, request.FILES, instance=badge)
+            if form.is_valid():
+                form.save()
+                return redirect(reverse('core:badge-detail', kwargs={'pk': badge.pk}))
+        else:
+            form = BadgeForm(instance=badge)
+
+        icon = None
+        if badge.icon:
+            icon = badge.icon.url
+
+        return render(request,"core/badges/edit.html",{"form":form,"icon":icon})
+
+    @action(detail=True, methods=["get", "post"])
+    def delete(self, request, pk=None):
+        """
+        Delete an existing badge.
+        """
+        badge = get_object_or_404(Badge, pk=pk)
+        if request.method == 'POST':
+            badge.delete()
+            return redirect(reverse('core:badge-list'))
+
+        badge_holders = badge.get_holders()
+        return render(request, 'core/badges/delete.html', {"badge": badge, "holders": badge_holders})
+
     @action(detail=False, methods=['get', 'post'])
     def create_badge(self, request):
         """

@@ -28,31 +28,43 @@ FossBadge is a free and open source platform for creating, managing, and sharing
 
 1. Clone the repository:
    ```bash
-   git clone https://github.com/yourusername/fossbadge.git
+   git clone https://github.com/CoopCodeCommun/FossBadge.git
    cd fossbadge
    ```
 
-2. Install dependencies using Poetry:
+2. Install dependencies using [uv](https://docs.astral.sh/uv/):
    ```bash
-   poetry install
+   uv sync
    ```
 
 3. Apply migrations:
    ```bash
-   poetry run python manage.py migrate
+   uv run python manage.py migrate
    ```
-
-4. Create a superuser (optional):
+   
+4. Populate the database (optional):
    ```bash
-   poetry run python manage.py createsuperuser
+   uv run python manage.py populate_db --img
    ```
 
-5. Run the development server:
+5. Create a superuser (optional):
    ```bash
-   poetry run python manage.py runserver
+   uv run python manage.py createsuperuser
    ```
 
-6. Access the application at http://127.0.0.1:8000/
+6. Run the development server:
+   ```bash
+   uv run python manage.py runserver
+   ```
+
+7. Access the application at http://127.0.0.1:8000/
+
+### 🔧 Tests :
+
+Run the tests :
+```bash
+  uv run python manage.py test
+```
 
 ### 📁 Project Structure
 
@@ -98,31 +110,43 @@ FossBadge est une plateforme libre et open source pour créer, gérer et partage
 
 1. Cloner le dépôt :
    ```bash
-   git clone https://github.com/yourusername/fossbadge.git
+   git clone https://github.com/CoopCodeCommun/FossBadge.git
    cd fossbadge
    ```
 
-2. Installer les dépendances avec Poetry :
+2. Installer les dépendances avec [uv](https://docs.astral.sh/uv/) :
    ```bash
-   poetry install
+   uv sync
    ```
 
 3. Appliquer les migrations :
    ```bash
-   poetry run python manage.py migrate
+   uv run python manage.py migrate
    ```
 
-4. Créer un superutilisateur (optionnel) :
+4. Remplir la base de données (optionnel) :
    ```bash
-   poetry run python manage.py createsuperuser
+   uv run python manage.py populate_db --img
    ```
 
-5. Lancer le serveur de développement :
+5. Créer un super utilisateur (optionnel) :
    ```bash
-   poetry run python manage.py runserver
+   uv run python manage.py createsuperuser
    ```
 
-6. Accéder à l'application à l'adresse http://127.0.0.1:8000/
+6. Lancer le serveur de développement :
+   ```bash
+   uv run python manage.py runserver
+   ```
+
+7.  Accéder à l'application à l'adresse http://127.0.0.1:8000/
+
+### 🔧 Tests :
+
+Lancer les tests :
+```bash
+    uv run python manage.py test
+```
 
 ### 📁 Structure du Projet
 

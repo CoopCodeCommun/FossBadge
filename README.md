@@ -32,7 +32,7 @@ FossBadge is a free and open source platform for creating, managing, and sharing
    cd fossbadge
    ```
 
-2. Install dependencies using [uv](https://docs.astral.sh/uv/):
+2. Install dependencies using [uv](https://docs.astral.sh/uv/) (optional, uv does it automatically):
    ```bash
    uv sync
    ```
@@ -114,7 +114,7 @@ FossBadge est une plateforme libre et open source pour créer, gérer et partage
    cd fossbadge
    ```
 
-2. Installer les dépendances avec [uv](https://docs.astral.sh/uv/) :
+2. Installer les dépendances avec [uv](https://docs.astral.sh/uv/) (optionnel, uv le fait automatiquement):
    ```bash
    uv sync
    ```

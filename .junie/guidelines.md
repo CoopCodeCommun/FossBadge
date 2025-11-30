@@ -52,7 +52,7 @@ fossbadge/
 ├── media/                 # Fichiers téléchargés par les utilisateurs
 ├── .junie/                # Configuration et documentation spécifiques
 ├── manage.py              # Script de gestion Django
-├── pyproject.toml         # Configuration Poetry
+├── pyproject.toml         # Configuration uv
 ├── README.md              # Documentation principale
 └── .gitignore             # Configuration Git
 ```
@@ -240,7 +240,7 @@ Exemple CSS:
 - **Backend**: Django 5.2+
 - **Frontend**: Bootstrap 5, HTMX
 - **Base de données**: SQLite (développement), PostgreSQL (production)
-- **Gestion des dépendances**: Poetry
+- **Gestion des dépendances**: Uv
 - **Tests**: Django Test Framework
 
 ## Déploiement

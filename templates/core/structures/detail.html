@@ -23,7 +23,7 @@
             {% picture structure.logo img_alt="Logo de "|add:structure.name img_class="img-fluid" ratio="1/1" %}
         </div>
         {% else %}
-        <img src="https://via.placeholder.com/200" alt="Logo de {{ structure.name }}" class="img-fluid mb-3" style="max-width: 200px;">
+        <img src="{{ placeholder_image }}" alt="Logo de {{ structure.name }}" class="img-fluid mb-3" style="max-width: 200px;">
         {% endif %}
         <h2 class="mb-3">{{ structure.name }}</h2>
         <a href="{% url 'core:create_badge' %}?structure={{ structure.id }}" class="btn btn-primary mb-4">Forger un nouveau badge</a>
@@ -118,7 +118,7 @@
                                     {% picture badge.icon img_alt=badge.name img_class="badge-icon" ratio="1/1" %}
                                 </div>
                                 {% else %}
-                                <img src="https://via.placeholder.com/100" alt="{{ badge.name }}" class="badge-icon">
+                                <img src="{{ placeholder_image }}" alt="{{ badge.name }}" class="badge-icon">
                                 {% endif %}
                                 <h5 class="card-title">{{ badge.name }}</h5>
                                 <p class="card-text">

@@ -10,7 +10,7 @@
                     {% picture badge.icon img_alt=badge.name img_class="badge-icon" ratio="1/1" %}
                 </div>
                 {% else %}
-                <img src="https://via.placeholder.com/100" alt="{{ badge.name }}" class="badge-icon">
+                <img src="{{ placeholder_image }}" alt="{{ badge.name }}" class="badge-icon">
                 {% endif %}
                 <h5 class="card-title">{{ badge.name }}</h5>
                 <p class="card-text">

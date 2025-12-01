@@ -108,7 +108,7 @@ class UserProfileTest(TestCase):
         self.assertIn('Informations personnelles', content)
 
         # Check that the placeholder image is used
-        self.assertIn('https://via.placeholder.com/150', content)
+        self.assertIn('/media/placeholder.svg', content)
 
         # Check that the address field is empty
         self.assertIn('<div class="col-md-4 fw-bold">Adresse:</div>', content)

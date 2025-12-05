@@ -1,9 +1,49 @@
 from django.db import models
-from django.contrib.auth.models import User
+from django.contrib.auth.models import AbstractUser
 from django.utils import timezone
 from pictures.models import PictureField
 
 # Create your models here.
+
+class User(AbstractUser):
+    avatar_width = models.PositiveIntegerField(blank=True, null=True, editable=False)
+    avatar_height = models.PositiveIntegerField(blank=True, null=True, editable=False)
+    avatar = PictureField(upload_to='users/avatars/', blank=True, null=True, verbose_name="Avatar",
+                         aspect_ratios=[None, "1/1", "3/2"], width_field='avatar_width', height_field='avatar_height')
+    address = models.TextField(blank=True, null=True, verbose_name="Adresse")
+
+    class Meta:
+        verbose_name = "Utilisateur"
+        verbose_name_plural = "Utilisateurs"
+
+    def __str__(self):
+        return f"Profil de {self.username}"
+
+    def get_badges(self):
+        """
+        Returns all badges held by this user
+        """
+        return Badge.objects.filter(assignments__user=self)
+
+    def get_badge_assignments(self):
+        """
+        Returns all badge assignments for this user
+        """
+        return self.badge_assignments.all().order_by('-assigned_date')
+
+    def add_badge(self, badge, assigned_by=None, notes=None):
+        """
+        Adds a badge to this user
+        """
+        return badge.add_holder(self, assigned_by, notes)
+
+    def remove_badge(self, badge):
+        """
+        Removes a badge from this user
+        """
+        badge.remove_holder(self)
+
+
 class Structure(models.Model):
     """
     Model representing a structure (association, company, school, etc.)
@@ -122,49 +162,6 @@ class Badge(models.Model):
         Removes a user as a holder of this badge
         """
         BadgeAssignment.objects.filter(badge=self, user=user).delete()
-
-
-class UserProfile(models.Model):
-    """
-    Model extending the built-in User model with additional fields
-    """
-    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='profile')
-    avatar_width = models.PositiveIntegerField(blank=True, null=True, editable=False)
-    avatar_height = models.PositiveIntegerField(blank=True, null=True, editable=False)
-    avatar = PictureField(upload_to='users/avatars/', blank=True, null=True, verbose_name="Avatar", 
-                         aspect_ratios=[None, "1/1", "3/2"], width_field='avatar_width', height_field='avatar_height')
-    address = models.TextField(blank=True, null=True, verbose_name="Adresse")
-
-    class Meta:
-        verbose_name = "Profil utilisateur"
-        verbose_name_plural = "Profils utilisateurs"
-
-    def __str__(self):
-        return f"Profil de {self.user.username}"
-
-    def get_badges(self):
-        """
-        Returns all badges held by this user
-        """
-        return Badge.objects.filter(assignments__user=self.user)
-
-    def get_badge_assignments(self):
-        """
-        Returns all badge assignments for this user
-        """
-        return self.user.badge_assignments.all().order_by('-assigned_date')
-
-    def add_badge(self, badge, assigned_by=None, notes=None):
-        """
-        Adds a badge to this user
-        """
-        return badge.add_holder(self.user, assigned_by, notes)
-
-    def remove_badge(self, badge):
-        """
-        Removes a badge from this user
-        """
-        badge.remove_holder(self.user)
 
 
 class BadgeHistory(models.Model):

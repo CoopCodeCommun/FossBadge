@@ -3,12 +3,12 @@
 {% load humanize %}
 {% load custom_filters %}
 
-{% block title %}Profil de {{ user_profile.get_full_name|default:user_profile.username }}{% endblock %}
+{% block title %}Profil de {{ user.get_full_name|default:user.username }}{% endblock %}
 
 {% block content %}
 <div class="row">
     <div class="col-md-12">
-        <h1 class="display-4 mb-4">Profil de {{ user_profile.get_full_name|default:user_profile.username }}</h1>
+        <h1 class="display-4 mb-4">Profil de {{ user.get_full_name|default:user.username }}</h1>
     </div>
 </div>
 
@@ -16,9 +16,9 @@
 <div class="row mb-5">
     <div class="col-md-4 text-center">
         <!-- User Avatar -->
-        {% if user_profile.profile and user_profile.profile.avatar %}
+        {% if user and user.avatar %}
         <div class="mb-3" style="width: 150px; height: 150px; margin: 0 auto;">
-            {% picture user_profile.profile.avatar img_alt="Avatar de "|add:user_profile.get_full_name|default:user_profile.username  img_class="img-fluid rounded-circle" ratio="1/1" %}
+            {% picture user.avatar img_alt="Avatar de "|add:user.get_full_name|default:user.username  img_class="img-fluid rounded-circle" ratio="1/1" %}
         </div>
         {% else %}
         <img src="https://via.placeholder.com/150" alt="Avatar utilisateur" class="img-fluid rounded-circle mb-3" style="width: 150px; height: 150px;">
@@ -30,10 +30,10 @@
                 <i class="fas fa-file-alt"></i> Voir mon CV
             </button>
             <ul class="dropdown-menu" aria-labelledby="cvDropdown">
-                <li><a class="dropdown-item" href="{% url 'core:user-cv' pk=user_profile.id %}?template=classic">Version classique</a></li>
-                <li><a class="dropdown-item" href="{% url 'core:user-cv' pk=user_profile.id %}?template=bootstrap">Version Bootstrap</a></li>
-                <li><a class="dropdown-item" href="{% url 'core:user-cv' pk=user_profile.id %}?template=material">Version Material Design</a></li>
-                <li><a class="dropdown-item" href="{% url 'core:user-cv' pk=user_profile.id %}?template=liquid_glass">Version Apple Liquid Glass</a></li>
+                <li><a class="dropdown-item" href="{% url 'core:user-cv' pk=user.id %}?template=classic">Version classique</a></li>
+                <li><a class="dropdown-item" href="{% url 'core:user-cv' pk=user.id %}?template=bootstrap">Version Bootstrap</a></li>
+                <li><a class="dropdown-item" href="{% url 'core:user-cv' pk=user.id %}?template=material">Version Material Design</a></li>
+                <li><a class="dropdown-item" href="{% url 'core:user-cv' pk=user.id %}?template=liquid_glass">Version Apple Liquid Glass</a></li>
             </ul>
         </div>
     </div>
@@ -44,15 +44,15 @@
                 <h2 class="card-title">Informations personnelles</h2>
                 <div class="row mb-2">
                     <div class="col-md-4 fw-bold">Nom:</div>
-                    <div class="col-md-8">{{ user_profile.last_name }}</div>
+                    <div class="col-md-8">{{ user.last_name }}</div>
                 </div>
                 <div class="row mb-2">
                     <div class="col-md-4 fw-bold">Prénom:</div>
-                    <div class="col-md-8">{{ user_profile.first_name }}</div>
+                    <div class="col-md-8">{{ user.first_name }}</div>
                 </div>
                 <div class="row mb-2">
                     <div class="col-md-4 fw-bold">Adresse:</div>
-                    <div class="col-md-8">{% if user_profile.profile %}{{ user_profile.profile.address }}{% endif %}</div>
+                    <div class="col-md-8">{{ user.address }}</div>
                 </div>
             </div>
         </div>

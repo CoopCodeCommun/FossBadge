@@ -19,12 +19,9 @@
                 <form method="post" enctype="multipart/form-data">
                     {% csrf_token %}
 
-                    {% if user_form.non_field_errors or user_profile_form.non_field_errors %}
+                    {% if form.non_field_errors or form.non_field_errors %}
                     <div class="alert alert-danger">
-                        {% for error in user_form.non_field_errors %}
-                            {{ error }}<br>
-                        {% endfor %}
-                        {% for error in user_profile_form.non_field_errors %}
+                        {% for error in form.non_field_errors %}
                             {{ error }}<br>
                         {% endfor %}
                     </div>
@@ -32,14 +29,14 @@
 
                     <!-- User Icon -->
                     <div class="mb-4">
-                        <label for="{{ user_profile_form.avatar.id_for_label }}" class="form-label fw-bold">{{ user_profile_form.avatar.label }}</label>
+                        <label for="{{ form.avatar.id_for_label }}" class="form-label fw-bold">{{ form.avatar.label }}</label>
                         <div class="row">
                             <div class="col-md-6">
                                 <div class="mb-3">
-                                    {{ user_profile_form.avatar }}
-                                    {% if user_profile_form.avatar.errors %}
+                                    {{ form.avatar }}
+                                    {% if form.avatar.errors %}
                                     <div class="invalid-feedback d-block">
-                                        {% for error in user_profile_form.avatar.errors %}
+                                        {% for error in form.avatar.errors %}
                                             {{ error }}
                                         {% endfor %}
                                     </div>
@@ -58,11 +55,11 @@
 
                     <!-- User first name -->
                     <div class="mb-4">
-                        <label for="{{ user_form.first_name.id_for_label }}" class="form-label fw-bold">{{ user_form.first_name.label }}</label>
-                        {{ user_form.first_name }}
-                        {% if user_form.first_name.errors %}
+                        <label for="{{ form.first_name.id_for_label }}" class="form-label fw-bold">{{ form.first_name.label }}</label>
+                        {{ form.first_name }}
+                        {% if form.first_name.errors %}
                         <div class="invalid-feedback d-block">
-                            {% for error in user_form.first_name.errors %}
+                            {% for error in form.first_name.errors %}
                                 {{ error }}
                             {% endfor %}
                         </div>
@@ -71,11 +68,11 @@
                 
                     <!-- User last name -->
                     <div class="mb-4">
-                        <label for="{{ user_form.last_name.id_for_label }}" class="form-label fw-bold">{{ user_form.last_name.label }}</label>
-                        {{ user_form.last_name }}
-                        {% if user_form.last_name.errors %}
+                        <label for="{{ form.last_name.id_for_label }}" class="form-label fw-bold">{{ form.last_name.label }}</label>
+                        {{ form.last_name }}
+                        {% if form.last_name.errors %}
                         <div class="invalid-feedback d-block">
-                            {% for error in user_form.last_name.errors %}
+                            {% for error in form.last_name.errors %}
                                 {{ error }}
                             {% endfor %}
                         </div>
@@ -84,11 +81,11 @@
                 
                     <!-- User email -->
                     <div class="mb-4">
-                        <label for="{{ user_form.email.id_for_label }}" class="form-label fw-bold">{{ user_form.email.label }}</label>
-                        {{ user_form.email }}
-                        {% if user_form.email.errors %}
+                        <label for="{{ form.email.id_for_label }}" class="form-label fw-bold">{{ form.email.label }}</label>
+                        {{ form.email }}
+                        {% if form.email.errors %}
                         <div class="invalid-feedback d-block">
-                            {% for error in user_form.email.errors %}
+                            {% for error in form.email.errors %}
                                 {{ error }}
                             {% endfor %}
                         </div>
@@ -97,11 +94,11 @@
                 
                     <!-- User password -->
                     <div class="mb-4">
-                        <label for="{{ user_form.password.id_for_label }}" class="form-label fw-bold">{{ user_form.password.label }}</label>
-                        {{ user_form.password }}
-                        {% if user_form.password.errors %}
+                        <label for="{{ form.password.id_for_label }}" class="form-label fw-bold">{{ form.password.label }}</label>
+                        {{ form.password }}
+                        {% if form.password.errors %}
                         <div class="invalid-feedback d-block">
-                            {% for error in user_form.password.errors %}
+                            {% for error in form.password.errors %}
                                 {{ error }}
                             {% endfor %}
                         </div>
@@ -110,11 +107,11 @@
                 
                     <!-- User password confirm -->
                     <div class="mb-4">
-                        <label for="{{ user_form.password_confirm.id_for_label }}" class="form-label fw-bold">{{ user_form.password_confirm.label }}</label>
-                        {{ user_form.password_confirm }}
-                        {% if user_form.password_confirm.errors %}
+                        <label for="{{ form.password_confirm.id_for_label }}" class="form-label fw-bold">{{ form.password_confirm.label }}</label>
+                        {{ form.password_confirm }}
+                        {% if form.password_confirm.errors %}
                         <div class="invalid-feedback d-block">
-                            {% for error in user_form.password_confirm.errors %}
+                            {% for error in form.password_confirm.errors %}
                                 {{ error }}
                             {% endfor %}
                         </div>
@@ -123,11 +120,11 @@
 
                     <!-- User address -->
                     <div class="mb-4">
-                        <label for="{{ user_profile_form.address.id_for_label }}" class="form-label fw-bold">{{ user_profile_form.address.label }}</label>
-                        {{ user_profile_form.address }}
-                        {% if user_profile_form.address.errors %}
+                        <label for="{{ form.address.id_for_label }}" class="form-label fw-bold">{{ form.address.label }}</label>
+                        {{ form.address }}
+                        {% if form.address.errors %}
                         <div class="invalid-feedback d-block">
-                            {% for error in user_profile_form.address.errors %}
+                            {% for error in form.address.errors %}
                                 {{ error }}
                             {% endfor %}
                         </div>
@@ -149,7 +146,7 @@
 {% block extra_js %}
 <script>
     // Simple preview for uploaded image
-    document.getElementById('{{ user_profile_form.avatar.auto_id }}').addEventListener('change', function(event) {
+    document.getElementById('{{ form.avatar.auto_id }}').addEventListener('change', function(event) {
         const file = event.target.files[0];
         if (file) {
             const reader = new FileReader();

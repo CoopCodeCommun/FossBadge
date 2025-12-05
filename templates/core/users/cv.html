@@ -3,7 +3,7 @@
 {% load humanize %}
 {% load custom_filters %}
 
-{% block title %}CV de {{ user_profile.get_full_name|default:user_profile.username }}{% endblock %}
+{% block title %}CV de {{ user.get_full_name|default:user.username }}{% endblock %}
 
 {% block extra_css %}
 <style>
@@ -372,16 +372,16 @@
 <div class="container-fluid mb-4 no-print">
     <div class="row">
         <div class="col-12">
-            <a href="{% url 'core:user-detail' pk=user_profile.id %}" class="btn btn-secondary">
+            <a href="{% url 'core:user-detail' pk=user.pk %}" class="btn btn-secondary">
                 <i class="fas fa-arrow-left"></i> Retour au profil
             </a>
-            <a href="{% url 'core:user-cv' pk=user_profile.id %}?template=bootstrap" class="btn btn-outline-primary">
+            <a href="{% url 'core:user-cv' pk=user.pk %}?template=bootstrap" class="btn btn-outline-primary">
                 <i class="fas fa-file-alt"></i> Version Bootstrap
             </a>
-            <a href="{% url 'core:user-cv' pk=user_profile.id %}?template=material" class="btn btn-outline-primary">
+            <a href="{% url 'core:user-cv' pk=user.pk %}?template=material" class="btn btn-outline-primary">
                 <i class="fas fa-file-alt"></i> Version Material Design
             </a>
-            <a href="{% url 'core:user-cv' pk=user_profile.id %}?template=liquid_glass" class="btn btn-outline-primary">
+            <a href="{% url 'core:user-cv' pk=user.pk %}?template=liquid_glass" class="btn btn-outline-primary">
                 <i class="fas fa-file-alt"></i> Version Apple Liquid Glass
             </a>
             <button class="btn btn-primary" onclick="window.print()">
@@ -399,14 +399,14 @@
     <div class="base">
         <div class="profile">
             <div class="photo">
-                {% if user_profile.profile and user_profile.profile.avatar %}
-                    {% picture user_profile.profile.avatar img_alt="Avatar de "|add:user_profile.get_full_name|default:user_profile.username img_class="img-fluid rounded-circle" ratio="1/1" %}
+                {% if user and user.avatar %}
+                    {% picture user.avatar img_alt="Avatar de "|add:user.get_full_name|default:user.username img_class="img-fluid rounded-circle" ratio="1/1" %}
                 {% else %}
                     <i class="fas fa-user-circle"></i>
                 {% endif %}
             </div>
             <div class="info">
-                <h1 class="name">{{ user_profile.get_full_name|default:user_profile.username }}</h1>
+                <h1 class="name">{{ user.get_full_name|default:user.username }}</h1>
                 <h2 class="job">Développeur Open Source</h2>
             </div>
         </div>
@@ -414,8 +414,8 @@
         <div class="about">
             <h3>À propos de moi</h3>
             <p>
-                {% if user_profile.profile and user_profile.profile.bio %}
-                    {{ user_profile.profile.bio }}
+                {% if user and user.bio %}
+                    {{ user.bio }}
                 {% else %}
                     Je suis un développeur passionné par l'open source et les technologies web. J'aime contribuer à des projets qui ont un impact positif sur la communauté.
                 {% endif %}
@@ -425,27 +425,27 @@
         <div class="contact">
             <h3>Contact</h3>
             <div class="call">
-                <a href="tel:{% if user_profile.profile and user_profile.profile.phone %}{{ user_profile.profile.phone }}{% else %}123-456-7890{% endif %}">
+                <a href="tel:{% if user and user.phone %}{{ user.phone }}{% else %}123-456-7890{% endif %}">
                     <i class="fas fa-phone"></i>
-                    <span>{% if user_profile.profile and user_profile.profile.phone %}{{ user_profile.profile.phone }}{% else %}123-456-7890{% endif %}</span>
+                    <span>{% if user and user.phone %}{{ user.phone }}{% else %}123-456-7890{% endif %}</span>
                 </a>
             </div>
             <div class="address">
                 <a href="#">
                     <i class="fas fa-map-marker"></i>
-                    <span>{% if user_profile.profile and user_profile.profile.address %}{{ user_profile.profile.address }}{% else %}Paris, France{% endif %}</span>
+                    <span>{% if user and user.address %}{{ user.address }}{% else %}Paris, France{% endif %}</span>
                 </a>
             </div>
             <div class="email">
-                <a href="mailto:{{ user_profile.email }}">
+                <a href="mailto:{{ user.email }}">
                     <i class="fas fa-envelope"></i>
-                    <span>{{ user_profile.email }}</span>
+                    <span>{{ user.email }}</span>
                 </a>
             </div>
             <div class="website">
-                <a href="{% if user_profile.profile and user_profile.profile.website %}{{ user_profile.profile.website }}{% else %}#{% endif %}" target="_blank">
+                <a href="{% if user and user.website %}{{ user.website }}{% else %}#{% endif %}" target="_blank">
                     <i class="fas fa-home"></i>
-                    <span>{% if user_profile.profile and user_profile.profile.website %}{{ user_profile.profile.website }}{% else %}monsite.com{% endif %}</span>
+                    <span>{% if user and user.website %}{{ user.website }}{% else %}monsite.com{% endif %}</span>
                 </a>
             </div>
         </div>
@@ -586,7 +586,7 @@
     <div class="base">
         <div class="profile">
             <div class="info">
-                <h1 class="name">{{ user_profile.get_full_name|default:user_profile.username }}</h1>
+                <h1 class="name">{{ user.get_full_name|default:user.username }}</h1>
                 <h2 class="job">Informations supplémentaires</h2>
             </div>
         </div>

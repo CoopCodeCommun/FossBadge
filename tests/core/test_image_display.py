@@ -2,8 +2,7 @@ from django.test import TestCase
 from django.urls import reverse
 from django.core.files.uploadedfile import SimpleUploadedFile
 from pathlib import Path
-from django.contrib.auth.models import User
-from core.models import Structure, Badge, UserProfile
+from core.models import Structure, Badge, User
 
 class ImageDisplayTest(TestCase):
     """Test that images are displayed correctly using django-pictures"""
@@ -42,18 +41,14 @@ class ImageDisplayTest(TestCase):
         )
         self.badge.icon.save('test_badge_icon.png', SimpleUploadedFile('test_badge_icon.png', image_content))
 
-        # Create test user and profile
+        # Create test user
         self.user = User.objects.create_user(
             username='testimageuser',
             email='testimageuser@example.com',
             password='testpassword',
             first_name='Test',
-            last_name='Image User'
-        )
-
-        self.profile = UserProfile.objects.create(
-            user=self.user,
-            address='123 Test Street'
+            last_name='Image User',
+            address = '123 Test Street'
         )
 
     def test_structure_detail_page_displays_image(self):

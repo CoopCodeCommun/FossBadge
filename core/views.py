@@ -1,13 +1,12 @@
 from django.shortcuts import render, get_object_or_404, redirect
-from django.contrib.auth.models import User
 from django.db.models import Q
 from django.urls import reverse
 from rest_framework import viewsets
 from rest_framework.response import Response
 from rest_framework.decorators import action
 
-from .models import Structure, Badge, UserProfile
-from .forms import BadgeForm, StructureForm, UserForm, UserProfileForm
+from .models import Structure, Badge, User
+from .forms import BadgeForm, StructureForm, UserForm
 
 # Create your views here.
 class HomeViewSet(viewsets.ViewSet):
@@ -307,20 +306,16 @@ class UserViewSet(viewsets.ViewSet):
             template_name = 'core/users/cv.html'
 
         # Get user's badges, badge assignments, and structures
-        try:
-            profile = user.profile
-            badges = Badge.objects.filter(assignments__user=user)
-            badge_assignments = user.badge_assignments.all()
-            # Create a dictionary to easily look up assignments by badge ID
-            badge_assignment_dict = {assignment.badge_id: assignment for assignment in badge_assignments}
-        except UserProfile.DoesNotExist:
-            badges = Badge.objects.none()
-            badge_assignment_dict = {}
+        badges = Badge.objects.filter(assignments__user=user)
+        badge_assignments = user.badge_assignments.all()
+        # Create a dictionary to easily look up assignments by badge ID
+        badge_assignment_dict = {assignment.badge_id: assignment for assignment in badge_assignments}
+
         structures = user.structures.all()
 
         return render(request, template_name, {
             'title': f'CV de {user.get_full_name() or user.username}',
-            'user_profile': user,
+            'user': user,
             'badges': badges,
             'badge_assignment_dict': badge_assignment_dict,
             'structures': structures,
@@ -395,20 +390,16 @@ class UserViewSet(viewsets.ViewSet):
         user = get_object_or_404(User, pk=pk)
 
         # Get user's badges, badge assignments, and structures
-        try:
-            profile = user.profile
-            badges = Badge.objects.filter(assignments__user=user)
-            badge_assignments = user.badge_assignments.all()
-            # Create a dictionary to easily look up assignments by badge ID
-            badge_assignment_dict = {assignment.badge_id: assignment for assignment in badge_assignments}
-        except UserProfile.DoesNotExist:
-            badges = Badge.objects.none()
-            badge_assignment_dict = {}
+        badges = Badge.objects.filter(assignments__user=user)
+        badge_assignments = user.badge_assignments.all()
+        # Create a dictionary to easily look up assignments by badge ID
+        badge_assignment_dict = {assignment.badge_id: assignment for assignment in badge_assignments}
+
         structures = user.structures.all()
 
         return render(request, 'core/users/detail.html', {
             'title': f'FossBadge - Profil de {user.get_full_name() or user.username}',
-            'user_profile': user,
+            'user': user,
             'badges': badges,
             'badge_assignment_dict': badge_assignment_dict,
             'structures': structures
@@ -420,25 +411,18 @@ class UserViewSet(viewsets.ViewSet):
         Create a new user.
         """
         if request.method == 'POST':
-            user_form = UserForm(request.POST, request.FILES)
-            user_profile_form = UserProfileForm(request.POST, request.FILES)
-            if user_form.is_valid() and user_profile_form.is_valid():
-                user = user_form.save(commit=False)
-                user.username = f"{user_form.cleaned_data['first_name']}.{user_form.cleaned_data['last_name']}".lower()
-                user.set_password(user_form.cleaned_data['password'])
+            form = UserForm(request.POST, request.FILES)
+            if form.is_valid():
+                user = form.save(commit=False)
+                user.username = f"{form.cleaned_data['first_name']}.{form.cleaned_data['last_name']}".lower()
+                user.set_password(form.cleaned_data['password'])
                 user.save()
-
-                user_profile = user_profile_form.save(commit=False)
-                user_profile.user_id = user.id
-                user_profile.save()
 
                 return redirect(reverse('core:user-detail', kwargs={'pk': user.pk}))
         else:
-            user_form = UserForm()
-            user_profile_form = UserProfileForm()
+            form = UserForm()
 
         return render(request, 'core/users/create.html', {
             'title': 'FossBadge - Créer un utilisateur',
-            'user_form': user_form,
-            'user_profile_form': user_profile_form
+            'form': form,
         })

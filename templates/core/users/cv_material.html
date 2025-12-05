@@ -3,7 +3,7 @@
 {% load humanize %}
 {% load custom_filters %}
 
-{% block title %}CV de {{ user_profile.get_full_name|default:user_profile.username }}{% endblock %}
+{% block title %}CV de {{ user.get_full_name|default:user.username }}{% endblock %}
 
 {% block extra_css %}
 <style>
@@ -283,16 +283,16 @@
 <div class="container mb-4 no-print">
     <div class="row">
         <div class="col-12">
-            <a href="{% url 'core:user-detail' pk=user_profile.id %}" class="md-btn md-btn-secondary">
+            <a href="{% url 'core:user-detail' pk=user.id %}" class="md-btn md-btn-secondary">
                 <i class="fas fa-arrow-left"></i> Retour au profil
             </a>
-            <a href="{% url 'core:user-cv' pk=user_profile.id %}?template=classic" class="md-btn md-btn-outline">
+            <a href="{% url 'core:user-cv' pk=user.id %}?template=classic" class="md-btn md-btn-outline">
                 <i class="fas fa-file-alt"></i> Version classique
             </a>
-            <a href="{% url 'core:user-cv' pk=user_profile.id %}?template=bootstrap" class="md-btn md-btn-outline">
+            <a href="{% url 'core:user-cv' pk=user.id %}?template=bootstrap" class="md-btn md-btn-outline">
                 <i class="fas fa-file-alt"></i> Version Bootstrap
             </a>
-            <a href="{% url 'core:user-cv' pk=user_profile.id %}?template=liquid_glass" class="md-btn md-btn-outline">
+            <a href="{% url 'core:user-cv' pk=user.id %}?template=liquid_glass" class="md-btn md-btn-outline">
                 <i class="fas fa-file-alt"></i> Version Apple Liquid Glass
             </a>
             <button class="md-btn md-btn-primary" onclick="window.print()">
@@ -313,9 +313,9 @@
         <div class="md-card-header">
             <div class="row align-items-center">
                 <div class="col-md-3 text-center">
-                    {% if user_profile.profile and user_profile.profile.avatar %}
+                    {% if user and user.avatar %}
                         <div class="md-avatar">
-                            {% picture user_profile.profile.avatar img_alt="Avatar de "|add:user_profile.get_full_name|default:user_profile.username img_class="img-fluid" ratio="1/1" %}
+                            {% picture user.avatar img_alt="Avatar de "|add:user.get_full_name|default:user.username img_class="img-fluid" ratio="1/1" %}
                         </div>
                     {% else %}
                         <div class="md-avatar d-flex align-items-center justify-content-center bg-light">
@@ -324,27 +324,27 @@
                     {% endif %}
                 </div>
                 <div class="col-md-9">
-                    <h1 class="display-4">{{ user_profile.get_full_name|default:user_profile.username }}</h1>
+                    <h1 class="display-4">{{ user.get_full_name|default:user.username }}</h1>
                     <h3 class="text-white-50">Développeur Open Source</h3>
                     <div class="row mt-3">
                         <div class="col-md-6">
                             <div class="md-contact-item">
                                 <i class="fas fa-phone"></i>
-                                <span>{% if user_profile.profile and user_profile.profile.phone %}{{ user_profile.profile.phone }}{% else %}123-456-7890{% endif %}</span>
+                                <span>{% if user and user.phone %}{{ user.phone }}{% else %}123-456-7890{% endif %}</span>
                             </div>
                             <div class="md-contact-item">
                                 <i class="fas fa-envelope"></i>
-                                <span>{{ user_profile.email }}</span>
+                                <span>{{ user.email }}</span>
                             </div>
                         </div>
                         <div class="col-md-6">
                             <div class="md-contact-item">
                                 <i class="fas fa-map-marker-alt"></i>
-                                <span>{% if user_profile.profile and user_profile.profile.address %}{{ user_profile.profile.address }}{% else %}Paris, France{% endif %}</span>
+                                <span>{% if user and user.address %}{{ user.address }}{% else %}Paris, France{% endif %}</span>
                             </div>
                             <div class="md-contact-item">
                                 <i class="fas fa-globe"></i>
-                                <span>{% if user_profile.profile and user_profile.profile.website %}{{ user_profile.profile.website }}{% else %}monsite.com{% endif %}</span>
+                                <span>{% if user and user.website %}{{ user.website }}{% else %}monsite.com{% endif %}</span>
                             </div>
                         </div>
                     </div>
@@ -359,8 +359,8 @@
             <h2 class="md-card-title"><i class="fas fa-user"></i>À propos de moi</h2>
             <div class="md-divider"></div>
             <p>
-                {% if user_profile.profile and user_profile.profile.bio %}
-                    {{ user_profile.profile.bio }}
+                {% if user and user.bio %}
+                    {{ user.bio }}
                 {% else %}
                     Je suis un développeur passionné par l'open source et les technologies web. J'aime contribuer à des projets qui ont un impact positif sur la communauté.
                 {% endif %}
@@ -584,7 +584,7 @@
 <div class="md-container">
     <div class="md-card">
         <div class="md-card-header">
-            <h2 class="mb-0">{{ user_profile.get_full_name|default:user_profile.username }} - Informations supplémentaires</h2>
+            <h2 class="mb-0">{{ user.get_full_name|default:user.username }} - Informations supplémentaires</h2>
         </div>
 
         {% if badges.count > 8 %}

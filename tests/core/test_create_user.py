@@ -85,7 +85,7 @@ class CreateUserTest(TestCase):
         self.assertIsNotNone(user)
         self.assertEqual(user.first_name, 'Jean')
         self.assertEqual(user.last_name, 'Test')
-        self.assertEqual(user.profile.address, '50 rue du test')
+        self.assertEqual(user.address, '50 rue du test')
 
         # Check that the user appears in the list view
         list_response = self.client.get(reverse('core:user-list'))

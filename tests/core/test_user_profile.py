@@ -1,7 +1,6 @@
 from django.test import TestCase
 from django.urls import reverse
-from django.contrib.auth.models import User
-from core.models import UserProfile, Structure, Badge
+from core.models import User, Structure, Badge
 from django.utils import timezone
 from datetime import timedelta
 
@@ -10,28 +9,14 @@ class UserProfileTest(TestCase):
 
     def setUp(self):
         """Set up test data"""
-        # Create a test user with a profile
-        self.user_with_profile = User.objects.create_user(
+        # Create a test user
+        self.user = User.objects.create_user(
             username='testuser',
             email='test@example.com',
             password='testpassword',
             first_name='Test',
-            last_name='User'
-        )
-
-        # Create a user profile
-        self.profile = UserProfile.objects.create(
-            user=self.user_with_profile,
-            address='123 Test Street'
-        )
-
-        # Create a test user without a profile
-        self.user_without_profile = User.objects.create_user(
-            username='testuserwithnoprofile',
-            email='testnoprofile@example.com',
-            password='testpassword',
-            first_name='TestNo',
-            last_name='Profile'
+            last_name='User',
+            address = '123 Test Street'
         )
 
         # Create a test structure
@@ -55,24 +40,24 @@ class UserProfileTest(TestCase):
 
         # Assign the badge to the user with a specific date
         self.assignment_date = timezone.now() - timedelta(days=30)
-        assignment = self.badge.add_holder(self.user_with_profile)
+        assignment = self.badge.add_holder(self.user)
         assignment.assigned_date = self.assignment_date
         assignment.save()
 
     def test_user_profile_page_loads_correctly(self):
         """Test that the user profile page loads correctly with a 200 status code"""
-        response = self.client.get(reverse('core:user-detail', kwargs={'pk': self.user_with_profile.id}))
+        response = self.client.get(reverse('core:user-detail', kwargs={'pk': self.user.id}))
         self.assertEqual(response.status_code, 200)
 
     def test_user_profile_page_uses_correct_template(self):
         """Test that the user profile page uses the correct template"""
-        response = self.client.get(reverse('core:user-detail', kwargs={'pk': self.user_with_profile.id}))
+        response = self.client.get(reverse('core:user-detail', kwargs={'pk': self.user.id}))
         self.assertTemplateUsed(response, 'core/users/detail.html')
         self.assertTemplateUsed(response, 'base.html')
 
     def test_user_profile_page_contains_expected_content(self):
         """Test that the user profile page contains expected content"""
-        response = self.client.get(reverse('core:user-detail', kwargs={'pk': self.user_with_profile.id}))
+        response = self.client.get(reverse('core:user-detail', kwargs={'pk': self.user.id}))
         content = response.content.decode('utf-8')
 
         # Check for user profile specific content
@@ -83,7 +68,7 @@ class UserProfileTest(TestCase):
 
     def test_user_profile_page_displays_badge_assignment_dates(self):
         """Test that the user profile page displays badge assignment dates correctly"""
-        response = self.client.get(reverse('core:user-detail', kwargs={'pk': self.user_with_profile.id}))
+        response = self.client.get(reverse('core:user-detail', kwargs={'pk': self.user.id}))
         content = response.content.decode('utf-8')
 
         # Check that the badge is displayed
@@ -95,24 +80,3 @@ class UserProfileTest(TestCase):
 
         # Check that the humanized date is displayed
         self.assertIn('il y a', content.lower())  # "il y a" is the French equivalent of "ago"
-
-    def test_user_without_profile_page_loads_correctly(self):
-        """Test that the user profile page loads correctly for a user without a UserProfile"""
-        response = self.client.get(reverse('core:user-detail', kwargs={'pk': self.user_without_profile.id}))
-        self.assertEqual(response.status_code, 200)
-
-        content = response.content.decode('utf-8')
-
-        # Check for user profile specific content
-        self.assertIn('Profil de TestNo Profile', content)
-        self.assertIn('Informations personnelles', content)
-
-        # Check that the placeholder image is used
-        self.assertIn('/media/placeholder.svg', content)
-
-        # Check that the address field is empty
-        self.assertIn('<div class="col-md-4 fw-bold">Adresse:</div>', content)
-        self.assertIn('<div class="col-md-8"></div>', content)
-
-        # Check that the "no badges" message is displayed
-        self.assertIn('Aucun badge n\'est associé à ce profil', content)

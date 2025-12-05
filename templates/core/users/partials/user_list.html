@@ -7,9 +7,9 @@
             <div class="card h-100">
                 <div class="card-body">
                     <div class="d-flex align-items-center mb-3">
-                        {% if user.profile.avatar %}
+                        {% if user.avatar %}
                         <div class="me-3" style="width: 80px; height: 80px;">
-                            {% picture user.profile.avatar img_alt="Avatar de {{ user.get_full_name|default:user.username }}" img_class="rounded-circle" ratio="1/1" %}
+                            {% picture user.avatar img_alt="Avatar de {{ user.get_full_name|default:user.username }}" img_class="rounded-circle" ratio="1/1" %}
                         </div>
                         {% else %}
                         <img src="{{ placeholder_image }}" alt="Avatar de {{ user.get_full_name|default:user.username }}" class="rounded-circle me-3" style="width: 80px; height: 80px;">

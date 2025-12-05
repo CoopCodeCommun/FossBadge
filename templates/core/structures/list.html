@@ -82,7 +82,7 @@
                                     {% picture structure.logo img_alt="Logo "|add:structure.name ratio="1/1" %}
                                 </div>
                                 {% else %}
-                                    <img src="https://via.placeholder.com/80" alt="Logo {{ structure.name }}" class="me-3" style="width: 80px; height: 80px;">
+                                    <img src="{{ placeholder_image }}" alt="Logo {{ structure.name }}" class="me-3" style="width: 80px; height: 80px;">
                                 {% endif %}
                                 <h5 class="card-title mb-0">{{ structure.name }}</h5>
                             </div>

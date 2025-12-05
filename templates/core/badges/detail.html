@@ -23,7 +23,7 @@
                     {% if badge.icon %}
                         {{ badge.icon.url }} {% picture badge.icon img_alt=badge.name img_class="badge-icon mb-3" ratio="1/1" picture_class="text-center" %}
                     {% else %}
-                        <img src="https://via.placeholder.com/150" alt="{{ badge.name }}" class="badge-icon mb-3"
+                        <img src="{{ placeholder_image }}" alt="{{ badge.name }}" class="badge-icon mb-3"
                              style="width: 150px; height: 150px;">
                     {% endif %}
                     <h2 class="card-title">{{ badge.name }}</h2>
@@ -48,10 +48,10 @@
                                     {% picture badge.issuing_structure.logo img_alt="Logo "|add:badge.issuing_structure.name img_class="img-fluid" ratio="1/1" %}
                                 </div>
                             {% else %}
-                                <img src="https://via.placeholder.com/50" alt="Logo {{ badge.issuing_structure.name }}"
+                                <img src="{{ placeholder_image }}" alt="Logo {{ badge.issuing_structure.name }}"
                                      class="img-fluid me-2" style="width: 50px;">
                             {% endif %}
-                            <span>{{ badge.issuing_structure.name }}</span>
+                            <a href="{% url 'core:structure-detail' badge.issuing_structure.pk %}"><span>{{ badge.issuing_structure.name }}</span></a>
                         </div>
                     </div>
 
@@ -67,7 +67,7 @@
                                     Code</a>
                             </div>
                         {% else %}
-                            <img src="https://via.placeholder.com/200" alt="QR Code du badge" class="img-fluid mb-2"
+                            <img src="{{ placeholder_image }}" alt="QR Code du badge" class="img-fluid mb-2"
                                  style="max-width: 200px;">
                             <div>
                                 <p class="text-muted">QR Code non disponible</p>
@@ -93,10 +93,11 @@
                                             {% picture structure.logo img_alt="Logo "|add:structure.name img_class="img-fluid" ratio="1/1" %}
                                         </div>
                                     {% else %}
-                                        <img src="https://via.placeholder.com/80" alt="Logo {{ structure.name }}"
+                                        <img src="{{ placeholder_image }}" alt="Logo {{ structure.name }}"
                                              class="img-fluid mb-2" style="max-width: 80px;">
                                     {% endif %}
                                     <p>{{ structure.name }}</p>
+                                    <a class="btn btn-primary" href="{% url 'core:structure-detail' structure.pk %}">Détail</a>
                                 </div>
                             {% endfor %}
                         {% else %}
@@ -115,7 +116,7 @@
                     {% if holders %}
                         <ul class="list-group list-group-flush">
                             {% for user in holders %}
-                                <li class="list-group-item">{{ user.get_full_name|default:user.username }}</li>
+                                <li class="list-group-item"><a href="{% url 'core:user-detail' user.pk %}">{{ user.get_full_name|default:user.username }}</a></li>
                             {% endfor %}
                         </ul>
                     {% else %}

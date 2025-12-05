@@ -29,7 +29,7 @@
                                                 {% picture structure.logo img_alt="Logo "|add:structure.name img_class="img-fluid" ratio="1/1" %}
                                             </div>
                                         {% else %}
-                                            <img src="https://via.placeholder.com/80" alt="Logo {{ structure.name }}"
+                                            <img src="{{ placeholder_image }}" alt="Logo {{ structure.name }}"
                                                  class="img-fluid mb-2" style="max-width: 80px;">
                                         {% endif %}
                                         <p>{{ structure.name }}</p>
@@ -59,7 +59,7 @@
                                                 {% picture user.profile.avatar img_alt=user.get_full_name img_class="img-fluid" ratio="1/1" %}
                                             </div>
                                         {% else %}
-                                            <img src="https://via.placeholder.com/80" alt="{{ user.get_full_name }}"
+                                            <img src="{{ placeholder_image }}" alt="{{ user.get_full_name }}"
                                                  class="img-fluid mb-2" style="max-width: 80px;">
                                         {% endif %}
                                         <p>{{ user.get_full_name|default:user.username }}</p>

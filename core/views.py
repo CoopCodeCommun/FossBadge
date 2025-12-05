@@ -130,6 +130,10 @@ class BadgeViewSet(viewsets.ViewSet):
         """
         Create a new badge.
         """
+
+        # If badge is created from a structure page, get the structure
+        default_structure = request.GET.get('structure', '')
+
         if request.method == 'POST':
             form = BadgeForm(request.POST, request.FILES)
             if form.is_valid():
@@ -143,7 +147,7 @@ class BadgeViewSet(viewsets.ViewSet):
                 )
                 return redirect(reverse('core:badge-detail', kwargs={'pk': badge.pk}))
         else:
-            form = BadgeForm()
+            form = BadgeForm(initial={'issuing_structure':default_structure})
 
         # Get all structures for the dropdown
         structures = Structure.objects.all()

@@ -91,7 +91,7 @@
                                     {% picture user.avatar img_alt="Avatar de "|add:user.get_full_name|default:user.username img_class="rounded-circle" ratio="1/1" %}
                                 </div>
                                 {% else %}
-                                <img src="https://via.placeholder.com/80" alt="Avatar de {{ user.get_full_name|default:user.username }}" class="rounded-circle me-3" style="width: 80px; height: 80px;">
+                                <img src="{{ placeholder_image }}" alt="Avatar de {{ user.get_full_name|default:user.username }}" class="rounded-circle me-3" style="width: 80px; height: 80px;">
                                 {% endif %}
                                 <div>
                                     <h5 class="card-title mb-0">{{ user.get_full_name|default:user.username }}</h5>

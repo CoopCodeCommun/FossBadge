@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Structure, Badge, UserProfile, BadgeHistory, BadgeAssignment, BadgeEndorsement
+from .models import Structure, Badge, User, BadgeHistory, BadgeAssignment, BadgeEndorsement
 
 # Register your models here.
 @admin.register(Structure)
@@ -15,10 +15,10 @@ class BadgeAdmin(admin.ModelAdmin):
     search_fields = ('name', 'description')
     filter_horizontal = ('valid_structures',)
 
-@admin.register(UserProfile)
+@admin.register(User)
 class UserProfileAdmin(admin.ModelAdmin):
-    list_display = ('user', 'address')
-    search_fields = ('user__username', 'user__first_name', 'user__last_name', 'address')
+    list_display = ('username','email','first_name','last_name','is_staff', 'address')
+    search_fields = ('username', 'first_name', 'last_name', 'address')
 
 @admin.register(BadgeHistory)
 class BadgeHistoryAdmin(admin.ModelAdmin):

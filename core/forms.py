@@ -1,6 +1,5 @@
 from django import forms
-from django.contrib.auth.models import User
-from .models import Badge, Structure, UserProfile
+from .models import Badge, Structure, User
 
 class BadgeForm(forms.ModelForm):
     """
@@ -98,20 +97,11 @@ class StructureForm(forms.ModelForm):
 
 class UserForm(forms.ModelForm):
     """
-    Form for creating and updating users
+    Form for creating and updating users profiles
     """
-
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self.fields['first_name'].required = True
-        self.fields['last_name'].required = True
-        self.fields['email'].required = True
-        self.fields['password'].required = True
-        self.fields['password_confirm'].required = True
-
     class Meta:
         model = User
-        fields = ["first_name","last_name","email","password"]
+        fields = ["first_name", "last_name", "email", "password", "avatar", "address"]
         widgets = {
             'first_name': forms.TextInput(attrs={
                 'class': 'form-control form-control-lg',
@@ -128,6 +118,14 @@ class UserForm(forms.ModelForm):
             'password': forms.PasswordInput(attrs={
                 'class': 'form-control form-control-lg',
                 'placeholder': 'Mot de passe'
+            }),
+            'address': forms.TextInput(attrs={
+                'class': 'form-control form-control-lg',
+                'placeholder': 'Adresse ...'
+            }),
+            'avatar': forms.FileInput(attrs={
+                'class': 'form-control',
+                'accept': 'image/*'
             }),
         }
 
@@ -146,21 +144,3 @@ class UserForm(forms.ModelForm):
             self.add_error(None, 'Les mots de passes ne correspondent pas')
 
         return cleaned_data
-
-class UserProfileForm(forms.ModelForm):
-    """
-    Form for creating and updating users profiles
-    """
-    class Meta:
-        model = UserProfile
-        fields = ["avatar", "address"]
-        widgets = {
-            'address': forms.TextInput(attrs={
-                'class': 'form-control form-control-lg',
-                'placeholder': 'Adresse ...'
-            }),
-            'avatar': forms.FileInput(attrs={
-                'class': 'form-control',
-                'accept': 'image/*'
-            }),
-        }

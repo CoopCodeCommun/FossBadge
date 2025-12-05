@@ -2,13 +2,12 @@ import random
 import os
 from pathlib import Path
 from django.core.management.base import BaseCommand
-from django.contrib.auth.models import User
 from django.core.files.base import ContentFile
 from django.core.files import File
 from django.conf import settings
 from django.utils import timezone
 from datetime import timedelta, datetime
-from core.models import Structure, Badge, UserProfile, BadgeEndorsement
+from core.models import Structure, Badge, User, BadgeEndorsement
 
 class Command(BaseCommand):
     help = 'Populate the database with development data'
@@ -119,28 +118,16 @@ class Command(BaseCommand):
                     'first_name': data['first_name'],
                     'last_name': data['last_name'],
                     'email': data['email'],
+                    'address': data['address'],
                 }
             )
 
-            if created:
-                user.set_password(data['password'])
-                user.save()
-
-                # Create user profile
-                profile = UserProfile.objects.create(
-                    user=user,
-                    address=data['address']
-                )
-            else:
-                # Get existing profile
-                profile, _ = UserProfile.objects.get_or_create(user=user, defaults={'address': data['address']})
-
             # Add an avatar image if available and not already set, and --img argument is provided
-            if self.profile_images and (created or not profile.avatar) and self.load_images and not settings.PICTURES["USE_PLACEHOLDERS"]:
+            if self.profile_images and (created or not user.avatar) and self.load_images and not settings.PICTURES["USE_PLACEHOLDERS"]:
                 # Get a random image from the available profile images
                 image_path = random.choice(self.profile_images)
                 with open(image_path, 'rb') as f:
-                    profile.avatar.save(
+                    user.avatar.save(
                         os.path.basename(image_path),
                         File(f),
                         save=True

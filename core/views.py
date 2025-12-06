@@ -6,7 +6,7 @@ from rest_framework.response import Response
 from rest_framework.decorators import action
 
 from .models import Structure, Badge, User
-from .forms import BadgeForm, StructureForm, UserForm
+from .forms import BadgeForm, StructureForm, UserForm, PartialUserForm
 
 # Create your views here.
 class HomeViewSet(viewsets.ViewSet):
@@ -426,3 +426,21 @@ class UserViewSet(viewsets.ViewSet):
             'title': 'FossBadge - Créer un utilisateur',
             'form': form,
         })
+
+    @action(detail=True, methods=['get', 'post'],name="edit-profile")
+    def edit(self,request,pk=None):
+
+        user = get_object_or_404(User, pk=pk)
+
+        if request.method == 'POST':
+            form = PartialUserForm(request.POST, instance=user)
+            if form.is_valid():
+                form.save()
+                user = User.objects.get(pk=pk)
+                return render(request, 'core/users/user_info.html', {'user': user})
+
+        if not request.htmx:
+            return redirect(reverse('core:user-detail', kwargs={'pk': pk}))
+        form = PartialUserForm(instance=user)
+        return render(request, 'core/users/user_edit.html', {'user': user, 'form': form})
+

@@ -16,7 +16,11 @@ urlpatterns = [
     path('', include(router.urls)),
 
     # Custom action URLs that don't fit the standard pattern
+    # Creation routes
     path('badge/create/', views.BadgeViewSet.as_view({'get': 'create_badge', 'post': 'create_badge'}), name='create_badge'),
     path('structure/create/', views.StructureViewSet.as_view({'get': 'create_association', 'post': 'create_association'}), name='create_association'),
     path('user/create/',views.UserViewSet.as_view({'get': 'create_user', 'post': 'create_user'}),name='create_user'),
+
+    # Edition routes
+    path('users/<int:pk>/edit', views.UserViewSet.as_view({'get': 'edit', 'post': 'edit'}), name='edit-profile')
 ]

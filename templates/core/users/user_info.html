@@ -1,0 +1,31 @@
+<div class="card">
+    <div class="card-body">
+        <div class="row">
+            <div class="col-md-8">
+                <h2 class="card-title">Informations personnelles </h2>
+            </div>
+            <div class="col-md-4">
+                <div class="btn btn-primary float-end"
+                     hx-get="{% url 'core:edit-profile' user.id %}"
+                     hx-target="#user-info"
+                     hx-swap="innerHTML">
+                    Editer
+                </div>
+            </div>
+
+        </div>
+
+        <div class="row mb-2">
+            <div class="col-md-4 fw-bold">Nom:</div>
+            <div class="col-md-8">{{ user.last_name }}</div>
+        </div>
+        <div class="row mb-2">
+            <div class="col-md-4 fw-bold">Prénom:</div>
+            <div class="col-md-8">{{ user.first_name }}</div>
+        </div>
+        <div class="row mb-2">
+            <div class="col-md-4 fw-bold">Adresse:</div>
+            <div class="col-md-8">{{ user.address }}</div>
+        </div>
+    </div>
+</div>

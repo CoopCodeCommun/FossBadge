@@ -37,11 +37,23 @@
             </ul>
         </div>
     </div>
-    <div class="col-md-8">
+    <div class="col-md-8" id="user-info" >
         <!-- User Details -->
         <div class="card">
             <div class="card-body">
-                <h2 class="card-title">Informations personnelles</h2>
+                <div class="row">
+                    <div class="col-md-8">
+                        <h2 class="card-title">Informations personnelles</h2>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="btn btn-primary float-end"
+                             hx-get="{% url 'core:edit-profile' user.pk %}"
+                             hx-target="#user-info"
+                             hx-swap="innerHTML">
+                            Éditer
+                        </div>
+                    </div>
+                </div>
                 <div class="row mb-2">
                     <div class="col-md-4 fw-bold">Nom:</div>
                     <div class="col-md-8">{{ user.last_name }}</div>

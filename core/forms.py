@@ -144,3 +144,26 @@ class UserForm(forms.ModelForm):
             self.add_error(None, 'Les mots de passes ne correspondent pas')
 
         return cleaned_data
+
+
+class PartialUserForm(forms.ModelForm):
+    """
+    Forms for editing user profiles
+    """
+    class Meta:
+        model = User
+        fields = ["first_name","last_name","address"]
+        widgets = {
+            'first_name': forms.TextInput(attrs={
+                'class': 'form-control form-control-lg',
+                'placeholder': 'Prénom'
+            }),
+            'last_name': forms.TextInput(attrs={
+                'class': 'form-control form-control-lg',
+                'placeholder': 'Nom de famille'
+            }),
+            'address': forms.TextInput(attrs={
+                'class': 'form-control form-control-lg',
+                'placeholder': 'Adresse ...'
+            }),
+        }

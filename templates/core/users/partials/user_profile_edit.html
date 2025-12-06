@@ -1,0 +1,71 @@
+<div class="card">
+    <div class="card-body">
+        <form hx-post="{% url 'core:edit-profile' user.pk %}"
+                hx-target="#user-info"
+                hx-swap="innerHTML">
+            <div class="row">
+                <div class="col-md-8">
+                    <h2 class="card-title">Modifier mes informations personnelles  </h2>
+                </div>
+                <div class="col-md-4">
+                    <a href="{% url 'core:user-detail' user.pk %}" class="btn btn-danger float-end">Annuler</a>
+                    <input type="submit" class="btn btn-success float-end" value="Valider"/>
+                </div>
+            </div>
+            {% csrf_token %}
+
+            {% if form.non_field_errors or form.non_field_errors %}
+            <div class="alert alert-danger">
+                {% for error in form.non_field_errors %}
+                    {{ error }}<br>
+                {% endfor %}
+            </div>
+            {% endif %}
+
+            <!--Last name-->
+            <div class="row mb-2">
+                <div class="col-md-4 fw-bold">
+                    <label for="{{ form.last_name.id_for_label }}" class="form-label fw-bold">{{ form.last_name.label }}</label>
+                </div>
+                <div class="col-md-8">{{ form.last_name }}</div>
+                {% if form.last_name.errors %}
+                <div class="invalid-feedback d-block">
+                    {% for error in form.last_name.errors %}
+                        {{ error }}
+                    {% endfor %}
+                </div>
+                {% endif %}
+            </div>
+
+            <!--First name-->
+            <div class="row mb-2">
+                <div class="col-md-4 fw-bold">
+                    <label for="{{ form.first_name.id_for_label }}" class="form-label fw-bold">{{ form.first_name.label }}</label>
+                </div>
+                <div class="col-md-8">{{ form.first_name }}</div>
+                {% if form.first_name.errors %}
+                <div class="invalid-feedback d-block">
+                    {% for error in form.first_name.errors %}
+                        {{ error }}
+                    {% endfor %}
+                </div>
+                {% endif %}
+            </div>
+
+            <!-- Address -->
+            <div class="row mb-2">
+                <div class="col-md-4 fw-bold">
+                    <label for="{{ form.address.id_for_label }}" class="form-label fw-bold">{{ form.address.label }}</label>
+                </div>
+                <div class="col-md-8">{{ form.address }}</div>
+                {% if form.address.errors %}
+                <div class="invalid-feedback d-block">
+                    {% for error in form.address.errors %}
+                        {{ error }}
+                    {% endfor %}
+                </div>
+                {% endif %}
+            </div>
+        </form>
+    </div>
+</div>

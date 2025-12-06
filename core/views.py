@@ -437,10 +437,10 @@ class UserViewSet(viewsets.ViewSet):
             if form.is_valid():
                 form.save()
                 user = User.objects.get(pk=pk)
-                return render(request, 'core/users/user_info.html', {'user': user})
+                return render(request, 'core/users/partials/user_profile_info.html', {'user': user})
 
         if not request.htmx:
             return redirect(reverse('core:user-detail', kwargs={'pk': pk}))
         form = PartialUserForm(instance=user)
-        return render(request, 'core/users/user_edit.html', {'user': user, 'form': form})
+        return render(request, 'core/users/partials/user_profile_edit.html', {'user': user, 'form': form})
 

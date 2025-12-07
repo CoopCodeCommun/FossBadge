@@ -31,5 +31,12 @@
 
     <!-- Custom JS -->
     {% block extra_js %}{% endblock %}
+
+    <!-- Load sweetalert2 -->
+    <script src="{% static 'js/sweetalert2.all.min.js' %}"></script>
+
+    <!-- Load sweetify (for sweetalert2) -->
+    {% load sweetify %}
+    {% sweetify %}
 </body>
 </html>

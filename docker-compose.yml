@@ -35,7 +35,7 @@ services:
     hostname: fossbadge_nginx
     volumes:
       - ./media:/www/media
-      - ./static:/www/static
+      - ./staticfiles:/www/static
       - ./logs:/logs
       - ./nginx:/etc/nginx/conf.d
     depends_on:

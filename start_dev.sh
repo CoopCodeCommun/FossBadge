@@ -3,8 +3,8 @@ set -e
 
 #curl -sSL https://install.python-poetry.org | python3
 export PATH="/home/fossbadge/.local/bin:$PATH"
-poetry install
-echo "Poetry install ok"
+uv sync
+echo "UV install ok"
 
 #poetry run python3 manage.py migrate
 # Install if no asset created :
@@ -17,11 +17,11 @@ sqlite3 ./db.sqlite3 'PRAGMA synchronous=normal;'
 
 if [[ "$GUNICORN" == "1" ]]; then
     echo "→ Gunicorn activé, démarrage…"
-    poetry run python3 manage.py collectstatic --noinput
-    poetry run gunicorn fossbadge.wsgi --log-level=info -w 3 -b 0.0.0.0:8000
+    uv run python3 manage.py collectstatic --noinput
+    uv run gunicorn fossbadge.wsgi --log-level=info -w 3 -b 0.0.0.0:8000
 else
     echo "→ Gunicorn désactivé, on sleep…"
-	echo "To start the server : rsp"
+	  echo "To start the server : rsp"
     sleep infinity
 fi
 #echo "Run GUNICORN"

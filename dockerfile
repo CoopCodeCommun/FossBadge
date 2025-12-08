@@ -1,4 +1,5 @@
-FROM python:3.14-bookworm
+#FROM python:3.14-bookworm
+FROM astral/uv:python3.14-trixie
 
 RUN apt update
 RUN apt upgrade -y
@@ -8,9 +9,6 @@ RUN apt-get install -y nano iputils-ping curl borgbackup cron git sqlite3
 RUN useradd -ms /bin/bash fossbadge
 USER fossbadge
 
-ENV POETRY_NO_INTERACTION=1
-
-RUN curl -sSL https://astral.sh/uv/install.sh | sh
 ENV PATH="/home/fossbadge/.local/bin:$PATH"
 
 # RUN cd /home/fossbadge && git clone https://github.com/TiBillet/Fedow.git

@@ -32,6 +32,11 @@ Fedora et dérivé:
   sudo dnf install pipx
 ```
 
+Pour s'assurer que le dossier de pipx soit dans le `PATH`, on lance la commande suivante :
+```shell
+  pipx ensurepath
+```
+
 Ensuite, on peut installer UV via pipx :
 
 ```shell

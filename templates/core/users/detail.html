@@ -125,7 +125,7 @@
 </div>
 
 <!-- Structures Section -->
-<div class="row">
+<div class="row mb-5">
     <div class="col-md-12">
         <div class="card">
             <div class="card-body">
@@ -157,4 +157,48 @@
         </div>
     </div>
 </div>
+
+<div class="row">
+    <div class="col-md-12">
+        <div class="card">
+            <div class="card-body">
+                <h2 class="card-title">Mes actions</h2>
+                <div class="row">
+                    <p>
+                        <form method="post" action="{% url 'core:user-delete' pk=user.pk %}" id="delete-account-form" >
+                            {% csrf_token %}
+                            <input type="submit" id="delete-account-button" class="btn btn-danger" value="Supprimer votre compte ?"/>
+                        </form>
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+{% block extra_js %}
+    <script>
+        // Get deletion form and its submit button
+        delete_button = document.querySelector("#delete-account-button");
+        delete_form = document.querySelector("#delete-account-form");
+        // Prevent button from sending the form, show an alert asking for confirmation
+        delete_button.addEventListener("click",(event)=>{
+            event.preventDefault();
+            Swal.fire({
+                title: "Supprimer votre compte ?",
+                text: "Etes vous sur de vouloir supprimer votre compte ? Cette action est irréversible",
+                icon: "error",
+                showDenyButton : true,
+                confirmButtonText : "Supprimer",
+                denyButtonText : "Annuler"
+            }).then((result)=>{
+                if (result.isConfirmed) {
+                    delete_form.submit()
+                } else if (result.isDenied) {
+
+                }
+            });
+        });
+    </script>
 {% endblock %}

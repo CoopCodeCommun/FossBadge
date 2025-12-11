@@ -7,6 +7,7 @@ from rest_framework.decorators import action
 
 from .models import Structure, Badge, User
 from .forms import BadgeForm, StructureForm, UserForm, PartialUserForm
+import sweetify
 
 # Create your views here.
 class HomeViewSet(viewsets.ViewSet):
@@ -444,3 +445,16 @@ class UserViewSet(viewsets.ViewSet):
         form = PartialUserForm(instance=user)
         return render(request, 'core/users/partials/user_profile_edit.html', {'user': user, 'form': form})
 
+
+    @action(detail=True, methods=['post'])
+    def delete(self, request, pk=None):
+        """
+        Delete a user.
+        """
+        # TODO when authentication will be added :
+        # Send a mail containing a link to delete the account
+
+        sweetify.toast(request, "L'utilisateur a bien été supprimé")
+        user = get_object_or_404(User, pk=pk)
+        user.delete()
+        return redirect('core:user-list')

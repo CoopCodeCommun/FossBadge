@@ -8,7 +8,10 @@
 {% block content %}
 <div class="row">
     <div class="col-md-12">
-        <h1 class="display-4 mb-4">Profil de {{ user.get_full_name|default:user.username }}</h1>
+        <h1 class="display-4 mb-4">
+            Profil de {{ user.get_full_name|default:user.username }}
+            {% if not user.is_active %}<span class="badge bg-secondary fs-4" style="vertical-align: middle">Inactif</span> {% endif %}
+        </h1>
     </div>
 </div>
 
@@ -164,12 +167,12 @@
             <div class="card-body">
                 <h2 class="card-title">Mes actions</h2>
                 <div class="row">
-                    <p>
-                        <form method="post" action="{% url 'core:user-delete' pk=user.pk %}" id="delete-account-form" >
-                            {% csrf_token %}
-                            <input type="submit" id="delete-account-button" class="btn btn-danger" value="Supprimer votre compte ?"/>
-                        </form>
-                    </p>
+                    {% if user.is_active %}
+                    <form method="post" action="{% url 'core:user-delete' pk=user.pk %}" id="delete-account-form">
+                        {% csrf_token %}
+                        <input type="submit" id="delete-account-button" class="btn btn-danger" value="Désactiver votre compte ?" />
+                    </form>
+                    {% endif %}
                 </div>
             </div>
         </div>
@@ -186,11 +189,11 @@
         delete_button.addEventListener("click",(event)=>{
             event.preventDefault();
             Swal.fire({
-                title: "Supprimer votre compte ?",
-                text: "Etes vous sur de vouloir supprimer votre compte ? Cette action est irréversible",
+                title: "Désactiver votre compte ?",
+                text: "Etes vous sur de vouloir désactiver votre compte ? Cette action est irréversible",
                 icon: "error",
                 showDenyButton : true,
-                confirmButtonText : "Supprimer",
+                confirmButtonText : "Désactiver",
                 denyButtonText : "Annuler"
             }).then((result)=>{
                 if (result.isConfirmed) {

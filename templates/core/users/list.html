@@ -94,7 +94,10 @@
                                 <img src="{{ placeholder_image }}" alt="Avatar de {{ user.get_full_name|default:user.username }}" class="rounded-circle me-3" style="width: 80px; height: 80px;">
                                 {% endif %}
                                 <div>
-                                    <h5 class="card-title mb-0">{{ user.get_full_name|default:user.username }}</h5>
+                                    <h5 class="card-title mb-0">
+                                        {{ user.get_full_name|default:user.username }}
+                                        {% if not user.is_active %}<span class="badge bg-secondary fs-6">Inactif</span> {% endif %}
+                                    </h5>
                                     <p class="text-muted mb-0">{{ user.badges.count }} badge{% if user.badges.count != 1 %}s{% endif %}</p>
                                 </div>
                             </div>

@@ -454,7 +454,8 @@ class UserViewSet(viewsets.ViewSet):
         # TODO when authentication will be added :
         # Send a mail containing a link to delete the account
 
-        sweetify.toast(request, "L'utilisateur a bien été supprimé")
+        sweetify.toast(request, "L'utilisateur a bien été désactivé")
         user = get_object_or_404(User, pk=pk)
-        user.delete()
+        user.is_active = False
+        user.save()
         return redirect('core:user-list')

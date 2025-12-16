@@ -139,9 +139,9 @@ class Badge(models.Model):
 
     def get_holders(self):
         """
-        Returns all users who hold this badge
+        Returns all users who hold this badge excluding inactive users
         """
-        return User.objects.filter(badge_assignments__badge=self)
+        return User.objects.filter(badge_assignments__badge=self,is_active=True)
 
     def add_holder(self, user, assigned_by=None, notes=None):
         """

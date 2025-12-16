@@ -26,7 +26,7 @@
         <img src="{{ placeholder_image }}" alt="Logo de {{ structure.name }}" class="img-fluid mb-3" style="max-width: 200px;">
         {% endif %}
         <h2 class="mb-3">{{ structure.name }}</h2>
-        <a href="{% url 'core:create_badge' %}?structure={{ structure.id }}" class="btn btn-primary mb-4">Forger un nouveau badge</a>
+        <a href="{% url 'core:create_badge' %}?structure={{ structure.pk }}" class="btn btn-primary mb-4">Forger un nouveau badge</a>
     </div>
 
     <div class="col-md-8">
@@ -130,7 +130,7 @@
                                     <span class="badge bg-success">{{ badge.get_level_display }}</span>
                                     {% endif %}
                                 </p>
-                                <a href="{% url 'core:badge-detail' pk=badge.id %}" class="btn btn-primary">Voir le badge</a>
+                                <a href="{% url 'core:badge-detail' pk=badge.pk %}" class="btn btn-primary">Voir le badge</a>
                             </div>
                         </div>
                         {% endfor %}

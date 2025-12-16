@@ -16,8 +16,8 @@ class HomeViewSet(viewsets.ViewSet):
     """
     def list(self, request):
         # Get some recent badges and structures for the home page
-        recent_badges = Badge.objects.all().order_by('-id')[:4]
-        popular_structures = Structure.objects.all().order_by('-id')[:4]
+        recent_badges = Badge.objects.all().order_by('-pk')[:4]
+        popular_structures = Structure.objects.all().order_by('-pk')[:4]
 
         return render(request, 'core/home/index.html', {
             'title': 'FossBadge - Accueil',

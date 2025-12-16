@@ -97,16 +97,16 @@
 <div class="container mb-4 no-print">
     <div class="row">
         <div class="col-12">
-            <a href="{% url 'core:user-detail' pk=user.id %}" class="btn btn-secondary">
+            <a href="{% url 'core:user-detail' pk=user.pk %}" class="btn btn-secondary">
                 <i class="fas fa-arrow-left"></i> Retour au profil
             </a>
-            <a href="{% url 'core:user-cv' pk=user.id %}?template=classic" class="btn btn-outline-primary">
+            <a href="{% url 'core:user-cv' pk=user.pk %}?template=classic" class="btn btn-outline-primary">
                 <i class="fas fa-file-alt"></i> Version classique
             </a>
-            <a href="{% url 'core:user-cv' pk=user.id %}?template=material" class="btn btn-outline-primary">
+            <a href="{% url 'core:user-cv' pk=user.pk %}?template=material" class="btn btn-outline-primary">
                 <i class="fas fa-file-alt"></i> Version Material Design
             </a>
-            <a href="{% url 'core:user-cv' pk=user.id %}?template=liquid_glass" class="btn btn-outline-primary">
+            <a href="{% url 'core:user-cv' pk=user.pk %}?template=liquid_glass" class="btn btn-outline-primary">
                 <i class="fas fa-file-alt"></i> Version Apple Liquid Glass
             </a>
             <button class="btn btn-primary" onclick="window.print()">
@@ -175,7 +175,7 @@
                     <h2 class="card-title border-bottom pb-2"><i class="fas fa-briefcase text-primary me-2"></i>Expérience</h2>
                     {% if badges %}
                         {% for badge in badges|slice:":5" %}
-                            {% with assignment=badge_assignment_dict|get_item:badge.id %}
+                            {% with assignment=badge_assignment_dict|get_item:badge.pk %}
                                 {% if assignment %}
                                     <div class="timeline-item">
                                         <h5>{{ badge.name }}</h5>
@@ -303,7 +303,7 @@
                                     </p>
                                     <p class="card-text small text-muted">
                                         {% with first_badge=structure_group.list.0 %}
-                                            {% with assignment=badge_assignment_dict|get_item:first_badge.id %}
+                                            {% with assignment=badge_assignment_dict|get_item:first_badge.pk %}
                                                 {% if assignment %}
                                                     Depuis {{ assignment.assigned_date|date:"M Y" }}
                                                 {% endif %}
@@ -387,7 +387,7 @@
             <h3 class="card-title"><i class="fas fa-briefcase text-primary me-2"></i>Expérience supplémentaire</h3>
             <div class="row">
                 {% for badge in badges|slice:"5:" %}
-                    {% with assignment=badge_assignment_dict|get_item:badge.id %}
+                    {% with assignment=badge_assignment_dict|get_item:badge.pk %}
                         {% if assignment %}
                             <div class="col-md-6 mb-3">
                                 <div class="timeline-item">
@@ -418,7 +418,7 @@
                                 </p>
                                 <p class="card-text small text-muted">
                                     {% with first_badge=structure_group.list.0 %}
-                                        {% with assignment=badge_assignment_dict|get_item:first_badge.id %}
+                                        {% with assignment=badge_assignment_dict|get_item:first_badge.pk %}
                                             {% if assignment %}
                                                 Depuis {{ assignment.assigned_date|date:"M Y" }}
                                             {% endif %}

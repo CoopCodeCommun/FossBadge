@@ -2,7 +2,7 @@
 
 [English](#english) | [Français](#français)
 
-<a name="english"></a>
+<a id="english"></a>
 ## 🏆 FossBadge - Open Badge Platform
 
 FossBadge is a free and open source platform for creating, managing, and sharing digital badges. It allows organizations to recognize skills and achievements through a simple, accessible interface.
@@ -66,6 +66,15 @@ Run the tests :
   uv run python manage.py test
 ```
 
+### Launch in production
+1. Set `Debug` to `False` in `fossbadge/settings.py`.
+2. Install [docker](https://docs.docker.com/engine/install/)
+3. Create à `.env` file : `$ cp env_exemple .env` and edit its values
+4. Create a network in docker : `$ docker network create frontend`
+5. Run the docker compose : `$ docker compose -f docker-compose-prod.yml up`
+
+After that, nginx will run on port 80.
+
 ### 📁 Project Structure
 
 - `core/`: Main application with views, models, and templates
@@ -84,7 +93,7 @@ This project is licensed under the AGPLv3 License - see the LICENSE file for det
 
 ---
 
-<a name="français"></a>
+<a id="français"></a>
 ## 🏆 FossBadge - Plateforme de Badges Ouverts
 
 FossBadge est une plateforme libre et open source pour créer, gérer et partager des badges numériques. Elle permet aux organisations de reconnaître les compétences et les réalisations à travers une interface simple et accessible.
@@ -147,6 +156,16 @@ Lancer les tests :
 ```bash
     uv run python manage.py test
 ```
+
+
+### Lancer en production
+1. Mettre `Debug` à `False` dans `fossbadge/settings.py`.
+2. Installer [docker](https://docs.docker.com/engine/install/)
+3. Créer un fichier `.env` : `$ cp env_exemple .env` et éditer ses valeurs
+4. Créer un réseau dans docker : `$ docker network create frontend`
+5. Lancer le docker compose : `$ docker compose -f docker-compose-prod.yml up`
+
+Après ça, nginx tournera sur le port 80.
 
 ### 📁 Structure du Projet
 

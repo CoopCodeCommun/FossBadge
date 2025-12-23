@@ -71,3 +71,6 @@ venv.bak/
 
 # Poetry
 poetry.lock
+
+# Logs
+logs/

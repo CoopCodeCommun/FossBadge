@@ -15,6 +15,8 @@ echo "UV install ok"
 sqlite3 ./db.sqlite3 'PRAGMA journal_mode=WAL;'
 sqlite3 ./db.sqlite3 'PRAGMA synchronous=normal;'
 
+uv run python manage.py migrate
+
 if [[ "$GUNICORN" == "1" ]]; then
     echo "→ Gunicorn activé, démarrage…"
     uv run python3 manage.py collectstatic --noinput

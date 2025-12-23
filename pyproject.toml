@@ -16,6 +16,7 @@ dependencies = [
     "gunicorn (>=23.0.0,<24.0.0)",
     "beautifulsoup4>=4.14.3",
     "psycopg[binary]>=3.3.2",
+    "sweetify>=2.3.1",
 ]
 
 [dependency-groups]

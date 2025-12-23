@@ -8,7 +8,10 @@
 {% block content %}
 <div class="row">
     <div class="col-md-12">
-        <h1 class="display-4 mb-4">Profil de {{ user.get_full_name|default:user.username }}</h1>
+        <h1 class="display-4 mb-4">
+            Profil de {{ user.get_full_name|default:user.username }}
+            {% if not user.is_active %}<span class="badge bg-secondary fs-4" style="vertical-align: middle">Inactif</span> {% endif %}
+        </h1>
     </div>
 </div>
 
@@ -125,7 +128,7 @@
 </div>
 
 <!-- Structures Section -->
-<div class="row">
+<div class="row mb-5">
     <div class="col-md-12">
         <div class="card">
             <div class="card-body">
@@ -157,4 +160,48 @@
         </div>
     </div>
 </div>
+
+<div class="row">
+    <div class="col-md-12">
+        <div class="card">
+            <div class="card-body">
+                <h2 class="card-title">Mes actions</h2>
+                <div class="row">
+                    {% if user.is_active %}
+                    <form method="post" action="{% url 'core:user-delete' pk=user.pk %}" id="delete-account-form">
+                        {% csrf_token %}
+                        <input type="submit" id="delete-account-button" class="btn btn-danger" value="Désactiver votre compte ?" />
+                    </form>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+{% block extra_js %}
+    <script>
+        // Get deletion form and its submit button
+        delete_button = document.querySelector("#delete-account-button");
+        delete_form = document.querySelector("#delete-account-form");
+        // Prevent button from sending the form, show an alert asking for confirmation
+        delete_button.addEventListener("click",(event)=>{
+            event.preventDefault();
+            Swal.fire({
+                title: "Désactiver votre compte ?",
+                text: "Etes vous sur de vouloir désactiver votre compte ? Cette action est irréversible",
+                icon: "error",
+                showDenyButton : true,
+                confirmButtonText : "Désactiver",
+                denyButtonText : "Annuler"
+            }).then((result)=>{
+                if (result.isConfirmed) {
+                    delete_form.submit()
+                } else if (result.isDenied) {
+
+                }
+            });
+        });
+    </script>
 {% endblock %}

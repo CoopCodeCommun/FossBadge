@@ -42,6 +42,7 @@ INSTALLED_APPS = [
     'django_htmx',
     'rest_framework',
     'pictures',
+    'sweetify',
 
     'django_cleanup.apps.CleanupConfig', # Toujours en dernier
 ]
@@ -173,3 +174,6 @@ MEDIA_ROOT = BASE_DIR / 'media'
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+# Sweetify settings
+SWEETIFY_SWEETALERT_LIBRARY = 'sweetalert2'

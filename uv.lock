@@ -147,6 +147,7 @@ dependencies = [
     { name = "gunicorn" },
     { name = "pillow" },
     { name = "psycopg", extra = ["binary"] },
+    { name = "sweetify" },
 ]
 
 [package.dev-dependencies]
@@ -167,6 +168,7 @@ requires-dist = [
     { name = "gunicorn", specifier = ">=23.0.0,<24.0.0" },
     { name = "pillow", specifier = ">=10" },
     { name = "psycopg", extras = ["binary"], specifier = ">=3.3.2" },
+    { name = "sweetify", specifier = ">=2.3.1" },
 ]
 
 [package.metadata.requires-dev]
@@ -455,6 +457,15 @@ dependencies = [
 sdist = { url = "https://files.pythonhosted.org/packages/28/e3/55dcc2cfbc3ca9c29519eb6884dd1415ecb53b0e934862d3559ddcb7e20b/stack_data-0.6.3.tar.gz", hash = "sha256:836a778de4fec4dcd1dcd89ed8abff8a221f58308462e1c4aa2a3cf30148f0b9", size = 44707, upload-time = "2023-09-30T13:58:05.479Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/f1/7b/ce1eafaf1a76852e2ec9b22edecf1daa58175c090266e9f6c64afcd81d91/stack_data-0.6.3-py3-none-any.whl", hash = "sha256:d5558e0c25a4cb0853cddad3d77da9891a08cb85dd9f9f91b9f8cd66e511e695", size = 24521, upload-time = "2023-09-30T13:58:03.53Z" },
+]
+
+[[package]]
+name = "sweetify"
+version = "2.3.1"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/aa/61/58e5088c21f01d5bb4386fc056db0e0fb2f33179e92022cb7a1f6afb0fd1/sweetify-2.3.1.tar.gz", hash = "sha256:37100d8f02929076cd060b1c1aae7575448af32e61ca8c03bc003548e31ffc70", size = 7608, upload-time = "2022-05-07T16:15:30.965Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/dd/20/83496b38a1b995b41c69c12b9287d4b6e4fbf83882261a615d9a5ddf7420/sweetify-2.3.1-py3-none-any.whl", hash = "sha256:941ed8914467d5a29eb263079fd4f39661df81bfded6476ed4ef2ad57a4c25ba", size = 7433, upload-time = "2022-05-07T16:15:29.145Z" },
 ]
 
 [[package]]

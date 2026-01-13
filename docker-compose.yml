@@ -21,12 +21,12 @@ services:
     volumes:
       - ./ssh:/home/fossbadge/.ssh
       - ./:/home/fossbadge/FossBadge
+    links:
+      - fossbadge_valkey:valkey
     networks:
       - fossbadge_backend
-#     For production :
+      - frontend
     command: "bash start_dev.sh"
-    # For dev :
-#    command: "bash start_dev.sh"
 
   fossbadge_nginx:
     image: nginx
@@ -52,6 +52,32 @@ services:
     networks:
       - frontend
       - fossbadge_backend
+
+  fossbadge_valkey:
+    container_name: fossbadge_valkey
+    hostname: fossbadge_valkey
+    image: valkey/valkey:9.0.1-alpine
+    #image: redis:7.2.3-bookworm
+    restart: always
+    networks:
+      - frontend
+
+
+  fossbadge_celery:
+    build: .
+    container_name: fossbadge_celery
+    hostname: fossbadge_celery
+    restart: always
+    env_file: .env
+    depends_on:
+      - fossbadge_valkey
+    links:
+      - fossbadge_valkey:valkey
+    volumes:
+      - ./:/DjangoFiles
+    networks:
+      - frontend
+    command: "uv run celery -A fossbadge worker -l INFO -B --concurrency=6"
 
 networks:
   frontend:

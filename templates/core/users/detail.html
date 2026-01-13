@@ -11,6 +11,11 @@
         <h1 class="display-4 mb-4">
             Profil de {{ user.get_full_name|default:user.username }}
             {% if not user.is_active %}<span class="badge bg-secondary fs-4" style="vertical-align: middle">Inactif</span> {% endif %}
+            {% if request.user.pk == user.pk %}
+                <a class="btn btn-danger float-end" href="{% url 'core:user-logout' %}">
+                    Se déconnecter
+                </a>
+            {% endif %}
         </h1>
     </div>
 </div>
@@ -48,14 +53,16 @@
                     <div class="col-md-8">
                         <h2 class="card-title">Informations personnelles</h2>
                     </div>
-                    <div class="col-md-4">
-                        <div class="btn btn-primary float-end"
-                             hx-get="{% url 'core:edit-profile' user.pk %}"
-                             hx-target="#user-info"
-                             hx-swap="innerHTML">
-                            Éditer
+                    {% if request.user.pk == user.pk %}
+                        <div class="col-md-4">
+                            <div class="btn btn-primary float-end"
+                                 hx-get="{% url 'core:edit-profile' user.pk %}"
+                                 hx-target="#user-info"
+                                 hx-swap="innerHTML">
+                                Éditer
+                            </div>
                         </div>
-                    </div>
+                    {% endif %}
                 </div>
                 <div class="row mb-2">
                     <div class="col-md-4 fw-bold">Nom:</div>
@@ -161,25 +168,28 @@
     </div>
 </div>
 
-<div class="row">
-    <div class="col-md-12">
-        <div class="card">
-            <div class="card-body">
-                <h2 class="card-title">Mes actions</h2>
-                <div class="row">
-                    {% if user.is_active %}
-                    <form method="post" action="{% url 'core:user-delete' pk=user.pk %}" id="delete-account-form">
-                        {% csrf_token %}
-                        <input type="submit" id="delete-account-button" class="btn btn-danger" value="Désactiver votre compte ?" />
-                    </form>
-                    {% endif %}
+{% if request.user.pk == user.pk %}
+    <div class="row">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-body">
+                    <h2 class="card-title">Mes actions</h2>
+                    <div class="row">
+                        {% if user.is_active %}
+                        <form method="post" action="{% url 'core:user-delete' pk=user.pk %}" id="delete-account-form">
+                            {% csrf_token %}
+                            <input type="submit" id="delete-account-button" class="btn btn-danger" value="Désactiver votre compte ?" />
+                        </form>
+                        {% endif %}
+                    </div>
                 </div>
             </div>
         </div>
     </div>
-</div>
+{% endif %}
 
 {% endblock %}
+
 {% block extra_js %}
     <script>
         // Get deletion form and its submit button

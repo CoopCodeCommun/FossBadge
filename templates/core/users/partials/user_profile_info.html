@@ -6,7 +6,7 @@
             </div>
             <div class="col-md-4">
                 <div class="btn btn-primary float-end"
-                     hx-get="{% url 'core:edit-profile' user.id %}"
+                     hx-get="{% url 'core:edit-profile' user.pk %}"
                      hx-target="#user-info"
                      hx-swap="innerHTML">
                     Editer

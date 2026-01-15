@@ -151,7 +151,7 @@ class BadgeSearchFilterTest(TestCase):
 
     def test_badge_filter_by_structure(self):
         """Test filtering badges by structure"""
-        response = self.client.get(reverse('core:badge-list') + f'?structure={self.structure1.id}')
+        response = self.client.get(reverse('core:badge-list') + f'?structure={self.structure1.pk}')
         self.assertEqual(response.status_code, 200)
 
         # Parse the HTML content

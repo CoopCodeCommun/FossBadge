@@ -20,18 +20,18 @@ class StructureDetailTest(TestCase):
 
     def test_structure_detail_page_loads_correctly(self):
         """Test that the structure detail page loads correctly with a 200 status code"""
-        response = self.client.get(reverse('core:structure-detail', kwargs={'pk': self.structure.id}))
+        response = self.client.get(reverse('core:structure-detail', kwargs={'pk': self.structure.pk}))
         self.assertEqual(response.status_code, 200)
 
     def test_structure_detail_page_uses_correct_template(self):
         """Test that the structure detail page uses the correct template"""
-        response = self.client.get(reverse('core:structure-detail', kwargs={'pk': self.structure.id}))
+        response = self.client.get(reverse('core:structure-detail', kwargs={'pk': self.structure.pk}))
         self.assertTemplateUsed(response, 'core/structures/detail.html')
         self.assertTemplateUsed(response, 'base.html')
 
     def test_structure_detail_page_contains_expected_content(self):
         """Test that the structure detail page contains expected content"""
-        response = self.client.get(reverse('core:structure-detail', kwargs={'pk': self.structure.id}))
+        response = self.client.get(reverse('core:structure-detail', kwargs={'pk': self.structure.pk}))
         content = response.content.decode('utf-8')
 
         # Check for structure detail specific content
@@ -49,6 +49,6 @@ class StructureDetailTest(TestCase):
         self.structure.save()
 
         # Check that the new name is displayed
-        response = self.client.get(reverse('core:structure-detail', kwargs={'pk': self.structure.id}))
+        response = self.client.get(reverse('core:structure-detail', kwargs={'pk': self.structure.pk}))
         content = response.content.decode('utf-8')
         self.assertIn(new_name, content)

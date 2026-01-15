@@ -22,5 +22,5 @@ urlpatterns = [
     path('user/create/',views.UserViewSet.as_view({'get': 'create_user', 'post': 'create_user'}),name='create_user'),
 
     # Edition routes
-    path('users/<int:pk>/edit', views.UserViewSet.as_view({'get': 'edit', 'post': 'edit'}), name='edit-profile')
+    path('users/<uuid:pk>/edit', views.UserViewSet.as_view({'get': 'edit', 'post': 'edit'}), name='edit-profile')
 ]

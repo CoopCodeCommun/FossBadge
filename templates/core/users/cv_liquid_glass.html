@@ -383,16 +383,16 @@
 <div class="container mb-4 no-print">
     <div class="row">
         <div class="col-12">
-            <a href="{% url 'core:user-detail' pk=user.id %}" class="glass-btn glass-btn-secondary">
+            <a href="{% url 'core:user-detail' pk=user.pk %}" class="glass-btn glass-btn-secondary">
                 <i class="fas fa-arrow-left"></i> Retour au profil
             </a>
-            <a href="{% url 'core:user-cv' pk=user.id %}?template=classic" class="glass-btn glass-btn-outline">
+            <a href="{% url 'core:user-cv' pk=user.pk %}?template=classic" class="glass-btn glass-btn-outline">
                 <i class="fas fa-file-alt"></i> Version classique
             </a>
-            <a href="{% url 'core:user-cv' pk=user.id %}?template=bootstrap" class="glass-btn glass-btn-outline">
+            <a href="{% url 'core:user-cv' pk=user.pk %}?template=bootstrap" class="glass-btn glass-btn-outline">
                 <i class="fas fa-file-alt"></i> Version Bootstrap
             </a>
-            <a href="{% url 'core:user-cv' pk=user.id %}?template=material" class="glass-btn glass-btn-outline">
+            <a href="{% url 'core:user-cv' pk=user.pk %}?template=material" class="glass-btn glass-btn-outline">
                 <i class="fas fa-file-alt"></i> Version Material Design
             </a>
             <button class="glass-btn glass-btn-primary" onclick="window.print()">
@@ -478,7 +478,7 @@
                     <div class="glass-timeline">
                         {% if badges %}
                             {% for badge in badges|slice:":5" %}
-                                {% with assignment=badge_assignment_dict|get_item:badge.id %}
+                                {% with assignment=badge_assignment_dict|get_item:badge.pk %}
                                     {% if assignment %}
                                         <div class="glass-timeline-item">
                                             <div class="glass-timeline-content">
@@ -620,7 +620,7 @@
                                     <div class="glass-tag primary">{{ structure_group.list|length }} badge{% if structure_group.list|length > 1 %}s{% endif %}</div>
                                     <p class="small text-muted mt-2">
                                         {% with first_badge=structure_group.list.0 %}
-                                            {% with assignment=badge_assignment_dict|get_item:first_badge.id %}
+                                            {% with assignment=badge_assignment_dict|get_item:first_badge.pk %}
                                                 {% if assignment %}
                                                     Depuis {{ assignment.assigned_date|date:"M Y" }}
                                                 {% endif %}
@@ -715,7 +715,7 @@
             <div class="glass-divider"></div>
             <div class="glass-timeline">
                 {% for badge in badges|slice:"5:" %}
-                    {% with assignment=badge_assignment_dict|get_item:badge.id %}
+                    {% with assignment=badge_assignment_dict|get_item:badge.pk %}
                         {% if assignment %}
                             <div class="glass-timeline-item">
                                 <div class="glass-timeline-content">
@@ -745,7 +745,7 @@
                                 <div class="glass-tag primary">{{ structure_group.list|length }} badge{% if structure_group.list|length > 1 %}s{% endif %}</div>
                                 <p class="small text-muted mt-2">
                                     {% with first_badge=structure_group.list.0 %}
-                                        {% with assignment=badge_assignment_dict|get_item:first_badge.id %}
+                                        {% with assignment=badge_assignment_dict|get_item:first_badge.pk %}
                                             {% if assignment %}
                                                 Depuis {{ assignment.assigned_date|date:"M Y" }}
                                             {% endif %}

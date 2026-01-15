@@ -457,7 +457,7 @@
             <ul>
                 {% if badges %}
                     {% for badge in badges|slice:":5" %}
-                        {% with assignment=badge_assignment_dict|get_item:badge.id %}
+                        {% with assignment=badge_assignment_dict|get_item:badge.pk %}
                             {% if assignment %}
                                 <li>
                                     <span>{{ badge.name }}</span>
@@ -549,7 +549,7 @@
                             <small>{{ structure_group.list|length }} badge{% if structure_group.list|length > 1 %}s{% endif %}</small>
                             <small>
                                 {% with first_badge=structure_group.list.0 %}
-                                    {% with assignment=badge_assignment_dict|get_item:first_badge.id %}
+                                    {% with assignment=badge_assignment_dict|get_item:first_badge.pk %}
                                         {% if assignment %}
                                             Depuis {{ assignment.assigned_date|date:"M Y" }}
                                         {% endif %}
@@ -614,7 +614,7 @@
             <h3><i class="fa fa-briefcase"></i>Expérience supplémentaire</h3>
             <ul>
                 {% for badge in badges|slice:"5:" %}
-                    {% with assignment=badge_assignment_dict|get_item:badge.id %}
+                    {% with assignment=badge_assignment_dict|get_item:badge.pk %}
                         {% if assignment %}
                             <li>
                                 <span>{{ badge.name }}</span>
@@ -638,7 +638,7 @@
                         <small>{{ structure_group.list|length }} badge{% if structure_group.list|length > 1 %}s{% endif %}</small>
                         <small>
                             {% with first_badge=structure_group.list.0 %}
-                                {% with assignment=badge_assignment_dict|get_item:first_badge.id %}
+                                {% with assignment=badge_assignment_dict|get_item:first_badge.pk %}
                                     {% if assignment %}
                                         Depuis {{ assignment.assigned_date|date:"M Y" }}
                                     {% endif %}

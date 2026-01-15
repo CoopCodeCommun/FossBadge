@@ -37,7 +37,7 @@
                         <select class="form-select" name="badge">
                             <option value="">Tous les badges</option>
                             {% for badge in badges %}
-                            <option value="{{ badge.id }}" {% if badge_filter == badge.id|stringformat:"i" %}selected{% endif %}>{{ badge.name }}</option>
+                            <option value="{{ badge.pk }}" {% if badge_filter == badge.pk|stringformat:"i" %}selected{% endif %}>{{ badge.name }}</option>
                             {% endfor %}
                         </select>
                     </div>
@@ -46,7 +46,7 @@
                         <select class="form-select" name="structure">
                             <option value="">Toutes les structures</option>
                             {% for structure in structures %}
-                            <option value="{{ structure.id }}" {% if structure_filter == structure.id|stringformat:"i" %}selected{% endif %}>{{ structure.name }}</option>
+                            <option value="{{ structure.pk }}" {% if structure_filter == structure.pk|stringformat:"i" %}selected{% endif %}>{{ structure.name }}</option>
                             {% endfor %}
                         </select>
                     </div>
@@ -122,7 +122,7 @@
                                 </div>
                             </div>
                             <div class="text-end">
-                                <a href="{% url 'core:user-detail' pk=user.id %}" class="btn btn-primary">Voir le profil</a>
+                                <a href="{% url 'core:user-detail' pk=user.pk %}" class="btn btn-primary">Voir le profil</a>
                             </div>
                         </div>
                     </div>

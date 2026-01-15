@@ -283,16 +283,16 @@
 <div class="container mb-4 no-print">
     <div class="row">
         <div class="col-12">
-            <a href="{% url 'core:user-detail' pk=user.id %}" class="md-btn md-btn-secondary">
+            <a href="{% url 'core:user-detail' pk=user.pk %}" class="md-btn md-btn-secondary">
                 <i class="fas fa-arrow-left"></i> Retour au profil
             </a>
-            <a href="{% url 'core:user-cv' pk=user.id %}?template=classic" class="md-btn md-btn-outline">
+            <a href="{% url 'core:user-cv' pk=user.pk %}?template=classic" class="md-btn md-btn-outline">
                 <i class="fas fa-file-alt"></i> Version classique
             </a>
-            <a href="{% url 'core:user-cv' pk=user.id %}?template=bootstrap" class="md-btn md-btn-outline">
+            <a href="{% url 'core:user-cv' pk=user.pk %}?template=bootstrap" class="md-btn md-btn-outline">
                 <i class="fas fa-file-alt"></i> Version Bootstrap
             </a>
-            <a href="{% url 'core:user-cv' pk=user.id %}?template=liquid_glass" class="md-btn md-btn-outline">
+            <a href="{% url 'core:user-cv' pk=user.pk %}?template=liquid_glass" class="md-btn md-btn-outline">
                 <i class="fas fa-file-alt"></i> Version Apple Liquid Glass
             </a>
             <button class="md-btn md-btn-primary" onclick="window.print()">
@@ -378,7 +378,7 @@
                     <div class="md-timeline">
                         {% if badges %}
                             {% for badge in badges|slice:":5" %}
-                                {% with assignment=badge_assignment_dict|get_item:badge.id %}
+                                {% with assignment=badge_assignment_dict|get_item:badge.pk %}
                                     {% if assignment %}
                                         <div class="md-timeline-item">
                                             <div class="md-timeline-content">
@@ -520,7 +520,7 @@
                                     <div class="md-chip primary">{{ structure_group.list|length }} badge{% if structure_group.list|length > 1 %}s{% endif %}</div>
                                     <p class="small text-muted mt-2">
                                         {% with first_badge=structure_group.list.0 %}
-                                            {% with assignment=badge_assignment_dict|get_item:first_badge.id %}
+                                            {% with assignment=badge_assignment_dict|get_item:first_badge.pk %}
                                                 {% if assignment %}
                                                     Depuis {{ assignment.assigned_date|date:"M Y" }}
                                                 {% endif %}
@@ -615,7 +615,7 @@
             <div class="md-divider"></div>
             <div class="md-timeline">
                 {% for badge in badges|slice:"5:" %}
-                    {% with assignment=badge_assignment_dict|get_item:badge.id %}
+                    {% with assignment=badge_assignment_dict|get_item:badge.pk %}
                         {% if assignment %}
                             <div class="md-timeline-item">
                                 <div class="md-timeline-content">
@@ -645,7 +645,7 @@
                                 <div class="md-chip primary">{{ structure_group.list|length }} badge{% if structure_group.list|length > 1 %}s{% endif %}</div>
                                 <p class="small text-muted mt-2">
                                     {% with first_badge=structure_group.list.0 %}
-                                        {% with assignment=badge_assignment_dict|get_item:first_badge.id %}
+                                        {% with assignment=badge_assignment_dict|get_item:first_badge.pk %}
                                             {% if assignment %}
                                                 Depuis {{ assignment.assigned_date|date:"M Y" }}
                                             {% endif %}

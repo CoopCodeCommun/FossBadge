@@ -63,7 +63,7 @@ class CreateBadgeTest(TestCase):
             'name': 'Test Badge Created From Form',
             'level': 'intermediate',
             'description': 'This is a test badge created from the form submission test',
-            'issuing_structure': self.structure.id,
+            'issuing_structure': self.structure.pk,
         }
 
         # Create a fresh test image for each test

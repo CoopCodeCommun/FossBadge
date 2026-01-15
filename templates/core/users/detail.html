@@ -38,10 +38,10 @@
                 <i class="fas fa-file-alt"></i> Voir mon CV
             </button>
             <ul class="dropdown-menu" aria-labelledby="cvDropdown">
-                <li><a class="dropdown-item" href="{% url 'core:user-cv' pk=user.id %}?template=classic">Version classique</a></li>
-                <li><a class="dropdown-item" href="{% url 'core:user-cv' pk=user.id %}?template=bootstrap">Version Bootstrap</a></li>
-                <li><a class="dropdown-item" href="{% url 'core:user-cv' pk=user.id %}?template=material">Version Material Design</a></li>
-                <li><a class="dropdown-item" href="{% url 'core:user-cv' pk=user.id %}?template=liquid_glass">Version Apple Liquid Glass</a></li>
+                <li><a class="dropdown-item" href="{% url 'core:user-cv' pk=user.pk %}?template=classic">Version classique</a></li>
+                <li><a class="dropdown-item" href="{% url 'core:user-cv' pk=user.pk %}?template=bootstrap">Version Bootstrap</a></li>
+                <li><a class="dropdown-item" href="{% url 'core:user-cv' pk=user.pk %}?template=material">Version Material Design</a></li>
+                <li><a class="dropdown-item" href="{% url 'core:user-cv' pk=user.pk %}?template=liquid_glass">Version Apple Liquid Glass</a></li>
             </ul>
         </div>
     </div>
@@ -109,7 +109,7 @@
                                     <span class="badge bg-success">{{ badge.get_level_display }}</span>
                                     {% endif %}
                                 </p>
-                                {% with assignment=badge_assignment_dict|get_item:badge.id %}
+                                {% with assignment=badge_assignment_dict|get_item:badge.pk %}
                                     {% if assignment %}
                                     <p class="card-text small text-muted">
                                         Assigné le {{ assignment.assigned_date|date:"d/m/Y" }}<br>
@@ -117,7 +117,7 @@
                                     </p>
                                     {% endif %}
                                 {% endwith %}
-                                <a href="{% url 'core:badge-detail' pk=badge.id %}" class="btn btn-primary">Voir le badge</a>
+                                <a href="{% url 'core:badge-detail' pk=badge.pk %}" class="btn btn-primary">Voir le badge</a>
                             </div>
                         </div>
                         {% endfor %}
@@ -152,7 +152,7 @@
                             <img src="{{ placeholder_image }}" alt="Logo {{ structure.name }}" class="img-fluid mb-2" style="max-width: 100px;">
                             {% endif %}
                             <h5>{{ structure.name }}</h5>
-                            <a href="{% url 'core:structure-detail' pk=structure.id %}" class="btn btn-outline-primary">Voir</a>
+                            <a href="{% url 'core:structure-detail' pk=structure.pk %}" class="btn btn-outline-primary">Voir</a>
                         </div>
                         {% endfor %}
                     {% else %}

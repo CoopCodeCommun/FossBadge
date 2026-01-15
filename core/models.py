@@ -1,3 +1,4 @@
+import uuid
 from django.db import models
 from django.contrib.auth.models import AbstractUser
 from django.utils import timezone
@@ -6,6 +7,9 @@ from pictures.models import PictureField
 # Create your models here.
 
 class User(AbstractUser):
+
+    uuid = models.UUIDField(default=uuid.uuid7, primary_key=True, db_index=True)
+
     avatar_width = models.PositiveIntegerField(blank=True, null=True, editable=False)
     avatar_height = models.PositiveIntegerField(blank=True, null=True, editable=False)
     avatar = PictureField(upload_to='users/avatars/', blank=True, null=True, verbose_name="Avatar",
@@ -48,6 +52,9 @@ class Structure(models.Model):
     """
     Model representing a structure (association, company, school, etc.)
     """
+
+    uuid = models.UUIDField(default=uuid.uuid7, primary_key=True, db_index=True)
+
     TYPE_CHOICES = [
         ('association', 'Association'),
         ('company', 'Entreprise'),
@@ -95,6 +102,9 @@ class Badge(models.Model):
     """
     Model representing a badge
     """
+
+    uuid = models.UUIDField(default=uuid.uuid7, primary_key=True, db_index=True)
+
     LEVEL_CHOICES = [
         ('beginner', 'Débutant'),
         ('intermediate', 'Intermédiaire'),
@@ -168,6 +178,9 @@ class BadgeHistory(models.Model):
     """
     Model to track the history of a badge (creation, modifications)
     """
+
+    uuid = models.UUIDField(default=uuid.uuid7, primary_key=True, db_index=True)
+
     badge = models.ForeignKey(Badge, on_delete=models.CASCADE, related_name='history', verbose_name="Badge")
     action = models.CharField(max_length=50, verbose_name="Action")
     timestamp = models.DateTimeField(default=timezone.now, verbose_name="Date et heure")
@@ -186,6 +199,9 @@ class BadgeAssignment(models.Model):
     """
     Model to track when a user receives a badge
     """
+
+    uuid = models.UUIDField(default=uuid.uuid7, primary_key=True)
+
     badge = models.ForeignKey(Badge, on_delete=models.CASCADE, related_name='assignments', verbose_name="Badge")
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='badge_assignments', verbose_name="Utilisateur")
     assigned_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, 
@@ -208,6 +224,9 @@ class BadgeEndorsement(models.Model):
     """
     Model to track when a structure endorses a badge
     """
+
+    uuid = models.UUIDField(default=uuid.uuid7, primary_key=True, db_index=True)
+
     badge = models.ForeignKey(Badge, on_delete=models.CASCADE, related_name='endorsements', verbose_name="Badge")
     structure = models.ForeignKey(Structure, on_delete=models.CASCADE, related_name='endorsed_badges', 
                                  verbose_name="Structure")

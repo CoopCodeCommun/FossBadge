@@ -58,7 +58,7 @@
                         <select class="form-select" name="badge">
                             <option value="">Tous les badges</option>
                             {% for badge in badges %}
-                            <option value="{{ badge.id }}" {% if badge_filter == badge.id|stringformat:"i" %}selected{% endif %}>{{ badge.name }}</option>
+                            <option value="{{ badge.pk }}" {% if badge_filter == badge.pk|stringformat:"i" %}selected{% endif %}>{{ badge.name }}</option>
                             {% endfor %}
                         </select>
                     </div>
@@ -89,7 +89,7 @@
                             <p class="card-text">{{ structure.description|truncatewords:30 }}</p>
                             <div class="d-flex justify-content-between align-items-center">
                                 <small class="text-muted">{{ structure.issued_badges.count }} badge{% if structure.issued_badges.count != 1 %}s{% endif %} disponible{% if structure.issued_badges.count != 1 %}s{% endif %}</small>
-                                <a href="{% url 'core:structure-detail' pk=structure.id %}" class="btn btn-primary">Voir la structure</a>
+                                <a href="{% url 'core:structure-detail' pk=structure.pk %}" class="btn btn-primary">Voir la structure</a>
                             </div>
                         </div>
                     </div>

@@ -53,7 +53,7 @@ class ImageDisplayTest(TestCase):
 
     def test_structure_detail_page_displays_image(self):
         """Test that the structure detail page displays the structure logo using django-pictures"""
-        response = self.client.get(reverse('core:structure-detail', kwargs={'pk': self.structure.id}))
+        response = self.client.get(reverse('core:structure-detail', kwargs={'pk': self.structure.pk}))
         content = response.content.decode('utf-8')
 
         # Check that the image is displayed using django-pictures (rendered HTML)
@@ -65,7 +65,7 @@ class ImageDisplayTest(TestCase):
 
     def test_badge_detail_page_displays_image(self):
         """Test that the badge detail page displays the badge icon using django-pictures"""
-        response = self.client.get(reverse('core:badge-detail', kwargs={'pk': self.badge.id}))
+        response = self.client.get(reverse('core:badge-detail', kwargs={'pk': self.badge.pk}))
         content = response.content.decode('utf-8')
 
         # Check that the image is displayed using django-pictures (rendered HTML)

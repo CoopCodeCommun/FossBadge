@@ -23,7 +23,7 @@
                     {% endif %}
                 </p>
                 <p class="card-text text-muted">{{ badge.issuing_structure.name }}</p>
-                <a href="{% url 'core:badge-detail' pk=badge.id %}" class="btn btn-primary">Voir le badge</a>
+                <a href="{% url 'core:badge-detail' pk=badge.pk %}" class="btn btn-primary">Voir le badge</a>
             </div>
         </div>
         {% endfor %}

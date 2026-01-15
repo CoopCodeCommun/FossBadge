@@ -46,18 +46,18 @@ class UserProfileTest(TestCase):
 
     def test_user_profile_page_loads_correctly(self):
         """Test that the user profile page loads correctly with a 200 status code"""
-        response = self.client.get(reverse('core:user-detail', kwargs={'pk': self.user.id}))
+        response = self.client.get(reverse('core:user-detail', kwargs={'pk': self.user.pk}))
         self.assertEqual(response.status_code, 200)
 
     def test_user_profile_page_uses_correct_template(self):
         """Test that the user profile page uses the correct template"""
-        response = self.client.get(reverse('core:user-detail', kwargs={'pk': self.user.id}))
+        response = self.client.get(reverse('core:user-detail', kwargs={'pk': self.user.pk}))
         self.assertTemplateUsed(response, 'core/users/detail.html')
         self.assertTemplateUsed(response, 'base.html')
 
     def test_user_profile_page_contains_expected_content(self):
         """Test that the user profile page contains expected content"""
-        response = self.client.get(reverse('core:user-detail', kwargs={'pk': self.user.id}))
+        response = self.client.get(reverse('core:user-detail', kwargs={'pk': self.user.pk}))
         content = response.content.decode('utf-8')
 
         # Check for user profile specific content
@@ -68,7 +68,7 @@ class UserProfileTest(TestCase):
 
     def test_user_profile_page_displays_badge_assignment_dates(self):
         """Test that the user profile page displays badge assignment dates correctly"""
-        response = self.client.get(reverse('core:user-detail', kwargs={'pk': self.user.id}))
+        response = self.client.get(reverse('core:user-detail', kwargs={'pk': self.user.pk}))
         content = response.content.decode('utf-8')
 
         # Check that the badge is displayed

@@ -28,18 +28,18 @@ class BadgeDetailTest(TestCase):
 
     def test_badge_detail_page_loads_correctly(self):
         """Test that the badge detail page loads correctly with a 200 status code"""
-        response = self.client.get(reverse('core:badge-detail', kwargs={'pk': self.badge.id}))
+        response = self.client.get(reverse('core:badge-detail', kwargs={'pk': self.badge.pk}))
         self.assertEqual(response.status_code, 200)
 
     def test_badge_detail_page_uses_correct_template(self):
         """Test that the badge detail page uses the correct template"""
-        response = self.client.get(reverse('core:badge-detail', kwargs={'pk': self.badge.id}))
+        response = self.client.get(reverse('core:badge-detail', kwargs={'pk': self.badge.pk}))
         self.assertTemplateUsed(response, 'core/badges/detail.html')
         self.assertTemplateUsed(response, 'base.html')
 
     def test_badge_detail_page_contains_expected_content(self):
         """Test that the badge detail page contains expected content"""
-        response = self.client.get(reverse('core:badge-detail', kwargs={'pk': self.badge.id}))
+        response = self.client.get(reverse('core:badge-detail', kwargs={'pk': self.badge.pk}))
         content = response.content.decode('utf-8')
 
         # Check for badge detail specific content
@@ -56,6 +56,6 @@ class BadgeDetailTest(TestCase):
         self.badge.save()
 
         # Check that the new name is displayed
-        response = self.client.get(reverse('core:badge-detail', kwargs={'pk': self.badge.id}))
+        response = self.client.get(reverse('core:badge-detail', kwargs={'pk': self.badge.pk}))
         content = response.content.decode('utf-8')
         self.assertIn(new_name, content)

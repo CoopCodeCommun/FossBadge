@@ -8,7 +8,7 @@ from pictures.models import PictureField
 
 class User(AbstractUser):
 
-    uuid = models.UUIDField(default=uuid.uuid7, primary_key=True)
+    uuid = models.UUIDField(default=uuid.uuid7, primary_key=True, db_index=True)
 
     avatar_width = models.PositiveIntegerField(blank=True, null=True, editable=False)
     avatar_height = models.PositiveIntegerField(blank=True, null=True, editable=False)
@@ -53,7 +53,7 @@ class Structure(models.Model):
     Model representing a structure (association, company, school, etc.)
     """
 
-    uuid = models.UUIDField(default=uuid.uuid7, primary_key=True)
+    uuid = models.UUIDField(default=uuid.uuid7, primary_key=True, db_index=True)
 
     TYPE_CHOICES = [
         ('association', 'Association'),
@@ -103,7 +103,7 @@ class Badge(models.Model):
     Model representing a badge
     """
 
-    uuid = models.UUIDField(default=uuid.uuid7, primary_key=True)
+    uuid = models.UUIDField(default=uuid.uuid7, primary_key=True, db_index=True)
 
     LEVEL_CHOICES = [
         ('beginner', 'Débutant'),
@@ -179,7 +179,7 @@ class BadgeHistory(models.Model):
     Model to track the history of a badge (creation, modifications)
     """
 
-    uuid = models.UUIDField(default=uuid.uuid7, primary_key=True)
+    uuid = models.UUIDField(default=uuid.uuid7, primary_key=True, db_index=True)
 
     badge = models.ForeignKey(Badge, on_delete=models.CASCADE, related_name='history', verbose_name="Badge")
     action = models.CharField(max_length=50, verbose_name="Action")
@@ -225,7 +225,7 @@ class BadgeEndorsement(models.Model):
     Model to track when a structure endorses a badge
     """
 
-    uuid = models.UUIDField(default=uuid.uuid7, primary_key=True)
+    uuid = models.UUIDField(default=uuid.uuid7, primary_key=True, db_index=True)
 
     badge = models.ForeignKey(Badge, on_delete=models.CASCADE, related_name='endorsements', verbose_name="Badge")
     structure = models.ForeignKey(Structure, on_delete=models.CASCADE, related_name='endorsed_badges', 

@@ -35,8 +35,3 @@ def send_login_mail(recipient_email):
     )
     mail.send()
     return True
-
-
-
-# valkey-server
-# uv run celery -A fossbadge worker -l INFO -B --concurrency=6

@@ -13,8 +13,12 @@ services:
     depends_on:
       - postgres
     command: "bash start.sh"
+    links:
+      - fossbadge_redis:redis
     networks:
       - fossbadge_backend
+      - frontend
+
 
   postgres:
     image: postgres
@@ -56,6 +60,32 @@ services:
     networks:
       - frontend
       - fossbadge_backend
+
+  fossbadge_redis:
+    container_name: fossbadge_redis
+    hostname: fossbadge_redis
+    image: redis:latest
+    restart: always
+    networks:
+      - frontend
+
+
+  fossbadge_celery:
+    build: .
+    container_name: fossbadge_celery
+    hostname: fossbadge_celery
+    restart: always
+    env_file: .env
+    depends_on:
+      - fossbadge_redis
+    links:
+      - fossbadge_redis:redis
+    volumes:
+      - ./:/DjangoFiles
+    networks:
+      - frontend
+    command: "uv run celery -A fossbadge worker -l INFO -B --concurrency=6"
+
 
 volumes:
   static_volume:

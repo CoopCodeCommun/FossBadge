@@ -22,7 +22,7 @@ services:
       - ./ssh:/home/fossbadge/.ssh
       - ./:/home/fossbadge/FossBadge
     links:
-      - fossbadge_valkey:valkey
+      - fossbadge_redis:redis
     networks:
       - fossbadge_backend
       - frontend
@@ -53,11 +53,10 @@ services:
       - frontend
       - fossbadge_backend
 
-  fossbadge_valkey:
-    container_name: fossbadge_valkey
-    hostname: fossbadge_valkey
-    image: valkey/valkey:9.0.1-alpine
-    #image: redis:7.2.3-bookworm
+  fossbadge_redis:
+    container_name: fossbadge_redis
+    hostname: fossbadge_redis
+    image: redis:latest
     restart: always
     networks:
       - frontend
@@ -70,9 +69,9 @@ services:
     restart: always
     env_file: .env
     depends_on:
-      - fossbadge_valkey
+      - fossbadge_redis
     links:
-      - fossbadge_valkey:valkey
+      - fossbadge_redis:redis
     volumes:
       - ./:/DjangoFiles
     networks:

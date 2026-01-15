@@ -1,4 +1,18 @@
 services:
+  postgres:
+    image: postgres
+    restart: always
+    container_name: postgres
+    hostname: postgres
+    ports:
+      - "5432:5432"
+    env_file:
+      - .env
+    environment:
+      - "POSTGRES_HOST_AUTH_METHOD=trust"
+    networks:
+      - fossbadge_backend
+
   fossbadge_django:
     build: .
     container_name: fossbadge_django
@@ -20,19 +34,6 @@ services:
       - frontend
 
 
-  postgres:
-    image: postgres
-    restart: always
-    container_name: postgres
-    hostname: postgres
-    ports:
-      - "5432:5432"
-    env_file:
-      - .env
-    environment:
-      - "POSTGRES_HOST_AUTH_METHOD=trust"
-    networks:
-      - fossbadge_backend
 
   fossbadge_nginx:
     image: nginx

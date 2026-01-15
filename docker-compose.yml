@@ -1,11 +1,50 @@
 services:
-#  fossbadge_memcached:
-#    image: memcached:1.6
-#    container_name: fossbadge_memcached
-#    hostname: fossbadge_memcached
-#    restart: always
-#    networks:
-#      - fossbadge_backend
+  postgres:
+    image: postgres:latest
+    restart: always
+    container_name: postgres
+    hostname: postgres
+#    ports:
+#      - "5432:5432"
+    volumes:
+      - lespass_dev_db:/var/lib/postgresql/data
+    env_file:
+      - .env
+    networks:
+      - fossbadge_backend
+
+  fossbadge_memcached:
+    image: memcached:latest
+    container_name: fossbadge_memcached
+    hostname: fossbadge_memcached
+    restart: always
+    networks:
+      - fossbadge_backend
+
+  fossbadge_redis:
+    image: redis:latest
+    container_name: fossbadge_redis
+    hostname: fossbadge_redis
+    restart: always
+    networks:
+      - fossbadge_backend
+
+  fossbadge_celery:
+    build: .
+    container_name: fossbadge_celery
+    hostname: fossbadge_celery
+    restart: always
+    env_file: .env
+    user: fossbadge
+    depends_on:
+      - fossbadge_redis
+    links:
+      - fossbadge_redis:redis
+    volumes:
+      - ./:/home/fossbadge/FossBadge
+    networks:
+      - fossbadge_backend
+    command: "uv run celery -A fossbadge worker -l INFO -B --concurrency=3"
 
   fossbadge_django:
     build: .
@@ -25,7 +64,6 @@ services:
       - fossbadge_redis:redis
     networks:
       - fossbadge_backend
-      - frontend
     command: "bash start_dev.sh"
 
   fossbadge_nginx:
@@ -52,31 +90,6 @@ services:
     networks:
       - frontend
       - fossbadge_backend
-
-  fossbadge_redis:
-    container_name: fossbadge_redis
-    hostname: fossbadge_redis
-    image: redis:latest
-    restart: always
-    networks:
-      - frontend
-
-
-  fossbadge_celery:
-    build: .
-    container_name: fossbadge_celery
-    hostname: fossbadge_celery
-    restart: always
-    env_file: .env
-    depends_on:
-      - fossbadge_redis
-    links:
-      - fossbadge_redis:redis
-    volumes:
-      - ./:/DjangoFiles
-    networks:
-      - frontend
-    command: "uv run celery -A fossbadge worker -l INFO -B --concurrency=6"
 
 networks:
   frontend:

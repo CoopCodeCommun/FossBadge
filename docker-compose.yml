@@ -1,13 +1,13 @@
 services:
-  postgres:
+  fossbadge_postgres:
     image: postgres:latest
     restart: always
-    container_name: postgres
-    hostname: postgres
+    container_name: fossbadge_postgres
+    hostname: fossbadge_postgres
 #    ports:
 #      - "5432:5432"
     volumes:
-      - o2badge_dev_db:/var/lib/postgresql/data
+      - o2badge_dev_db:/var/lib/postgresql
     env_file:
       - .env
     networks:
@@ -40,6 +40,8 @@ services:
       - fossbadge_redis
     links:
       - fossbadge_redis:redis
+      - fossbadge_postgres:postgres
+      - fossbadge_memcached:memcached
     volumes:
       - ./:/home/fossbadge/FossBadge
     networks:
@@ -56,12 +58,13 @@ services:
     ports:
       - "8000:8000"
 #    links:
-#      - fossbadge_memcached:memcached
     volumes:
       - ./ssh:/home/fossbadge/.ssh
       - ./:/home/fossbadge/FossBadge
     links:
       - fossbadge_redis:redis
+      - fossbadge_postgres:postgres
+      - fossbadge_memcached:memcached
     networks:
       - fossbadge_backend
     command: "bash start.sh"

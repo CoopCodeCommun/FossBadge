@@ -12,10 +12,10 @@ echo "UV install ok"
 # New static for nginx ?
 #poetry run python3 manage.py collectstatic --noinput
 
-uv run python manage.py migrate
 
 if [[ "$GUNICORN" == "1" ]]; then
     echo "→ Gunicorn activé, démarrage…"
+    uv run python manage.py migrate
     uv run python3 manage.py collectstatic --noinput
     uv run gunicorn fossbadge.wsgi --log-level=info -w 3 -b 0.0.0.0:8000
 else

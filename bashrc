@@ -17,3 +17,6 @@ psql --dbname $POSTGRES_DB -f $1
 
 echo "SQL file loaded : $1"
 }
+
+alias venv="source .venv/bin/activate"
+

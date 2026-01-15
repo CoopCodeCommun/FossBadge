@@ -74,3 +74,6 @@ poetry.lock
 
 # Logs
 logs/
+
+# Celery
+celerybeat-schedule*

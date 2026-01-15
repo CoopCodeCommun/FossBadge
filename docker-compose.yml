@@ -7,7 +7,7 @@ services:
 #    ports:
 #      - "5432:5432"
     volumes:
-      - lespass_dev_db:/var/lib/postgresql/data
+      - o2badge_dev_db:/var/lib/postgresql/data
     env_file:
       - .env
     networks:
@@ -96,3 +96,5 @@ networks:
     external: true
   fossbadge_backend:
 
+volumes:
+  o2badge_dev_db:

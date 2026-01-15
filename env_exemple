@@ -1,8 +1,9 @@
-DOMAIN="localhost:8000"
+# Domaine pour nginx et pour le moteur de mail
+DOMAIN="localhost:8000" # change me
 
 # Django settings
 SECRET_KEY=""
-
+TIME_ZONE="Europe/Paris"
 
 # POSTGRES settings
 POSTGRES_USER=
@@ -16,5 +17,5 @@ EMAIL_HOST_USER=""
 EMAIL_HOST_PASSWORD=""
 
 # Celery settings
-CELERY_BROKER=''
-CELERY_BACKEND=''
+CELERY_BROKER='redis://redis:6379/0'
+CELERY_BACKEND='redis://redis:6379/0'

@@ -64,7 +64,7 @@ services:
       - fossbadge_redis:redis
     networks:
       - fossbadge_backend
-    command: "bash start_dev.sh"
+    command: "bash start.sh"
 
   fossbadge_nginx:
     image: nginx

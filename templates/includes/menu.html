@@ -36,5 +36,36 @@
                 </li>
             </ul>
         </div>
+
+        <div class="navbar-nav d-flex mb-0">
+            <div class="nav-item">
+                {% if request.user.is_authenticated == False %}
+                    <button
+                        class="nav-link"
+                        data-bs-toggle="offcanvas"
+                        data-bs-target="#loginPanel"
+                        aria-controls="loginPanel">
+                        Se connecter
+                    </button>
+                {% else %}
+                    <a class="nav-link" href="{% url 'core:user-detail' user.pk %}">
+                        <i class="bi bi-person-circle"></i>
+                        Mon compte
+                    </a>
+
+            {% endif %}
+          </div>
+        </div>
     </div>
 </nav>
+
+<!-- login panel -->
+<div class="offcanvas-start offcanvas" tabindex="-1" id="loginPanel" aria-labelledby="loginPanelLabel">
+    <div class="offcanvas-header">
+        <h5 class="offcanvas-title" id="loginPanelLabel">Connexion</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Fermer"></button>
+    </div>
+    <div class="offcanvas-body" id="login-body">
+        {% include 'authentication/login.html' %}
+    </div>
+</div>

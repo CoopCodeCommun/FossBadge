@@ -1,3 +1,8 @@
+from django.contrib.auth import logout, get_user_model, authenticate, login
+from django.core.exceptions import ValidationError, PermissionDenied
+from django.core.signing import SignatureExpired
+from django.core.validators import validate_email
+from django.http import HttpResponseForbidden
 from django.shortcuts import render, get_object_or_404, redirect
 from django.db.models import Q
 from django.urls import reverse
@@ -5,9 +10,14 @@ from rest_framework import viewsets
 from rest_framework.response import Response
 from rest_framework.decorators import action
 
+from .helpers import TokenHelper
+from .helpers.utils import get_or_create_user
 from .models import Structure, Badge, User
 from .forms import BadgeForm, StructureForm, UserForm, PartialUserForm
 import sweetify
+
+def raise403(request):
+    return render(request, 'errors/403.html', status=403)
 
 # Create your views here.
 class HomeViewSet(viewsets.ViewSet):
@@ -430,6 +440,11 @@ class UserViewSet(viewsets.ViewSet):
 
     @action(detail=True, methods=['get', 'post'],name="edit-profile")
     def edit(self,request,pk=None):
+        """
+        Edit an existing user.
+        """
+        if request.user.pk != pk:
+            return raise403(request)
 
         user = get_object_or_404(User, pk=pk)
 
@@ -445,7 +460,6 @@ class UserViewSet(viewsets.ViewSet):
         form = PartialUserForm(instance=user)
         return render(request, 'core/users/partials/user_profile_edit.html', {'user': user, 'form': form})
 
-
     @action(detail=True, methods=['post'])
     def delete(self, request, pk=None):
         """
@@ -453,9 +467,67 @@ class UserViewSet(viewsets.ViewSet):
         """
         # TODO when authentication will be added :
         # Send a mail containing a link to delete the account
+        if request.user.pk != pk:
+            return raise403(request)
 
-        sweetify.toast(request, "L'utilisateur a bien été désactivé")
+        sweetify.toast(request, "L'utilisateur a bien été désactivé",showCloseButton=True, timer=10000)
         user = get_object_or_404(User, pk=pk)
         user.is_active = False
         user.save()
         return redirect('core:user-list')
+
+    @action(detail=False, methods=['get','post'], url_name="login")
+    def login_request(self, request):
+        if not request.htmx:
+            return raise403(request)
+
+        if request.method == 'GET':
+            return render(request, 'authentication/login.html')
+
+        email = request.POST['email']
+        try:
+            # Raise an exception if mail is invalide
+            validate_email(email)
+
+            # Send an email to the user
+            get_or_create_user(email,send_mail=True)
+
+            return render(request, 'authentication/login.html', {
+                "success": "Le mail a bien été envoyé",
+            })
+
+        except ValidationError as e:
+            # return same templates, with error
+            return render(request, 'authentication/login.html', {
+                "error":e.message,
+                "placeholder": email,
+            })
+
+    @action(detail=False, methods=['get'])
+    def login_from_email(self, request):
+        token = request.GET['token']
+        try:
+            user_pk = TokenHelper.is_user_token_valid(token)
+            user = get_user_model().objects.get(pk=user_pk)
+
+            # Set user to active
+            if not user.is_active:
+                user.is_active = True
+                user.save()
+
+            login(request, user)
+
+            sweetify.toast(request, f"Connexion réussi !", showCloseButton=True, timer=10000)
+            return redirect('core:home-list')
+        except SignatureExpired:
+            sweetify.toast(request, f"Ce lien est expiré, veuillez refaire une demande de connexion", icon="error",showCloseButton=True, timer=10000)
+            return redirect('core:home-list')
+        except Exception:
+            sweetify.toast(request, f"Ce lien est invalide, veuillez refaire une demande de connexion", icon="error",showCloseButton=True, timer=10000)
+            return redirect('core:home-list')
+
+    @action(detail=False, methods=['get'])
+    def logout(self, request):
+        logout(request)
+        sweetify.toast(request, f"Déconnexion réussi", icon="success", showCloseButton=True, timer=10000)
+        return redirect('core:home-list')

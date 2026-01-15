@@ -1,0 +1,17 @@
+<form id="loginForm"
+      hx-post="{% url "core:user-login" %}" hx-target="#login-body"
+      hx-swap="innerHTML">
+    <h4>Avec une adresse email</h4>
+    <div class="form-floating mb-3">
+        <input type="email" class="form-control" id="loginEmail" placeholder="mon@email.fr" name="email" value="{{ placeholder }}" required>
+        <label for="loginEmail">Adresse mail</label>
+        <p class="mt-3">Pas besoin de mot de passe, un lien de connexion sera envoyé par mail.</p>
+        {% if error %}
+            <p class="alert alert-danger"> {{ error }}</p>
+        {% endif %}
+        {% if success %}
+            <p class="alert alert-success"> {{ success }}</p>
+        {% endif %}
+        <button type="submit" class="btn btn-primary d-block w-100">Demander la connexion</button>
+    </div>
+</form>

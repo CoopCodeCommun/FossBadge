@@ -4,6 +4,8 @@ DOMAIN="localhost:8000" # change me
 # Django settings
 SECRET_KEY=""
 TIME_ZONE="Europe/Paris"
+GUNICORN=0
+DEBUG=1
 
 # POSTGRES settings
 POSTGRES_USER=
@@ -19,3 +21,4 @@ EMAIL_HOST_PASSWORD=""
 # Celery settings
 CELERY_BROKER='redis://redis:6379/0'
 CELERY_BACKEND='redis://redis:6379/0'
+

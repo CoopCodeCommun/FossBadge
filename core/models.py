@@ -82,6 +82,7 @@ class Structure(models.Model):
 
     # Relationships
     admins = models.ManyToManyField(User, related_name='structures_admins', verbose_name='Administrateurs')
+    editors = models.ManyToManyField(User, related_name='structures_editors', verbose_name='Éditeurs')
     users = models.ManyToManyField(User, related_name='structures', blank=True, verbose_name="Utilisateurs")
 
     class Meta:

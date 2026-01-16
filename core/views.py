@@ -17,9 +17,14 @@ from .forms import BadgeForm, StructureForm, UserForm, PartialUserForm
 import sweetify
 
 def raise403(request):
+    """
+    Return a not authorize error (403).
+    Usage example (in another method) :
+        return raise403(request)
+    """
     return render(request, 'errors/403.html', status=403)
 
-# Create your views here.
+
 class HomeViewSet(viewsets.ViewSet):
     """
     ViewSet for the home page of the site.

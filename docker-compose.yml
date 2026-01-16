@@ -46,7 +46,7 @@ services:
       - ./:/home/fossbadge/FossBadge
     networks:
       - fossbadge_backend
-    command: "uv run celery -A fossbadge worker -l INFO -B --concurrency=3"
+    command: "uv run celery -A fossbadge worker -Q celery,pictures -l INFO -B --concurrency=3"
 
   fossbadge_django:
     build: .
@@ -61,6 +61,9 @@ services:
     volumes:
       - ./ssh:/home/fossbadge/.ssh
       - ./:/home/fossbadge/FossBadge
+    depends_on:
+      - fossbadge_celery
+      - fossbadge_postgres
     links:
       - fossbadge_redis:redis
       - fossbadge_postgres:postgres

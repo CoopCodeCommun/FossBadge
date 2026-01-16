@@ -4,173 +4,121 @@
 {% block title %}Liste des Profils{% endblock %}
 
 {% block content %}
-<div class="row">
-    <div class="col-md-12">
-        <h1 class="display-4 mb-4">Liste des Profils</h1>
-        <p class="lead">Découvrez tous les utilisateurs et leurs badges.</p>
+    <div class="row">
+        <div class="col-md-12">
+            <h1 class="display-4 mb-4">Liste des Profils</h1>
+            <p class="lead">Découvrez tous les utilisateurs et leurs badges.</p>
+        </div>
     </div>
-</div>
 
-<div class="row mb-4">
-    <div class="col-md-6">
-        <form class="d-flex" hx-get="{% url 'core:user-list' %}" hx-target="#user-list" hx-swap="innerHTML" hx-push-url="true">
-            <input class="form-control me-2" type="search" placeholder="Rechercher un utilisateur" aria-label="Rechercher" name="search">
-            <button class="btn btn-outline-primary" type="submit">Rechercher</button>
-        </form>
+    <div class="row mb-4">
+        <div class="col-md-6">
+            <form class="d-flex" hx-get="{% url 'core:user-list' %}" hx-target="#user-list" hx-swap="innerHTML" hx-push-url="true">
+                <input class="form-control me-2" type="search" placeholder="Rechercher un utilisateur" aria-label="Rechercher" name="search">
+                <button class="btn btn-outline-primary" type="submit">Rechercher</button>
+            </form>
+        </div>
+        <div class="col-md-6 text-end">
+            <a href="{% url 'core:create_user' %}" class="btn btn-primary">
+                <i class="bi bi-plus-circle"></i> Créer un nouvel utilisateur
+            </a>
+        </div>
     </div>
-    <div class="col-md-6 text-end">
-        <a href="{% url 'core:create_user' %}" class="btn btn-primary">
-            <i class="bi bi-plus-circle"></i> Créer un nouvel utilisateur
-        </a>
-    </div>
-</div>
 
-<div class="row">
-    <!-- Filters -->
-    <div class="col-md-3 mb-4">
-        <div class="card">
-            <div class="card-body">
-                <h5 class="card-title">Filtres</h5>
-                <form hx-get="{% url 'core:user-list' %}" hx-target="#user-list" hx-swap="innerHTML" hx-push-url="true">
-                    <div class="mb-3">
-                        <label class="form-label fw-bold">Badge</label>
-                        <select class="form-select" name="badge">
-                            <option value="">Tous les badges</option>
-                            {% for badge in badges %}
-                            <option value="{{ badge.pk }}" {% if badge_filter == badge.pk|stringformat:"i" %}selected{% endif %}>{{ badge.name }}</option>
-                            {% endfor %}
-                        </select>
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label fw-bold">Structure</label>
-                        <select class="form-select" name="structure">
-                            <option value="">Toutes les structures</option>
-                            {% for structure in structures %}
-                            <option value="{{ structure.pk }}" {% if structure_filter == structure.pk|stringformat:"i" %}selected{% endif %}>{{ structure.name }}</option>
-                            {% endfor %}
-                        </select>
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label fw-bold">Niveau de badge</label>
-                        <div class="form-check">
-                            <input class="form-check-input" type="checkbox" value="beginner" id="level_beginner" name="level" {% if 'beginner' in level_filter %}checked{% endif %}>
-                            <label class="form-check-label" for="level_beginner">
-                                <span class="badge bg-primary">Débutant</span>
-                            </label>
+    <div class="row">
+        <!-- Filters -->
+        <div class="col-md-3 mb-4">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Filtres</h5>
+                    <form hx-get="{% url 'core:user-list' %}" hx-target="#user-list" hx-swap="innerHTML" hx-push-url="true">
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Badge</label>
+                            <select class="form-select" name="badge">
+                                <option value="">Tous les badges</option>
+                                {% for badge in badges %}
+                                    <option value="{{ badge.pk }}" {% if badge_filter == badge.pk|stringformat:"i" %}selected{% endif %}>
+                                        {{ badge.name }}
+                                    </option>
+                                {% endfor %}
+                            </select>
                         </div>
-                        <div class="form-check">
-                            <input class="form-check-input" type="checkbox" value="intermediate" id="level_intermediate" name="level" {% if 'intermediate' in level_filter %}checked{% endif %}>
-                            <label class="form-check-label" for="level_intermediate">
-                                <span class="badge bg-warning text-dark">Intermédiaire</span>
-                            </label>
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Structure</label>
+                            <select class="form-select" name="structure">
+                                <option value="">Toutes les structures</option>
+                                {% for structure in structures %}
+                                    <option value="{{ structure.pk }}" {% if structure_filter == structure.pk|stringformat:"i" %}selected{% endif %}>
+                                        {{ structure.name }}
+                                    </option>
+                                {% endfor %}
+                            </select>
                         </div>
-                        <div class="form-check">
-                            <input class="form-check-input" type="checkbox" value="expert" id="level_expert" name="level" {% if 'expert' in level_filter %}checked{% endif %}>
-                            <label class="form-check-label" for="level_expert">
-                                <span class="badge bg-success">Expert</span>
-                            </label>
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Niveau de badge</label>
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" value="beginner" id="level_beginner" name="level" {% if 'beginner' in level_filter %}checked{% endif %}>
+                                <label class="form-check-label" for="level_beginner">
+                                    <span class="badge bg-primary">Débutant</span>
+                                </label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" value="intermediate" id="level_intermediate" name="level" {% if 'intermediate' in level_filter %}checked{% endif %}>
+                                <label class="form-check-label" for="level_intermediate">
+                                    <span class="badge bg-warning text-dark">Intermédiaire</span>
+                                </label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" value="expert" id="level_expert" name="level" {% if 'expert' in level_filter %}checked{% endif %}>
+                                <label class="form-check-label" for="level_expert">
+                                    <span class="badge bg-success">Expert</span>
+                                </label>
+                            </div>
                         </div>
-                    </div>
-                    <button type="submit" class="btn btn-primary w-100">Appliquer les filtres</button>
-                </form>
+                        <button type="submit" class="btn btn-primary w-100">Appliquer les filtres</button>
+                    </form>
+                </div>
             </div>
         </div>
-    </div>
 
-    <!-- User List -->
-    <div class="col-md-9" id="user-list">
-        <div class="row">
-            {% if users %}
-                {% for user in users %}
-                <div class="col-md-6 mb-4">
-                    <div class="card h-100">
-                        <div class="card-body">
-                            <div class="d-flex align-items-center mb-3">
-                                {% if user.avatar %}
-                                    <div class="me-3" style="width: 80px; height: 80px;">
-                                        {% picture user.avatar img_alt="Avatar de "|add:user.get_full_name|default:user.username img_class="rounded-circle" ratio="1/1" %}
-                                    </div>
-                                {% else %}
-                                    <img src="{{ placeholder_image }}" alt="Avatar de {{ user.get_full_name|default:user.username }}" class="rounded-circle me-3" style="width: 80px; height: 80px;">
-                                {% endif %}
-                                <div>
-                                    <h5 class="card-title mb-0">
-                                        {{ user.get_full_name|default:user.username }}
-                                        {% if not user.is_active %}<span class="badge bg-secondary fs-6">Inactif</span> {% endif %}
-                                    </h5>
-                                    <p class="text-muted mb-0">{{ user.badges.count }} badge{% if user.badges.count != 1 %}s{% endif %}</p>
-                                </div>
-                            </div>
-                            <div class="mb-3">
-                                <h6 class="card-subtitle mb-2">Badges</h6>
-                                <div class="d-flex flex-wrap">
-                                    {% for badge in user.badges.all %}
-                                    <span class="badge {% if badge.level == 'beginner' %}bg-primary{% elif badge.level == 'intermediate' %}bg-warning text-dark{% elif badge.level == 'expert' %}bg-success{% endif %} me-1 mb-1 p-2">{{ badge.name }}</span>
-                                    {% empty %}
-                                    <span class="text-muted">Aucun badge</span>
-                                    {% endfor %}
-                                </div>
-                            </div>
-                            <div class="mb-3">
-                                <h6 class="card-subtitle mb-2">Structures</h6>
-                                <div class="d-flex flex-wrap">
-                                    {% for structure in user.structures.all %}
-                                    <span class="badge bg-light text-dark me-1 mb-1 p-2">{{ structure.name }}</span>
-                                    {% empty %}
-                                    <span class="text-muted">Aucune structure</span>
-                                    {% endfor %}
-                                </div>
-                            </div>
-                            <div class="text-end">
-                                <a href="{% url 'core:user-detail' pk=user.pk %}" class="btn btn-primary">Voir le profil</a>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                {% endfor %}
-            {% else %}
-                <div class="col-12">
-                    <div class="alert alert-info">
-                        Aucun utilisateur ne correspond à vos critères de recherche.
-                    </div>
-                </div>
+        <!-- User List -->
+        <div class="col-md-9" id="user-list">
+            {% include 'core/users/partials/user_list.html' %}
+
+            <!-- Pagination -->
+            {% if is_paginated %}
+                <nav aria-label="Page navigation" class="mt-4">
+                    <ul class="pagination justify-content-center">
+                        {% if page_obj.has_previous %}
+                            <li class="page-item">
+                                <a class="page-link" href="?page={{ page_obj.previous_page_number }}{% if search_query %}&search={{ search_query }}{% endif %}" tabindex="-1">Précédent</a>
+                            </li>
+                        {% else %}
+                            <li class="page-item disabled">
+                                <a class="page-link" href="#" tabindex="-1" aria-disabled="true">Précédent</a>
+                            </li>
+                        {% endif %}
+
+                        {% for i in paginator.page_range %}
+                            {% if page_obj.number == i %}
+                                <li class="page-item active"><a class="page-link" href="#">{{ i }}</a></li>
+                            {% else %}
+                                <li class="page-item"><a class="page-link" href="?page={{ i }}{% if search_query %}&search={{ search_query }}{% endif %}">{{ i }}</a></li>
+                            {% endif %}
+                        {% endfor %}
+
+                        {% if page_obj.has_next %}
+                            <li class="page-item">
+                                <a class="page-link" href="?page={{ page_obj.next_page_number }}{% if search_query %}&search={{ search_query }}{% endif %}">Suivant</a>
+                            </li>
+                        {% else %}
+                            <li class="page-item disabled">
+                                <a class="page-link" href="#" tabindex="-1" aria-disabled="true">Suivant</a>
+                            </li>
+                        {% endif %}
+                    </ul>
+                </nav>
             {% endif %}
         </div>
-
-        <!-- Pagination -->
-        {% if is_paginated %}
-        <nav aria-label="Page navigation" class="mt-4">
-            <ul class="pagination justify-content-center">
-                {% if page_obj.has_previous %}
-                <li class="page-item">
-                    <a class="page-link" href="?page={{ page_obj.previous_page_number }}{% if search_query %}&search={{ search_query }}{% endif %}" tabindex="-1">Précédent</a>
-                </li>
-                {% else %}
-                <li class="page-item disabled">
-                    <a class="page-link" href="#" tabindex="-1" aria-disabled="true">Précédent</a>
-                </li>
-                {% endif %}
-
-                {% for i in paginator.page_range %}
-                    {% if page_obj.number == i %}
-                    <li class="page-item active"><a class="page-link" href="#">{{ i }}</a></li>
-                    {% else %}
-                    <li class="page-item"><a class="page-link" href="?page={{ i }}{% if search_query %}&search={{ search_query }}{% endif %}">{{ i }}</a></li>
-                    {% endif %}
-                {% endfor %}
-
-                {% if page_obj.has_next %}
-                <li class="page-item">
-                    <a class="page-link" href="?page={{ page_obj.next_page_number }}{% if search_query %}&search={{ search_query }}{% endif %}">Suivant</a>
-                </li>
-                {% else %}
-                <li class="page-item disabled">
-                    <a class="page-link" href="#" tabindex="-1" aria-disabled="true">Suivant</a>
-                </li>
-                {% endif %}
-            </ul>
-        </nav>
-        {% endif %}
     </div>
-</div>
 {% endblock %}

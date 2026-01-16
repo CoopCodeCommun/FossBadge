@@ -4,146 +4,146 @@
 {% block title %}Modifier un Badge{% endblock %}
 
 {% block content %}
-<div class="row">
-    <div class="col-md-12">
-        <h1 class="display-4 mb-4">Modifier un Badge</h1>
+    <div class="row">
+        <div class="col-md-12">
+            <h1 class="display-4 mb-4">Modifier un Badge</h1>
+        </div>
     </div>
-</div>
 
-<div class="row">
-    <div class="col-md-8 mx-auto">
-        <div class="card">
-            <div class="card-body">
-                <h2 class="card-title mb-4">Informations du badge</h2>
+    <div class="row">
+        <div class="col-md-8 mx-auto">
+            <div class="card">
+                <div class="card-body">
+                    <h2 class="card-title mb-4">Informations du badge</h2>
 
-                <!-- Badge Edition Form -->
-                <form method="post" enctype="multipart/form-data">
-                    {% csrf_token %}
+                    <!-- Badge Edition Form -->
+                    <form method="post" enctype="multipart/form-data">
+                        {% csrf_token %}
 
-                    {% if form.non_field_errors %}
-                    <div class="alert alert-danger">
-                        {% for error in form.non_field_errors %}
-                            {{ error }}
-                        {% endfor %}
-                    </div>
-                    {% endif %}
+                        {% if form.non_field_errors %}
+                            <div class="alert alert-danger">
+                                {% for error in form.non_field_errors %}
+                                    {{ error }}
+                                {% endfor %}
+                            </div>
+                        {% endif %}
 
-                    <!-- Badge Icon -->
-                    <div class="mb-4">
-                        <label for="{{ form.icon.id_for_label }}" class="form-label fw-bold">{{ form.icon.label }}</label>
-                        <div class="row">
-                            <div class="col-md-6">
-                                <div class="mb-3">
-                                    {{ form.icon }}
-                                    {% if form.icon.errors %}
-                                    <div class="invalid-feedback d-block">
-                                        {% for error in form.icon.errors %}
-                                            {{ error }}
-                                        {% endfor %}
+                        <!-- Badge Icon -->
+                        <div class="mb-4">
+                            <label for="{{ form.icon.id_for_label }}" class="form-label fw-bold">{{ form.icon.label }}</label>
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        {{ form.icon }}
+                                        {% if form.icon.errors %}
+                                            <div class="invalid-feedback d-block">
+                                                {% for error in form.icon.errors %}
+                                                    {{ error }}
+                                                {% endfor %}
+                                            </div>
+                                        {% endif %}
+                                        <div class="form-text">Téléchargez une image pour l'icône du badge</div>
                                     </div>
-                                    {% endif %}
-                                    <div class="form-text">Téléchargez une image pour l'icône du badge</div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="text-center">
+                                        <img src="{{ icon }}" alt="Aperçu de l'icône" class="img-fluid mb-2 badge-icon" id="icon_preview">
+                                        <p class="form-text">Aperçu</p>
+                                    </div>
                                 </div>
                             </div>
-                            <div class="col-md-6">
-                                <div class="text-center">
-                                    <img src="{{icon}}" alt="Aperçu de l'icône" class="img-fluid mb-2 badge-icon" id="icon_preview">
-                                    <p class="form-text">Aperçu</p>
+                        </div>
+
+                        <!-- Badge Name -->
+                        <div class="mb-4">
+                            <label for="{{ form.name.id_for_label }}" class="form-label fw-bold">{{ form.name.label }}</label>
+                            {{ form.name }}
+                            {% if form.name.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {% for error in form.name.errors %}
+                                        {{ error }}
+                                    {% endfor %}
                                 </div>
+                            {% endif %}
+                        </div>
+
+                        <!-- Badge Level -->
+                        <div class="mb-4">
+                            <label class="form-label fw-bold">{{ form.level.label }}</label>
+                            {{ form.level }}
+                            {% if form.level.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {% for error in form.level.errors %}
+                                        {{ error }}
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+
+                        <!-- Issuing Structure -->
+                        <div class="mb-4">
+                            <label for="{{ form.issuing_structure.id_for_label }}" class="form-label fw-bold">{{ form.issuing_structure.label }}</label>
+                            {{ form.issuing_structure }}
+                            {% if form.issuing_structure.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {% for error in form.issuing_structure.errors %}
+                                        {{ error }}
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+
+                        <!-- Badge Description -->
+                        <div class="mb-4">
+                            <label for="{{ form.description.id_for_label }}" class="form-label fw-bold">{{ form.description.label }}</label>
+                            {{ form.description }}
+                            {% if form.description.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {% for error in form.description.errors %}
+                                        {{ error }}
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+
+                        <!-- Valid Structures -->
+                        <div class="mb-4">
+                            <label class="form-label fw-bold">{{ form.valid_structures.label }}</label>
+                            <div class="row">
+                                {{ form.valid_structures }}
                             </div>
+                            {% if form.valid_structures.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {% for error in form.valid_structures.errors %}
+                                        {{ error }}
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
                         </div>
-                    </div>
 
-                    <!-- Badge Name -->
-                    <div class="mb-4">
-                        <label for="{{ form.name.id_for_label }}" class="form-label fw-bold">{{ form.name.label }}</label>
-                        {{ form.name }}
-                        {% if form.name.errors %}
-                        <div class="invalid-feedback d-block">
-                            {% for error in form.name.errors %}
-                                {{ error }}
-                            {% endfor %}
+                        <!-- Submit Button -->
+                        <div class="text-center">
+                            <button type="submit" class="btn btn-primary btn-lg">Modifier le badge</button>
                         </div>
-                        {% endif %}
-                    </div>
-
-                    <!-- Badge Level -->
-                    <div class="mb-4">
-                        <label class="form-label fw-bold">{{ form.level.label }}</label>
-                        {{ form.level }}
-                        {% if form.level.errors %}
-                        <div class="invalid-feedback d-block">
-                            {% for error in form.level.errors %}
-                                {{ error }}
-                            {% endfor %}
-                        </div>
-                        {% endif %}
-                    </div>
-
-                    <!-- Issuing Structure -->
-                    <div class="mb-4">
-                        <label for="{{ form.issuing_structure.id_for_label }}" class="form-label fw-bold">{{ form.issuing_structure.label }}</label>
-                        {{ form.issuing_structure }}
-                        {% if form.issuing_structure.errors %}
-                        <div class="invalid-feedback d-block">
-                            {% for error in form.issuing_structure.errors %}
-                                {{ error }}
-                            {% endfor %}
-                        </div>
-                        {% endif %}
-                    </div>
-
-                    <!-- Badge Description -->
-                    <div class="mb-4">
-                        <label for="{{ form.description.id_for_label }}" class="form-label fw-bold">{{ form.description.label }}</label>
-                        {{ form.description }}
-                        {% if form.description.errors %}
-                        <div class="invalid-feedback d-block">
-                            {% for error in form.description.errors %}
-                                {{ error }}
-                            {% endfor %}
-                        </div>
-                        {% endif %}
-                    </div>
-
-                    <!-- Valid Structures -->
-                    <div class="mb-4">
-                        <label class="form-label fw-bold">{{ form.valid_structures.label }}</label>
-                        <div class="row">
-                            {{ form.valid_structures }}
-                        </div>
-                        {% if form.valid_structures.errors %}
-                        <div class="invalid-feedback d-block">
-                            {% for error in form.valid_structures.errors %}
-                                {{ error }}
-                            {% endfor %}
-                        </div>
-                        {% endif %}
-                    </div>
-
-                    <!-- Submit Button -->
-                    <div class="text-center">
-                        <button type="submit" class="btn btn-primary btn-lg">Modifier le badge</button>
-                    </div>
-                </form>
+                    </form>
+                </div>
             </div>
         </div>
     </div>
-</div>
 {% endblock %}
 
 {% block extra_js %}
-<script>
-    // Simple preview for uploaded image
-    document.getElementById('{{ form.icon.auto_id }}').addEventListener('change', function(event) {
-        const file = event.target.files[0];
-        if (file) {
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                document.getElementById('icon_preview').src = e.target.result;
+    <script>
+        // Simple preview for uploaded image
+        document.getElementById('{{ form.icon.auto_id }}').addEventListener('change', function (event) {
+            const file = event.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function (e) {
+                    document.getElementById('icon_preview').src = e.target.result;
+                }
+                reader.readAsDataURL(file);
             }
-            reader.readAsDataURL(file);
-        }
-    });
-</script>
+        });
+    </script>
 {% endblock %}

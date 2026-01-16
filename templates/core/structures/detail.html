@@ -4,146 +4,165 @@
 {% block title %}{{ structure.name }}{% endblock %}
 
 {% block content %}
-<div class="row">
-    <div class="col-md-8">
-        <h1 class="display-4 mb-4">{{ structure.name }}</h1>
-    </div>
-    <div class="col-md-4">
-        <a class="btn btn-success mb-4" href="{% url 'core:structure-edit' pk=structure.pk %}"> Éditer </a>
-        <a class="btn btn-danger mb-4" href="{% url 'core:structure-delete' pk=structure.pk %}"> Supprimer </a>
-    </div>
-</div>
-
-<div class="row mb-5">
-    <!-- Structure Information Section -->
-    <div class="col-md-4 text-center">
-        <!-- Structure Logo -->
-        {% if structure.logo %}
-        <div class="mb-3" style="max-width: 200px; margin: 0 auto;">
-            {% picture structure.logo img_alt="Logo de "|add:structure.name img_class="img-fluid" ratio="1/1" %}
+    <div class="row">
+        <div class="col-md-8">
+            <h1 class="display-4 mb-4">{{ structure.name }}</h1>
         </div>
-        {% else %}
-        <img src="{{ placeholder_image }}" alt="Logo de {{ structure.name }}" class="img-fluid mb-3" style="max-width: 200px;">
-        {% endif %}
-        <h2 class="mb-3">{{ structure.name }}</h2>
-        <a href="{% url 'core:create_badge' %}?structure={{ structure.pk }}" class="btn btn-primary mb-4">Forger un nouveau badge</a>
-    </div>
-
-    <div class="col-md-8">
-        <!-- Structure Details -->
-        <div class="card mb-4">
-            <div class="card-body">
-                <h3 class="card-title">Informations</h3>
-                <div class="row mb-2">
-                    <div class="col-md-4 fw-bold">Adresse:</div>
-                    <div class="col-md-8">{{ structure.address }}</div>
-                </div>
-                {% if structure.siret %}
-                <div class="row mb-2">
-                    <div class="col-md-4 fw-bold">SIREN/SIRET:</div>
-                    <div class="col-md-8">{{ structure.siret }}</div>
-                </div>
-                {% endif %}
-                <div class="row mb-4">
-                    <div class="col-md-12">
-                        <h4>Description</h4>
-                        <p>
-                            {{ structure.description|linebreaks }}
-                        </p>
-                    </div>
-                </div>
-
-                <!-- Référent information -->
-                <div class="row">
-                    <div class="col-md-12">
-                        <h4>Personne référente</h4>
-                        <div class="row mb-2">
-                            <div class="col-md-4 fw-bold">Nom:</div>
-                            <div class="col-md-8">{{ structure.referent_last_name }}</div>
-                        </div>
-                        <div class="row mb-2">
-                            <div class="col-md-4 fw-bold">Prénom:</div>
-                            <div class="col-md-8">{{ structure.referent_first_name }}</div>
-                        </div>
-                        <div class="row mb-2">
-                            <div class="col-md-4 fw-bold">Poste:</div>
-                            <div class="col-md-8">{{ structure.referent_position }}</div>
-                        </div>
-                    </div>
-                </div>
-            </div>
+        <div class="col-md-4">
+            <a class="btn btn-success mb-4" href="{% url 'core:structure-edit' pk=structure.pk %}"> Éditer </a>
+            <a class="btn btn-danger mb-4" href="{% url 'core:structure-delete' pk=structure.pk %}"> Supprimer </a>
         </div>
     </div>
-</div>
 
-<!-- Map Section -->
-{% if structure.latitude and structure.longitude %}
-<div class="row mb-5">
-    <div class="col-md-12">
-        <div class="card">
-            <div class="card-body">
-                <h3 class="card-title">Localisation</h3>
-                <!-- OpenStreetMap -->
-                <div id="map" style="height: 400px;"></div>
-                <script>
-                    document.addEventListener('DOMContentLoaded', function() {
-                        var map = L.map('map').setView([{{ structure.latitude }}, {{ structure.longitude }}], 15);
-                        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-                            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-                        }).addTo(map);
-                        L.marker([{{ structure.latitude }}, {{ structure.longitude }}]).addTo(map)
-                            .bindPopup('{{ structure.name }}')
-                            .openPopup();
-                    });
-                </script>
-            </div>
-        </div>
-    </div>
-</div>
-{% endif %}
-
-<!-- Available Badges Section -->
-<div class="row">
-    <div class="col-md-12">
-        <div class="card">
-            <div class="card-body">
-                <h3 class="card-title">Badges disponibles</h3>
-                <div class="badge-grid">
-                    {% if issued_badges %}
-                        {% for badge in issued_badges %}
-                        <div class="card text-center">
-                            <div class="card-body">
-                                {% if badge.icon %}
-                                <div class="badge-icon-container">
-                                    {% picture badge.icon img_alt=badge.name img_class="badge-icon" ratio="1/1" %}
-                                </div>
-                                {% else %}
-                                <img src="{{ placeholder_image }}" alt="{{ badge.name }}" class="badge-icon">
-                                {% endif %}
-                                <h5 class="card-title">{{ badge.name }}</h5>
-                                <p class="card-text">
-                                    {% if badge.level == 'beginner' %}
-                                    <span class="badge bg-primary">{{ badge.get_level_display }}</span>
-                                    {% elif badge.level == 'intermediate' %}
-                                    <span class="badge bg-warning text-dark">{{ badge.get_level_display }}</span>
-                                    {% elif badge.level == 'expert' %}
-                                    <span class="badge bg-success">{{ badge.get_level_display }}</span>
-                                    {% endif %}
-                                </p>
-                                <a href="{% url 'core:badge-detail' pk=badge.pk %}" class="btn btn-primary">Voir le badge</a>
-                            </div>
+    <ul class="nav nav-pills mb-3" id="pills-tab" role="tablist">
+        <li class="nav-item" role="presentation">
+            <button class="nav-link active" id="structure-detail-tab" data-bs-toggle="pill"
+                    data-bs-target="#structure-detail" type="button" role="tab" aria-controls="structure-detail"
+                    aria-selected="true">
+                Détail
+            </button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" id="structure-badges-tab" data-bs-toggle="pill" data-bs-target="#structure-badges"
+                    type="button" role="tab" aria-controls="structure-badges" aria-selected="false">
+                Badges
+            </button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" id="structure-users-tab" data-bs-toggle="pill" data-bs-target="#structure-users"
+                    type="button" role="tab" aria-controls="structure-users" aria-selected="false">
+                Utilisateurs
+            </button>
+        </li>
+    </ul>
+    <div class="tab-content" id="pills-tabContent">
+        <!-- Structure details -->
+        <div class="tab-pane fade show active" id="structure-detail" role="tabpanel" aria-labelledby="structure-detail-tab">
+            <div class="row mb-5">
+                <!-- Structure Information Section -->
+                <div class="col-md-4 text-center">
+                    <!-- Structure Logo -->
+                    {% if structure.logo %}
+                        <div class="mb-3" style="max-width: 200px; margin: 0 auto;">
+                            {% picture structure.logo img_alt="Logo de "|add:structure.name img_class="img-fluid" ratio="1/1" %}
                         </div>
-                        {% endfor %}
                     {% else %}
-                        <div class="col-12">
-                            <div class="alert alert-info">
-                                Cette structure n'a pas encore émis de badges.
+                        <img src="{{ placeholder_image }}" alt="Logo de {{ structure.name }}" class="img-fluid mb-3" style="max-width: 200px;">
+                    {% endif %}
+                    <h2 class="mb-3">{{ structure.name }}</h2>
+                    <a href="{% url 'core:create_badge' %}?structure={{ structure.pk }}" class="btn btn-primary mb-4">
+                        Forger un nouveau badge
+                    </a>
+                </div>
+
+                <div class="col-md-8">
+                    <!-- Structure Details -->
+                    <div class="card mb-4">
+                        <div class="card-body">
+                            <h3 class="card-title">Informations</h3>
+                            <div class="row mb-2">
+                                <div class="col-md-4 fw-bold">Adresse:</div>
+                                <div class="col-md-8">{{ structure.address }}</div>
+                            </div>
+                            {% if structure.siret %}
+                                <div class="row mb-2">
+                                    <div class="col-md-4 fw-bold">SIREN/SIRET:</div>
+                                    <div class="col-md-8">{{ structure.siret }}</div>
+                                </div>
+                            {% endif %}
+                            <div class="row mb-4">
+                                <div class="col-md-12">
+                                    <h4>Description</h4>
+                                    <p>
+                                        {{ structure.description|linebreaks }}
+                                    </p>
+                                </div>
+                            </div>
+
+                            <!-- Référent information -->
+                            <div class="row">
+                                <div class="col-md-12">
+                                    <h4>Personne référente</h4>
+                                    <div class="row mb-2">
+                                        <div class="col-md-4 fw-bold">Nom:</div>
+                                        <div class="col-md-8">{{ structure.referent_last_name }}</div>
+                                    </div>
+                                    <div class="row mb-2">
+                                        <div class="col-md-4 fw-bold">Prénom:</div>
+                                        <div class="col-md-8">{{ structure.referent_first_name }}</div>
+                                    </div>
+                                    <div class="row mb-2">
+                                        <div class="col-md-4 fw-bold">Poste:</div>
+                                        <div class="col-md-8">{{ structure.referent_position }}</div>
+                                    </div>
+                                </div>
                             </div>
                         </div>
-                    {% endif %}
+                    </div>
+                </div>
+            </div>
+            {% comment %}
+            TODO : Add the map
+            <!-- Map Section -->
+            {% if structure.latitude and structure.longitude %}
+                <div class="row mb-5">
+                    <div class="col-md-12">
+                        <div class="card">
+                            <div class="card-body">
+                                <h3 class="card-title">Localisation</h3>
+                                <!-- OpenStreetMap -->
+                                <div id="map" style="height: 400px;"></div>
+                                <script>
+                                    document.addEventListener('DOMContentLoaded', function () {
+                                        var map = L.map('map').setView([{{ structure.latitude }}, {{ structure.longitude }}], 15);
+                                        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                                            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+                                        }).addTo(map);
+                                        L.marker([{{ structure.latitude }}, {{ structure.longitude }}]).addTo(map)
+                                            .bindPopup('{{ structure.name }}')
+                                            .openPopup();
+                                    });
+                                </script>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            {% endif %}
+            {% endcomment %}
+        </div>
+        <div class="tab-pane fade" id="structure-badges" role="tabpanel" aria-labelledby="structure-badges-tab">
+            <!-- Available Badges Section -->
+            <div class="row">
+                <div class="col-md-12">
+                    <div class="card">
+                        <div class="card-body">
+                            <h3 class="card-title">Badges créés</h3>
+                            {% with badges=issued_badges %}
+                                {% include 'core/badges/partials/badge_list.html' %}
+                            {% endwith %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+        <div class="tab-pane fade" id="structure-users" role="tabpanel" aria-labelledby="structure-users-tab">
+            <div class="row">
+                <div class="col-md-12">
+                    <div class="card">
+                        <div class="card-body">
+                            <h3 class="card-title">Utilisateurs</h3>
+                            {% with users=structure.users.all %}
+                                {% include 'core/users/partials/user_list.html' %}
+                            {% endwith %}
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
-</div>
+
+
+
+
 {% endblock %}

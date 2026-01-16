@@ -6,187 +6,149 @@
 {% block title %}Profil de {{ user.get_full_name|default:user.username }}{% endblock %}
 
 {% block content %}
-<div class="row">
-    <div class="col-md-12">
-        <h1 class="display-4 mb-4">
-            Profil de {{ user.get_full_name|default:user.username }}
-            {% if not user.is_active %}<span class="badge bg-secondary fs-4" style="vertical-align: middle">Inactif</span> {% endif %}
-            {% if request.user.pk == user.pk %}
-                <a class="btn btn-danger float-end" href="{% url 'core:user-logout' %}">
-                    Se déconnecter
-                </a>
-            {% endif %}
-        </h1>
-    </div>
-</div>
-
-<!-- User Information Section -->
-<div class="row mb-5">
-    <div class="col-md-4 text-center">
-        <!-- User Avatar -->
-        {% if user and user.avatar %}
-        <div class="mb-3" style="width: 150px; height: 150px; margin: 0 auto;">
-            {% picture user.avatar img_alt="Avatar de "|add:user.get_full_name|default:user.username  img_class="img-fluid rounded-circle" ratio="1/1" %}
-        </div>
-        {% else %}
-        <img src="{{ placeholder_image }}" alt="Avatar utilisateur" class="img-fluid rounded-circle mb-3" style="width: 150px; height: 150px;">
-        {% endif %}
-
-        <!-- CV Buttons -->
-        <div class="dropdown mb-3">
-            <button class="btn btn-primary dropdown-toggle" type="button" id="cvDropdown" data-bs-toggle="dropdown" aria-expanded="false">
-                <i class="fas fa-file-alt"></i> Voir mon CV
-            </button>
-            <ul class="dropdown-menu" aria-labelledby="cvDropdown">
-                <li><a class="dropdown-item" href="{% url 'core:user-cv' pk=user.pk %}?template=classic">Version classique</a></li>
-                <li><a class="dropdown-item" href="{% url 'core:user-cv' pk=user.pk %}?template=bootstrap">Version Bootstrap</a></li>
-                <li><a class="dropdown-item" href="{% url 'core:user-cv' pk=user.pk %}?template=material">Version Material Design</a></li>
-                <li><a class="dropdown-item" href="{% url 'core:user-cv' pk=user.pk %}?template=liquid_glass">Version Apple Liquid Glass</a></li>
-            </ul>
-        </div>
-    </div>
-    <div class="col-md-8" id="user-info" >
-        <!-- User Details -->
-        <div class="card">
-            <div class="card-body">
-                <div class="row">
-                    <div class="col-md-8">
-                        <h2 class="card-title">Informations personnelles</h2>
-                    </div>
-                    {% if request.user.pk == user.pk %}
-                        <div class="col-md-4">
-                            <div class="btn btn-primary float-end"
-                                 hx-get="{% url 'core:edit-profile' user.pk %}"
-                                 hx-target="#user-info"
-                                 hx-swap="innerHTML">
-                                Éditer
-                            </div>
-                        </div>
-                    {% endif %}
-                </div>
-                <div class="row mb-2">
-                    <div class="col-md-4 fw-bold">Nom:</div>
-                    <div class="col-md-8">{{ user.last_name }}</div>
-                </div>
-                <div class="row mb-2">
-                    <div class="col-md-4 fw-bold">Prénom:</div>
-                    <div class="col-md-8">{{ user.first_name }}</div>
-                </div>
-                <div class="row mb-2">
-                    <div class="col-md-4 fw-bold">Adresse:</div>
-                    <div class="col-md-8">{{ user.address }}</div>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
-
-<!-- Badges Section -->
-<div class="row mb-5">
-    <div class="col-md-12">
-        <div class="card">
-            <div class="card-body">
-                <h2 class="card-title">Mes badges</h2>
-                <div class="badge-grid">
-                    {% if badges %}
-                        {% for badge in badges %}
-                        <div class="card text-center">
-                            <div class="card-body">
-                                {% if badge.icon %}
-                                <div class="badge-icon-container">
-                                    {% picture badge.icon img_alt=badge.name img_class="badge-icon" ratio="1/1" %}
-                                </div>
-                                {% else %}
-                                <img src="{{ placeholder_image }}" alt="{{ badge.name }}" class="badge-icon">
-                                {% endif %}
-                                <h5 class="card-title">{{ badge.name }}</h5>
-                                <p class="card-text">
-                                    {% if badge.level == 'beginner' %}
-                                    <span class="badge bg-primary">{{ badge.get_level_display }}</span>
-                                    {% elif badge.level == 'intermediate' %}
-                                    <span class="badge bg-warning text-dark">{{ badge.get_level_display }}</span>
-                                    {% elif badge.level == 'expert' %}
-                                    <span class="badge bg-success">{{ badge.get_level_display }}</span>
-                                    {% endif %}
-                                </p>
-                                {% with assignment=badge_assignment_dict|get_item:badge.pk %}
-                                    {% if assignment %}
-                                    <p class="card-text small text-muted">
-                                        Assigné le {{ assignment.assigned_date|date:"d/m/Y" }}<br>
-                                        <em>({{ assignment.assigned_date|naturaltime }})</em>
-                                    </p>
-                                    {% endif %}
-                                {% endwith %}
-                                <a href="{% url 'core:badge-detail' pk=badge.pk %}" class="btn btn-primary">Voir le badge</a>
-                            </div>
-                        </div>
-                        {% endfor %}
-                    {% else %}
-                        <div class="col-12">
-                            <div class="alert alert-info">
-                                Aucun badge n'est associé à ce profil.
-                            </div>
-                        </div>
-                    {% endif %}
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
-
-<!-- Structures Section -->
-<div class="row mb-5">
-    <div class="col-md-12">
-        <div class="card">
-            <div class="card-body">
-                <h2 class="card-title">Mes structures</h2>
-                <div class="row">
-                    {% if structures %}
-                        {% for structure in structures %}
-                        <div class="col-md-3 col-sm-6 text-center mb-4">
-                            {% if structure.logo %}
-                            <div class="mb-2" style="max-width: 100px; margin: 0 auto;">
-                                {% picture structure.logo img_alt="Logo "|add:structure.name img_class="img-fluid" ratio="1/1" %}
-                            </div>
-                            {% else %}
-                            <img src="{{ placeholder_image }}" alt="Logo {{ structure.name }}" class="img-fluid mb-2" style="max-width: 100px;">
-                            {% endif %}
-                            <h5>{{ structure.name }}</h5>
-                            <a href="{% url 'core:structure-detail' pk=structure.pk %}" class="btn btn-outline-primary">Voir</a>
-                        </div>
-                        {% endfor %}
-                    {% else %}
-                        <div class="col-12">
-                            <div class="alert alert-info">
-                                Aucune structure n'est associée à ce profil.
-                            </div>
-                        </div>
-                    {% endif %}
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
-
-{% if request.user.pk == user.pk %}
     <div class="row">
+        <div class="col-md-12">
+            <h1 class="display-4 mb-4">
+                Profil de {{ user.get_full_name|default:user.username }}
+                {% if not user.is_active %}
+                    <span class="badge bg-secondary fs-4" style="vertical-align: middle">Inactif</span>
+                {% endif %}
+
+                {% if request.user.pk == user.pk %}
+                    <a class="btn btn-danger float-end" href="{% url 'core:user-logout' %}">
+                        Se déconnecter
+                    </a>
+                {% endif %}
+            </h1>
+        </div>
+    </div>
+
+    <!-- User Information Section -->
+    <div class="row mb-5">
+        <div class="col-md-4 text-center">
+            <!-- User Avatar -->
+            {% if user and user.avatar %}
+                <div class="mb-3" style="width: 150px; height: 150px; margin: 0 auto;">
+                    {% picture user.avatar img_alt="Avatar de "|add:user.get_full_name|default:user.username img_class="img-fluid rounded-circle" ratio="1/1" %}
+                </div>
+            {% else %}
+                <img src="{{ placeholder_image }}" alt="Avatar utilisateur" class="img-fluid rounded-circle mb-3" style="width: 150px; height: 150px;">
+            {% endif %}
+
+            <!-- CV Buttons -->
+            <div class="dropdown mb-3">
+                <button class="btn btn-primary dropdown-toggle" type="button" id="cvDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                    <i class="fas fa-file-alt"></i> Voir mon CV
+                </button>
+                <ul class="dropdown-menu" aria-labelledby="cvDropdown">
+                    <li><a class="dropdown-item" href="{% url 'core:user-cv' pk=user.pk %}?template=classic">Version classique</a></li>
+                    <li><a class="dropdown-item" href="{% url 'core:user-cv' pk=user.pk %}?template=bootstrap">Version Bootstrap</a></li>
+                    <li><a class="dropdown-item" href="{% url 'core:user-cv' pk=user.pk %}?template=material">Version Material Design</a></li>
+                    <li><a class="dropdown-item" href="{% url 'core:user-cv' pk=user.pk %}?template=liquid_glass">Version Apple Liquid Glass</a></li>
+                </ul>
+            </div>
+        </div>
+        <div class="col-md-8" id="user-info">
+            <!-- User Details -->
+            <div class="card">
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-8">
+                            <h2 class="card-title">Informations personnelles</h2>
+                        </div>
+                        {% if request.user.pk == user.pk %}
+                            <div class="col-md-4">
+                                <div class="btn btn-primary float-end"
+                                     hx-get="{% url 'core:edit-profile' user.pk %}"
+                                     hx-target="#user-info"
+                                     hx-swap="innerHTML">
+                                    Éditer
+                                </div>
+                            </div>
+                        {% endif %}
+                    </div>
+                    <div class="row mb-2">
+                        <div class="col-md-4 fw-bold">Nom:</div>
+                        <div class="col-md-8">{{ user.last_name }}</div>
+                    </div>
+                    <div class="row mb-2">
+                        <div class="col-md-4 fw-bold">Prénom:</div>
+                        <div class="col-md-8">{{ user.first_name }}</div>
+                    </div>
+                    <div class="row mb-2">
+                        <div class="col-md-4 fw-bold">Adresse:</div>
+                        <div class="col-md-8">{{ user.address }}</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Badges Section -->
+    <div class="row mb-5">
         <div class="col-md-12">
             <div class="card">
                 <div class="card-body">
-                    <h2 class="card-title">Mes actions</h2>
+                    <h2 class="card-title">Mes badges</h2>
+                    {% include 'core/badges/partials/badge_list.html' %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Structures Section -->
+    <div class="row mb-5">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-body">
+                    <h2 class="card-title">Mes structures</h2>
                     <div class="row">
-                        {% if user.is_active %}
-                        <form method="post" action="{% url 'core:user-delete' pk=user.pk %}" id="delete-account-form">
-                            {% csrf_token %}
-                            <input type="submit" id="delete-account-button" class="btn btn-danger" value="Désactiver votre compte ?" />
-                        </form>
+                        {% if structures %}
+                            {% for structure in structures %}
+                                <div class="col-md-3 col-sm-6 text-center mb-4">
+                                    {% if structure.logo %}
+                                        <div class="mb-2" style="max-width: 100px; margin: 0 auto;">
+                                            {% picture structure.logo img_alt="Logo "|add:structure.name img_class="img-fluid" ratio="1/1" %}
+                                        </div>
+                                    {% else %}
+                                        <img src="{{ placeholder_image }}" alt="Logo {{ structure.name }}" class="img-fluid mb-2" style="max-width: 100px;">
+                                    {% endif %}
+                                    <h5>{{ structure.name }}</h5>
+                                    <a href="{% url 'core:structure-detail' pk=structure.pk %}" class="btn btn-outline-primary">Voir</a>
+                                </div>
+                            {% endfor %}
+                        {% else %}
+                            <div class="col-12">
+                                <div class="alert alert-info">
+                                    Aucune structure n'est associée à ce profil.
+                                </div>
+                            </div>
                         {% endif %}
                     </div>
                 </div>
             </div>
         </div>
     </div>
-{% endif %}
+
+    {% if request.user.pk == user.pk %}
+        <div class="row">
+            <div class="col-md-12">
+                <div class="card">
+                    <div class="card-body">
+                        <h2 class="card-title">Mes actions</h2>
+                        <div class="row">
+                            {% if user.is_active %}
+                                <form method="post" action="{% url 'core:user-delete' pk=user.pk %}" id="delete-account-form">
+                                    {% csrf_token %}
+                                    <input type="submit" id="delete-account-button" class="btn btn-danger" value="Désactiver votre compte ?"/>
+                                </form>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    {% endif %}
 
 {% endblock %}
 
@@ -196,16 +158,16 @@
         delete_button = document.querySelector("#delete-account-button");
         delete_form = document.querySelector("#delete-account-form");
         // Prevent button from sending the form, show an alert asking for confirmation
-        delete_button.addEventListener("click",(event)=>{
+        delete_button.addEventListener("click", (event) => {
             event.preventDefault();
             Swal.fire({
                 title: "Désactiver votre compte ?",
                 text: "Etes vous sur de vouloir désactiver votre compte ? Cette action est irréversible",
                 icon: "error",
-                showDenyButton : true,
-                confirmButtonText : "Désactiver",
-                denyButtonText : "Annuler"
-            }).then((result)=>{
+                showDenyButton: true,
+                confirmButtonText: "Désactiver",
+                denyButtonText: "Annuler"
+            }).then((result) => {
                 if (result.isConfirmed) {
                     delete_form.submit()
                 } else if (result.isDenied) {

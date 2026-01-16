@@ -3,44 +3,44 @@
 {% block title %}{{ title }}{% endblock %}
 
 {% block content %}
-<div class="row">
-    <div class="col-md-12">
-        <div class="jumbotron text-center">
-            <h1 class="display-4">Bienvenue sur FossBadge</h1>
-            <p class="lead">Un système de badges pour valoriser les compétences et les contributions.</p>
-            <hr class="my-4">
-            <p>FossBadge est une plateforme qui permet de créer, gérer et partager des badges numériques.</p>
+    <div class="row">
+        <div class="col-md-12">
+            <div class="jumbotron text-center">
+                <h1 class="display-4">Bienvenue sur FossBadge</h1>
+                <p class="lead">Un système de badges pour valoriser les compétences et les contributions.</p>
+                <hr class="my-4">
+                <p>FossBadge est une plateforme qui permet de créer, gérer et partager des badges numériques.</p>
+            </div>
         </div>
     </div>
-</div>
 
-<div class="row mt-5">
-    <div class="col-md-4">
-        <div class="card mb-4">
-            <div class="card-body text-center">
-                <h5 class="card-title">Badges</h5>
-                <p class="card-text">Découvrez les différents badges disponibles.</p>
-                <a href="{% url 'core:badge-list' %}" class="btn btn-primary">Voir les badges</a>
+    <div class="row mt-5">
+        <div class="col-md-4">
+            <div class="card mb-4">
+                <div class="card-body text-center">
+                    <h5 class="card-title">Badges</h5>
+                    <p class="card-text">Découvrez les différents badges disponibles.</p>
+                    <a href="{% url 'core:badge-list' %}" class="btn btn-primary">Voir les badges</a>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card mb-4">
+                <div class="card-body text-center">
+                    <h5 class="card-title">Structures</h5>
+                    <p class="card-text">Explorez les structures et entreprises partenaires.</p>
+                    <a href="{% url 'core:structure-list' %}" class="btn btn-primary">Voir les structures</a>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card mb-4">
+                <div class="card-body text-center">
+                    <h5 class="card-title">Profils</h5>
+                    <p class="card-text">Découvrez tous les utilisateurs et leurs badges.</p>
+                    <a href="{% url 'core:user-list' %}" class="btn btn-primary">Voir les profils</a>
+                </div>
             </div>
         </div>
     </div>
-    <div class="col-md-4">
-        <div class="card mb-4">
-            <div class="card-body text-center">
-                <h5 class="card-title">Structures</h5>
-                <p class="card-text">Explorez les structures et entreprises partenaires.</p>
-                <a href="{% url 'core:structure-list' %}" class="btn btn-primary">Voir les structures</a>
-            </div>
-        </div>
-    </div>
-    <div class="col-md-4">
-        <div class="card mb-4">
-            <div class="card-body text-center">
-                <h5 class="card-title">Profils</h5>
-                <p class="card-text">Découvrez tous les utilisateurs et leurs badges.</p>
-                <a href="{% url 'core:user-list' %}" class="btn btn-primary">Voir les profils</a>
-            </div>
-        </div>
-    </div>
-</div>
 {% endblock %}

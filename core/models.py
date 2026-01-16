@@ -81,6 +81,7 @@ class Structure(models.Model):
     longitude = models.FloatField(blank=True, null=True, verbose_name="Longitude")
 
     # Relationships
+    admins = models.ManyToManyField(User, related_name='structures_admins', verbose_name='Administrateurs')
     users = models.ManyToManyField(User, related_name='structures', blank=True, verbose_name="Utilisateurs")
 
     class Meta:

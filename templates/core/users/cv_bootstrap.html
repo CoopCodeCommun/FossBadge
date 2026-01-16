@@ -6,433 +6,450 @@
 {% block title %}CV de {{ user.get_full_name|default:user.username }}{% endblock %}
 
 {% block extra_css %}
-<style>
-    /* Print styles */
-    @media print {
-        body {
-            margin: 0;
-            padding: 0;
-            background: white;
+    <style>
+        /* Print styles */
+        @media print {
+            body {
+                margin: 0;
+                padding: 0;
+                background: white;
+            }
+
+            .page-break {
+                display: block;
+                page-break-before: always;
+            }
+
+            .no-print {
+                display: none !important;
+            }
+
+            .container {
+                max-width: 100%;
+                width: 100%;
+            }
+
+            .card {
+                border: none;
+            }
+
+            .shadow {
+                box-shadow: none !important;
+            }
         }
 
-        .page-break {
-            display: block;
-            page-break-before: always;
+        /* Custom styles to complement Bootstrap */
+        .cv-header {
+            background-color: #f8f9fa;
+            border-bottom: 3px solid #007bff;
         }
 
-        .no-print {
-            display: none !important;
+        .timeline-item {
+            position: relative;
+            padding-left: 40px;
+            margin-bottom: 20px;
         }
 
-        .container {
-            max-width: 100%;
-            width: 100%;
+        .timeline-item:before {
+            content: "";
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 2px;
+            height: 100%;
+            background-color: #dee2e6;
         }
 
-        .card {
-            border: none;
+        .timeline-item:after {
+            content: "";
+            position: absolute;
+            left: -4px;
+            top: 0;
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background-color: #007bff;
+            border: 2px solid #fff;
         }
 
-        .shadow {
-            box-shadow: none !important;
+        .skill-bar {
+            height: 10px;
+            background-color: #e9ecef;
+            border-radius: 5px;
+            margin-bottom: 10px;
         }
-    }
 
-    /* Custom styles to complement Bootstrap */
-    .cv-header {
-        background-color: #f8f9fa;
-        border-bottom: 3px solid #007bff;
-    }
+        .skill-progress {
+            height: 100%;
+            border-radius: 5px;
+            background-color: #007bff;
+        }
 
-    .timeline-item {
-        position: relative;
-        padding-left: 40px;
-        margin-bottom: 20px;
-    }
-
-    .timeline-item:before {
-        content: "";
-        position: absolute;
-        left: 0;
-        top: 0;
-        width: 2px;
-        height: 100%;
-        background-color: #dee2e6;
-    }
-
-    .timeline-item:after {
-        content: "";
-        position: absolute;
-        left: -4px;
-        top: 0;
-        width: 10px;
-        height: 10px;
-        border-radius: 50%;
-        background-color: #007bff;
-        border: 2px solid #fff;
-    }
-
-    .skill-bar {
-        height: 10px;
-        background-color: #e9ecef;
-        border-radius: 5px;
-        margin-bottom: 10px;
-    }
-
-    .skill-progress {
-        height: 100%;
-        border-radius: 5px;
-        background-color: #007bff;
-    }
-
-    .interest-icon {
-        font-size: 2rem;
-        color: #007bff;
-    }
-</style>
+        .interest-icon {
+            font-size: 2rem;
+            color: #007bff;
+        }
+    </style>
 {% endblock %}
 
 {% block content %}
-<!-- Navigation buttons -->
-<div class="container mb-4 no-print">
-    <div class="row">
-        <div class="col-12">
-            <a href="{% url 'core:user-detail' pk=user.pk %}" class="btn btn-secondary">
-                <i class="fas fa-arrow-left"></i> Retour au profil
-            </a>
-            <a href="{% url 'core:user-cv' pk=user.pk %}?template=classic" class="btn btn-outline-primary">
-                <i class="fas fa-file-alt"></i> Version classique
-            </a>
-            <a href="{% url 'core:user-cv' pk=user.pk %}?template=material" class="btn btn-outline-primary">
-                <i class="fas fa-file-alt"></i> Version Material Design
-            </a>
-            <a href="{% url 'core:user-cv' pk=user.pk %}?template=liquid_glass" class="btn btn-outline-primary">
-                <i class="fas fa-file-alt"></i> Version Apple Liquid Glass
-            </a>
-            <button class="btn btn-primary" onclick="window.print()">
-                <i class="fas fa-print"></i> Imprimer le CV
-            </button>
+    <!-- Navigation buttons -->
+    <div class="container mb-4 no-print">
+        <div class="row">
+            <div class="col-12">
+                <a href="{% url 'core:user-detail' pk=user.pk %}" class="btn btn-secondary">
+                    <i class="fas fa-arrow-left"></i> Retour au profil
+                </a>
+                <a href="{% url 'core:user-cv' pk=user.pk %}?template=classic" class="btn btn-outline-primary">
+                    <i class="fas fa-file-alt"></i> Version classique
+                </a>
+                <a href="{% url 'core:user-cv' pk=user.pk %}?template=material" class="btn btn-outline-primary">
+                    <i class="fas fa-file-alt"></i> Version Material Design
+                </a>
+                <a href="{% url 'core:user-cv' pk=user.pk %}?template=liquid_glass" class="btn btn-outline-primary">
+                    <i class="fas fa-file-alt"></i> Version Apple Liquid Glass
+                </a>
+                <button class="btn btn-primary" onclick="window.print()">
+                    <i class="fas fa-print"></i> Imprimer le CV
+                </button>
+            </div>
         </div>
     </div>
-</div>
 
-{% if badges %}
-    {% regroup badges by issuing_structure as structure_badges %}
-{% endif %}
+    {% if badges %}
+        {% regroup badges by issuing_structure as structure_badges %}
+    {% endif %}
 
-<!-- CV Content -->
-<div class="container mb-5">
-    <!-- Header Section -->
-    <div class="card mb-4 shadow">
-        <div class="card-body cv-header">
-            <div class="row align-items-center">
-                <div class="col-md-3 text-center">
-                    {% if user and user.avatar %}
-                        <div class="mb-3" style="width: 150px; height: 150px; margin: 0 auto;">
-                            {% picture user.avatar img_alt="Avatar de "|add:user.get_full_name|default:user.username img_class="img-fluid rounded-circle" ratio="1/1" %}
+    <!-- CV Content -->
+    <div class="container mb-5">
+        <!-- Header Section -->
+        <div class="card mb-4 shadow">
+            <div class="card-body cv-header">
+                <div class="row align-items-center">
+                    <div class="col-md-3 text-center">
+                        {% if user and user.avatar %}
+                            <div class="mb-3" style="width: 150px; height: 150px; margin: 0 auto;">
+                                {% picture user.avatar img_alt="Avatar de "|add:user.get_full_name|default:user.username img_class="img-fluid rounded-circle" ratio="1/1" %}
+                            </div>
+                        {% else %}
+                            <i class="fas fa-user-circle fa-8x text-primary"></i>
+                        {% endif %}
+                    </div>
+                    <div class="col-md-9">
+                        <h1 class="display-4">{{ user.get_full_name|default:user.username }}</h1>
+                        <h3 class="text-muted">Développeur Open Source</h3>
+                        <div class="row mt-3">
+                            <div class="col-md-6">
+                                <p><i class="fas fa-phone text-primary me-2"></i>
+                                    {% if user and user.phone %}{{ user.phone }}{% else %}123-456-7890{% endif %}</p>
+                                <p><i class="fas fa-envelope text-primary me-2"></i> {{ user.email }}</p>
+                            </div>
+                            <div class="col-md-6">
+                                <p><i class="fas fa-map-marker-alt text-primary me-2"></i>
+                                    {% if user and user.address %}{{ user.address }}{% else %}Paris, France{% endif %}
+                                </p>
+                                <p><i class="fas fa-globe text-primary me-2"></i>
+                                    {% if user and user.website %}{{ user.website }}{% else %}monsite.com{% endif %}</p>
+                            </div>
                         </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- About Me Section -->
+        <div class="card mb-4 shadow">
+            <div class="card-body">
+                <h2 class="card-title border-bottom pb-2"><i class="fas fa-user text-primary me-2"></i>À propos de moi
+                </h2>
+                <p class="card-text">
+                    {% if user and user.bio %}
+                        {{ user.bio }}
                     {% else %}
-                        <i class="fas fa-user-circle fa-8x text-primary"></i>
+                        Je suis un développeur passionné par l'open source et les technologies web. J'aime contribuer à
+                        des projets qui ont un impact positif sur la communauté.
                     {% endif %}
-                </div>
-                <div class="col-md-9">
-                    <h1 class="display-4">{{ user.get_full_name|default:user.username }}</h1>
-                    <h3 class="text-muted">Développeur Open Source</h3>
-                    <div class="row mt-3">
-                        <div class="col-md-6">
-                            <p><i class="fas fa-phone text-primary me-2"></i> {% if user and user.phone %}{{ user.phone }}{% else %}123-456-7890{% endif %}</p>
-                            <p><i class="fas fa-envelope text-primary me-2"></i> {{ user.email }}</p>
-                        </div>
-                        <div class="col-md-6">
-                            <p><i class="fas fa-map-marker-alt text-primary me-2"></i> {% if user and user.address %}{{ user.address }}{% else %}Paris, France{% endif %}</p>
-                            <p><i class="fas fa-globe text-primary me-2"></i> {% if user and user.website %}{{ user.website }}{% else %}monsite.com{% endif %}</p>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- About Me Section -->
-    <div class="card mb-4 shadow">
-        <div class="card-body">
-            <h2 class="card-title border-bottom pb-2"><i class="fas fa-user text-primary me-2"></i>À propos de moi</h2>
-            <p class="card-text">
-                {% if user and user.bio %}
-                    {{ user.bio }}
-                {% else %}
-                    Je suis un développeur passionné par l'open source et les technologies web. J'aime contribuer à des projets qui ont un impact positif sur la communauté.
-                {% endif %}
-            </p>
-        </div>
-    </div>
-
-    <div class="row">
-        <!-- Experience Section -->
-        <div class="col-md-6 mb-4">
-            <div class="card h-100 shadow">
-                <div class="card-body">
-                    <h2 class="card-title border-bottom pb-2"><i class="fas fa-briefcase text-primary me-2"></i>Expérience</h2>
-                    {% if badges %}
-                        {% for badge in badges|slice:":5" %}
-                            {% with assignment=badge_assignment_dict|get_item:badge.pk %}
-                                {% if assignment %}
-                                    <div class="timeline-item">
-                                        <h5>{{ badge.name }}</h5>
-                                        <p class="text-muted mb-1">{{ badge.issuing_structure.name }}</p>
-                                        <p class="small">{{ assignment.assigned_date|date:"M Y" }} - Présent</p>
-                                        <p>{{ badge.description|truncatewords:20 }}</p>
-                                    </div>
-                                {% endif %}
-                            {% endwith %}
-                        {% endfor %}
-                    {% else %}
-                        <div class="timeline-item">
-                            <h5>Développeur Web</h5>
-                            <p class="text-muted mb-1">Entreprise XYZ</p>
-                            <p class="small">Jan 2020 - Présent</p>
-                            <p>Développement d'applications web avec les dernières technologies.</p>
-                        </div>
-                        <div class="timeline-item">
-                            <h5>Stagiaire Développeur</h5>
-                            <p class="text-muted mb-1">Startup ABC</p>
-                            <p class="small">Jun 2019 - Dec 2019</p>
-                            <p>Participation au développement de fonctionnalités clés.</p>
-                        </div>
-                    {% endif %}
-                </div>
+                </p>
             </div>
         </div>
 
-        <!-- Education Section -->
-        <div class="col-md-6 mb-4">
-            <div class="card h-100 shadow">
-                <div class="card-body">
-                    <h2 class="card-title border-bottom pb-2"><i class="fas fa-graduation-cap text-primary me-2"></i>Éducation</h2>
-                    <div class="timeline-item">
-                        <h5>Master en Informatique</h5>
-                        <p class="text-muted mb-1">Université de Paris</p>
-                        <p class="small">2018 - 2020</p>
-                        <p>Spécialisation en développement web et applications mobiles.</p>
-                    </div>
-                    <div class="timeline-item">
-                        <h5>Licence en Informatique</h5>
-                        <p class="text-muted mb-1">Université de Lyon</p>
-                        <p class="small">2015 - 2018</p>
-                        <p>Formation générale en informatique et programmation.</p>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Skills Section -->
-    <div class="card mb-4 shadow">
-        <div class="card-body">
-            <h2 class="card-title border-bottom pb-2"><i class="fas fa-code text-primary me-2"></i>Compétences</h2>
-            <div class="row">
-                {% if badges %}
-                    {% for badge in badges|slice:":8" %}
-                        <div class="col-md-6 mb-3">
-                            <div class="d-flex align-items-center mb-1">
-                                <span class="me-auto">{{ badge.name }}</span>
-                                <span class="badge {% if badge.level == 'beginner' %}bg-primary{% elif badge.level == 'intermediate' %}bg-warning text-dark{% elif badge.level == 'expert' %}bg-success{% endif %} ms-2">
-                                    {{ badge.get_level_display }}
-                                </span>
+        <div class="row">
+            <!-- Experience Section -->
+            <div class="col-md-6 mb-4">
+                <div class="card h-100 shadow">
+                    <div class="card-body">
+                        <h2 class="card-title border-bottom pb-2"><i class="fas fa-briefcase text-primary me-2"></i>Expérience
+                        </h2>
+                        {% if badges %}
+                            {% for badge in badges|slice:":5" %}
+                                {% with assignment=badge_assignment_dict|get_item:badge.pk %}
+                                    {% if assignment %}
+                                        <div class="timeline-item">
+                                            <h5>{{ badge.name }}</h5>
+                                            <p class="text-muted mb-1">{{ badge.issuing_structure.name }}</p>
+                                            <p class="small">{{ assignment.assigned_date|date:"M Y" }} - Présent</p>
+                                            <p>{{ badge.description|truncatewords:20 }}</p>
+                                        </div>
+                                    {% endif %}
+                                {% endwith %}
+                            {% endfor %}
+                        {% else %}
+                            <div class="timeline-item">
+                                <h5>Développeur Web</h5>
+                                <p class="text-muted mb-1">Entreprise XYZ</p>
+                                <p class="small">Jan 2020 - Présent</p>
+                                <p>Développement d'applications web avec les dernières technologies.</p>
                             </div>
-                            <div class="skill-bar">
-                                <div class="skill-progress" style="width: {% if badge.level == 'beginner' %}60%{% elif badge.level == 'intermediate' %}80%{% elif badge.level == 'expert' %}95%{% else %}70%{% endif %}"></div>
-                            </div>
-                        </div>
-                    {% endfor %}
-                {% else %}
-                    <div class="col-md-6 mb-3">
-                        <div class="d-flex align-items-center mb-1">
-                            <span class="me-auto">HTML5</span>
-                            <span class="badge bg-success ms-2">Expert</span>
-                        </div>
-                        <div class="skill-bar">
-                            <div class="skill-progress" style="width: 95%"></div>
-                        </div>
-                    </div>
-                    <div class="col-md-6 mb-3">
-                        <div class="d-flex align-items-center mb-1">
-                            <span class="me-auto">CSS3 & SCSS</span>
-                            <span class="badge bg-success ms-2">Expert</span>
-                        </div>
-                        <div class="skill-bar">
-                            <div class="skill-progress" style="width: 90%"></div>
-                        </div>
-                    </div>
-                    <div class="col-md-6 mb-3">
-                        <div class="d-flex align-items-center mb-1">
-                            <span class="me-auto">JavaScript</span>
-                            <span class="badge bg-warning text-dark ms-2">Intermédiaire</span>
-                        </div>
-                        <div class="skill-bar">
-                            <div class="skill-progress" style="width: 80%"></div>
-                        </div>
-                    </div>
-                    <div class="col-md-6 mb-3">
-                        <div class="d-flex align-items-center mb-1">
-                            <span class="me-auto">Python</span>
-                            <span class="badge bg-success ms-2">Expert</span>
-                        </div>
-                        <div class="skill-bar">
-                            <div class="skill-progress" style="width: 85%"></div>
-                        </div>
-                    </div>
-                {% endif %}
-            </div>
-        </div>
-    </div>
-
-    <!-- Structures Visited Section -->
-    <div class="card mb-4 shadow">
-        <div class="card-body">
-            <h2 class="card-title border-bottom pb-2"><i class="fas fa-building text-primary me-2"></i>Structures visitées</h2>
-            <div class="row">
-                {% if structure_badges %}
-                    {% for structure_group in structure_badges|slice:":5" %}
-                        <div class="col-md-6 mb-3">
-                            <div class="card">
-                                <div class="card-body">
-                                    <h5 class="card-title">{{ structure_group.grouper.name }}</h5>
-                                    <p class="card-text">
-                                        <span class="badge bg-primary">{{ structure_group.list|length }} badge{% if structure_group.list|length > 1 %}s{% endif %}</span>
-                                    </p>
-                                    <p class="card-text small text-muted">
-                                        {% with first_badge=structure_group.list.0 %}
-                                            {% with assignment=badge_assignment_dict|get_item:first_badge.pk %}
-                                                {% if assignment %}
-                                                    Depuis {{ assignment.assigned_date|date:"M Y" }}
-                                                {% endif %}
-                                            {% endwith %}
-                                        {% endwith %}
-                                    </p>
-                                </div>
-                            </div>
-                        </div>
-                    {% endfor %}
-                {% else %}
-                    <div class="col-12">
-                        <div class="alert alert-info">
-                            Aucune structure visitée. Pas encore de badges.
-                        </div>
-                    </div>
-                {% endif %}
-            </div>
-        </div>
-    </div>
-
-    <!-- Interests Section -->
-    <div class="card mb-4 shadow">
-        <div class="card-body">
-            <h2 class="card-title border-bottom pb-2"><i class="fas fa-star text-primary me-2"></i>Centres d'intérêt</h2>
-            <div class="row text-center">
-                <div class="col-md-3 col-6 mb-3">
-                    <i class="fas fa-code interest-icon mb-2"></i>
-                    <p>Programmation</p>
-                </div>
-                <div class="col-md-3 col-6 mb-3">
-                    <i class="fas fa-book interest-icon mb-2"></i>
-                    <p>Lecture</p>
-                </div>
-                <div class="col-md-3 col-6 mb-3">
-                    <i class="fas fa-music interest-icon mb-2"></i>
-                    <p>Musique</p>
-                </div>
-                <div class="col-md-3 col-6 mb-3">
-                    <i class="fas fa-hiking interest-icon mb-2"></i>
-                    <p>Randonnée</p>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
-
-<!-- Second page for additional content if needed -->
-{% if badges.count > 8 or structure_badges|length > 5 %}
-<div class="page-break"></div>
-
-<div class="container mb-5">
-    <div class="card mb-4 shadow">
-        <div class="card-header bg-primary text-white">
-            <h2 class="mb-0">{{ user.get_full_name|default:user.username }} - Informations supplémentaires</h2>
-        </div>
-
-        {% if badges.count > 8 %}
-        <div class="card-body">
-            <h3 class="card-title"><i class="fas fa-code text-primary me-2"></i>Compétences supplémentaires</h3>
-            <div class="row">
-                {% for badge in badges|slice:"8:" %}
-                    <div class="col-md-6 mb-3">
-                        <div class="d-flex align-items-center mb-1">
-                            <span class="me-auto">{{ badge.name }}</span>
-                            <span class="badge {% if badge.level == 'beginner' %}bg-primary{% elif badge.level == 'intermediate' %}bg-warning text-dark{% elif badge.level == 'expert' %}bg-success{% endif %} ms-2">
-                                {{ badge.get_level_display }}
-                            </span>
-                        </div>
-                        <div class="skill-bar">
-                            <div class="skill-progress" style="width: {% if badge.level == 'beginner' %}60%{% elif badge.level == 'intermediate' %}80%{% elif badge.level == 'expert' %}95%{% else %}70%{% endif %}"></div>
-                        </div>
-                    </div>
-                {% endfor %}
-            </div>
-        </div>
-        {% endif %}
-
-        {% if badges.count > 5 %}
-        <div class="card-body border-top">
-            <h3 class="card-title"><i class="fas fa-briefcase text-primary me-2"></i>Expérience supplémentaire</h3>
-            <div class="row">
-                {% for badge in badges|slice:"5:" %}
-                    {% with assignment=badge_assignment_dict|get_item:badge.pk %}
-                        {% if assignment %}
-                            <div class="col-md-6 mb-3">
-                                <div class="timeline-item">
-                                    <h5>{{ badge.name }}</h5>
-                                    <p class="text-muted mb-1">{{ badge.issuing_structure.name }}</p>
-                                    <p class="small">{{ assignment.assigned_date|date:"M Y" }} - Présent</p>
-                                    <p>{{ badge.description|truncatewords:20 }}</p>
-                                </div>
+                            <div class="timeline-item">
+                                <h5>Stagiaire Développeur</h5>
+                                <p class="text-muted mb-1">Startup ABC</p>
+                                <p class="small">Jun 2019 - Dec 2019</p>
+                                <p>Participation au développement de fonctionnalités clés.</p>
                             </div>
                         {% endif %}
-                    {% endwith %}
-                {% endfor %}
+                    </div>
+                </div>
             </div>
-        </div>
-        {% endif %}
 
-        {% if structure_badges|length > 5 %}
-        <div class="card-body border-top">
-            <h3 class="card-title"><i class="fas fa-building text-primary me-2"></i>Structures visitées supplémentaires</h3>
-            <div class="row">
-                {% for structure_group in structure_badges|slice:"5:" %}
-                    <div class="col-md-6 mb-3">
-                        <div class="card">
-                            <div class="card-body">
-                                <h5 class="card-title">{{ structure_group.grouper.name }}</h5>
-                                <p class="card-text">
-                                    <span class="badge bg-primary">{{ structure_group.list|length }} badge{% if structure_group.list|length > 1 %}s{% endif %}</span>
-                                </p>
-                                <p class="card-text small text-muted">
-                                    {% with first_badge=structure_group.list.0 %}
-                                        {% with assignment=badge_assignment_dict|get_item:first_badge.pk %}
-                                            {% if assignment %}
-                                                Depuis {{ assignment.assigned_date|date:"M Y" }}
-                                            {% endif %}
-                                        {% endwith %}
-                                    {% endwith %}
-                                </p>
-                            </div>
+            <!-- Education Section -->
+            <div class="col-md-6 mb-4">
+                <div class="card h-100 shadow">
+                    <div class="card-body">
+                        <h2 class="card-title border-bottom pb-2"><i
+                                class="fas fa-graduation-cap text-primary me-2"></i>Éducation</h2>
+                        <div class="timeline-item">
+                            <h5>Master en Informatique</h5>
+                            <p class="text-muted mb-1">Université de Paris</p>
+                            <p class="small">2018 - 2020</p>
+                            <p>Spécialisation en développement web et applications mobiles.</p>
+                        </div>
+                        <div class="timeline-item">
+                            <h5>Licence en Informatique</h5>
+                            <p class="text-muted mb-1">Université de Lyon</p>
+                            <p class="small">2015 - 2018</p>
+                            <p>Formation générale en informatique et programmation.</p>
                         </div>
                     </div>
-                {% endfor %}
+                </div>
             </div>
         </div>
-        {% endif %}
+
+        <!-- Skills Section -->
+        <div class="card mb-4 shadow">
+            <div class="card-body">
+                <h2 class="card-title border-bottom pb-2"><i class="fas fa-code text-primary me-2"></i>Compétences</h2>
+                <div class="row">
+                    {% if badges %}
+                        {% for badge in badges|slice:":8" %}
+                            <div class="col-md-6 mb-3">
+                                <div class="d-flex align-items-center mb-1">
+                                    <span class="me-auto">{{ badge.name }}</span>
+                                    <span class="badge {% if badge.level == 'beginner' %}bg-primary{% elif badge.level == 'intermediate' %}bg-warning text-dark{% elif badge.level == 'expert' %}bg-success{% endif %} ms-2">
+                                    {{ badge.get_level_display }}
+                                </span>
+                                </div>
+                                <div class="skill-bar">
+                                    <div class="skill-progress"
+                                         style="width: {% if badge.level == 'beginner' %}60%{% elif badge.level == 'intermediate' %}80%{% elif badge.level == 'expert' %}95%{% else %}70%{% endif %}"></div>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    {% else %}
+                        <div class="col-md-6 mb-3">
+                            <div class="d-flex align-items-center mb-1">
+                                <span class="me-auto">HTML5</span>
+                                <span class="badge bg-success ms-2">Expert</span>
+                            </div>
+                            <div class="skill-bar">
+                                <div class="skill-progress" style="width: 95%"></div>
+                            </div>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <div class="d-flex align-items-center mb-1">
+                                <span class="me-auto">CSS3 & SCSS</span>
+                                <span class="badge bg-success ms-2">Expert</span>
+                            </div>
+                            <div class="skill-bar">
+                                <div class="skill-progress" style="width: 90%"></div>
+                            </div>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <div class="d-flex align-items-center mb-1">
+                                <span class="me-auto">JavaScript</span>
+                                <span class="badge bg-warning text-dark ms-2">Intermédiaire</span>
+                            </div>
+                            <div class="skill-bar">
+                                <div class="skill-progress" style="width: 80%"></div>
+                            </div>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <div class="d-flex align-items-center mb-1">
+                                <span class="me-auto">Python</span>
+                                <span class="badge bg-success ms-2">Expert</span>
+                            </div>
+                            <div class="skill-bar">
+                                <div class="skill-progress" style="width: 85%"></div>
+                            </div>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Structures Visited Section -->
+        <div class="card mb-4 shadow">
+            <div class="card-body">
+                <h2 class="card-title border-bottom pb-2"><i class="fas fa-building text-primary me-2"></i>Structures
+                    visitées</h2>
+                <div class="row">
+                    {% if structure_badges %}
+                        {% for structure_group in structure_badges|slice:":5" %}
+                            <div class="col-md-6 mb-3">
+                                <div class="card">
+                                    <div class="card-body">
+                                        <h5 class="card-title">{{ structure_group.grouper.name }}</h5>
+                                        <p class="card-text">
+                                            <span class="badge bg-primary">{{ structure_group.list|length }} badge
+                                                {% if structure_group.list|length > 1 %}s{% endif %}</span>
+                                        </p>
+                                        <p class="card-text small text-muted">
+                                            {% with first_badge=structure_group.list.0 %}
+                                                {% with assignment=badge_assignment_dict|get_item:first_badge.pk %}
+                                                    {% if assignment %}
+                                                        Depuis {{ assignment.assigned_date|date:"M Y" }}
+                                                    {% endif %}
+                                                {% endwith %}
+                                            {% endwith %}
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    {% else %}
+                        <div class="col-12">
+                            <div class="alert alert-info">
+                                Aucune structure visitée. Pas encore de badges.
+                            </div>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Interests Section -->
+        <div class="card mb-4 shadow">
+            <div class="card-body">
+                <h2 class="card-title border-bottom pb-2"><i class="fas fa-star text-primary me-2"></i>Centres d'intérêt
+                </h2>
+                <div class="row text-center">
+                    <div class="col-md-3 col-6 mb-3">
+                        <i class="fas fa-code interest-icon mb-2"></i>
+                        <p>Programmation</p>
+                    </div>
+                    <div class="col-md-3 col-6 mb-3">
+                        <i class="fas fa-book interest-icon mb-2"></i>
+                        <p>Lecture</p>
+                    </div>
+                    <div class="col-md-3 col-6 mb-3">
+                        <i class="fas fa-music interest-icon mb-2"></i>
+                        <p>Musique</p>
+                    </div>
+                    <div class="col-md-3 col-6 mb-3">
+                        <i class="fas fa-hiking interest-icon mb-2"></i>
+                        <p>Randonnée</p>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
-</div>
-{% endif %}
+
+    <!-- Second page for additional content if needed -->
+    {% if badges.count > 8 or structure_badges|length > 5 %}
+        <div class="page-break"></div>
+
+        <div class="container mb-5">
+            <div class="card mb-4 shadow">
+                <div class="card-header bg-primary text-white">
+                    <h2 class="mb-0">{{ user.get_full_name|default:user.username }} - Informations supplémentaires</h2>
+                </div>
+
+                {% if badges.count > 8 %}
+                    <div class="card-body">
+                        <h3 class="card-title"><i class="fas fa-code text-primary me-2"></i>Compétences supplémentaires
+                        </h3>
+                        <div class="row">
+                            {% for badge in badges|slice:"8:" %}
+                                <div class="col-md-6 mb-3">
+                                    <div class="d-flex align-items-center mb-1">
+                                        <span class="me-auto">{{ badge.name }}</span>
+                                        <span class="badge {% if badge.level == 'beginner' %}bg-primary{% elif badge.level == 'intermediate' %}bg-warning text-dark{% elif badge.level == 'expert' %}bg-success{% endif %} ms-2">
+                                {{ badge.get_level_display }}
+                            </span>
+                                    </div>
+                                    <div class="skill-bar">
+                                        <div class="skill-progress"
+                                             style="width: {% if badge.level == 'beginner' %}60%{% elif badge.level == 'intermediate' %}80%{% elif badge.level == 'expert' %}95%{% else %}70%{% endif %}"></div>
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                {% endif %}
+
+                {% if badges.count > 5 %}
+                    <div class="card-body border-top">
+                        <h3 class="card-title"><i class="fas fa-briefcase text-primary me-2"></i>Expérience
+                            supplémentaire</h3>
+                        <div class="row">
+                            {% for badge in badges|slice:"5:" %}
+                                {% with assignment=badge_assignment_dict|get_item:badge.pk %}
+                                    {% if assignment %}
+                                        <div class="col-md-6 mb-3">
+                                            <div class="timeline-item">
+                                                <h5>{{ badge.name }}</h5>
+                                                <p class="text-muted mb-1">{{ badge.issuing_structure.name }}</p>
+                                                <p class="small">{{ assignment.assigned_date|date:"M Y" }} - Présent</p>
+                                                <p>{{ badge.description|truncatewords:20 }}</p>
+                                            </div>
+                                        </div>
+                                    {% endif %}
+                                {% endwith %}
+                            {% endfor %}
+                        </div>
+                    </div>
+                {% endif %}
+
+                {% if structure_badges|length > 5 %}
+                    <div class="card-body border-top">
+                        <h3 class="card-title"><i class="fas fa-building text-primary me-2"></i>Structures visitées
+                            supplémentaires</h3>
+                        <div class="row">
+                            {% for structure_group in structure_badges|slice:"5:" %}
+                                <div class="col-md-6 mb-3">
+                                    <div class="card">
+                                        <div class="card-body">
+                                            <h5 class="card-title">{{ structure_group.grouper.name }}</h5>
+                                            <p class="card-text">
+                                                <span class="badge bg-primary">{{ structure_group.list|length }} badge
+                                                    {% if structure_group.list|length > 1 %}s{% endif %}</span>
+                                            </p>
+                                            <p class="card-text small text-muted">
+                                                {% with first_badge=structure_group.list.0 %}
+                                                    {% with assignment=badge_assignment_dict|get_item:first_badge.pk %}
+                                                        {% if assignment %}
+                                                            Depuis {{ assignment.assigned_date|date:"M Y" }}
+                                                        {% endif %}
+                                                    {% endwith %}
+                                                {% endwith %}
+                                            </p>
+                                        </div>
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    {% endif %}
 {% endblock %}

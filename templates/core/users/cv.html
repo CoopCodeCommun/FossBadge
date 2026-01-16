@@ -6,651 +6,656 @@
 {% block title %}CV de {{ user.get_full_name|default:user.username }}{% endblock %}
 
 {% block extra_css %}
-<style>
-    @import url("https://fonts.googleapis.com/css?family=Montserrat");
+    <style>
+        @import url("https://fonts.googleapis.com/css?family=Montserrat");
 
-    /* CV Styles */
-    .resume {
-        width: 210mm; /* A4 width */
-        min-height: 297mm; /* A4 height as minimum */
-        background: #1a237e;
-        color: #ffffff;
-        margin: 20px auto;
-        box-shadow: 10px 10px #0e1442;
-        position: relative;
-        display: flex;
-        flex-wrap: wrap; /* Allow wrapping for better responsiveness */
-        font-family: "Montserrat", sans-serif;
-        overflow: hidden; /* Prevent content from overflowing */
-    }
-
-    .resume .base,
-    .resume .func {
-        box-sizing: border-box;
-        float: left;
-        overflow: hidden; /* Prevent content overflow */
-    }
-
-    .resume .base > div,
-    .resume .func > div {
-        padding-bottom: 10px;
-    }
-
-    .resume .base > div:last-of-type,
-    .resume .func > div:last-of-type {
-        padding-bottom: 0;
-    }
-
-    .resume .base {
-        width: 30%;
-        padding: 30px 15px;
-        background: #283593;
-        color: #ffffff;
-    }
-
-    .resume .base .profile {
-        background: #ffb300;
-        padding: 30px 15px 40px 15px;
-        margin: -30px -15px 45px -15px;
-        position: relative;
-        z-index: 2;
-    }
-
-    .resume .base .profile::after {
-        content: "";
-        position: absolute;
-        background: #303f9f;
-        width: 100%;
-        height: 30px;
-        bottom: -15px;
-        left: 0;
-        transform: skewY(-5deg);
-        z-index: -1;
-    }
-
-    .resume .base .profile .photo img {
-        width: 100%;
-        border-radius: 50%;
-    }
-
-    .resume .base .profile .photo {
-        display: flex;
-        justify-content: center;
-        align-items: center;
-    }
-
-    .resume .base .profile .fa-rocket {
-        font-size: 100px;
-        text-align: center;
-        margin: auto;
-        color: #283593;
-    }
-
-    .resume .base .profile .info {
-        text-align: center;
-        color: #ffffff;
-    }
-
-    .resume .base .profile .info .name {
-        margin-top: 10px;
-        margin-bottom: 0;
-        font-size: 1.75em;
-        text-transform: lowercase;
-        color: #1a237e;
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
-        max-width: 100%;
-    }
-
-    .resume .base .profile .info .job {
-        margin-top: 10px;
-        margin-bottom: 0;
-        font-size: 1.5em;
-        text-transform: lowercase;
-        color: #283593;
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
-        max-width: 100%;
-    }
-
-    .resume .base .contact div {
-        line-height: 24px;
-    }
-
-    .resume .base .contact div a {
-        color: #ffffff;
-        text-decoration: none;
-        display: block;
-        transition-duration: 0.3s;
-    }
-
-    .resume .base .contact div a:hover {
-        color: #fdd835;
-    }
-
-    .resume .base .contact div a:hover span::after {
-        width: 100%;
-    }
-
-    .resume .base .contact div:hover i {
-        color: #fdd835;
-    }
-
-    .resume .base .contact div i {
-        color: #ffb300;
-        width: 20px;
-        height: 20px;
-        font-size: 20px;
-        text-align: center;
-        margin-right: 15px;
-        transition-duration: 0.3s;
-    }
-
-    .resume .base .contact div span {
-        position: relative;
-        display: inline-block;
-        max-width: 180px;
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
-        vertical-align: bottom;
-    }
-
-    .resume .base .contact div span::after {
-        content: "";
-        position: absolute;
-        background: #fdd835;
-        height: 1px;
-        width: 0;
-        bottom: 0;
-        left: 0;
-        transition-duration: 0.3s;
-    }
-
-    .resume .base .about {
-        margin-bottom: 15px;
-    }
-
-    .resume .func {
-        width: 70%;
-        padding: 30px;
-    }
-
-    .resume .func h3 {
-        color: #ffb300;
-        margin: 10px 0;
-        text-transform: lowercase;
-        font-size: 1.25em;
-    }
-
-    .resume .func h3 i {
-        color: #283593;
-        background: #ffb300;
-        width: 42px;
-        height: 42px;
-        font-size: 20px;
-        line-height: 42px;
-        border-radius: 50%;
-        text-align: center;
-        vertical-align: middle;
-        margin-right: 8px;
-        transition-duration: 0.3s;
-    }
-
-    .resume .func .work,
-    .resume .func .edu,
-    .resume .func .structures-visited {
-        float: left;
-        width: 48%;
-        background: #283593;
-        padding: 15px;
-        margin: 0 4% 15px 0;
-    }
-
-    .resume .func .edu,
-    .resume .func .structures-visited {
-        margin-right: 0;
-    }
-
-    .resume .func .structures-visited {
-        clear: both;
-        width: 100%;
-    }
-
-    .resume .func .work ul li,
-    .resume .func .edu ul li,
-    .resume .func .structures-visited ul li {
-        position: relative;
-        margin-left: 15px;
-        padding-left: 25px;
-        padding-bottom: 15px;
-    }
-
-    .resume .func .work ul li span,
-    .resume .func .edu ul li span,
-    .resume .func .structures-visited ul li span {
-        display: block;
-        max-width: 100%;
-        overflow: hidden;
-        text-overflow: ellipsis;
-        white-space: nowrap;
-    }
-
-    .resume .func .work ul li::before,
-    .resume .func .edu ul li::before,
-    .resume .func .structures-visited ul li::before {
-        content: "";
-        display: block;
-        position: absolute;
-        width: 7px;
-        height: 7px;
-        border: 3px solid #ffffff;
-        background: #ffb300;
-        border-radius: 50%;
-        left: 3px;
-        z-index: 1;
-    }
-
-    .resume .func .work ul li::after,
-    .resume .func .edu ul li::after,
-    .resume .func .structures-visited ul li::after {
-        content: "";
-        display: block;
-        position: absolute;
-        width: 3px;
-        height: 100%;
-        background: #ffffff;
-        left: 5px;
-        top: 0;
-    }
-
-    .resume .func .work ul li:last-of-type,
-    .resume .func .edu ul li:last-of-type,
-    .resume .func .structures-visited ul li:last-of-type {
-        padding-bottom: 3px;
-    }
-
-    .resume .func .work ul li:last-of-type::after,
-    .resume .func .edu ul li:last-of-type::after,
-    .resume .func .structures-visited ul li:last-of-type::after {
-        border-radius: 1.5px;
-    }
-
-    .resume .func .skills-prog {
-        clear: both;
-        background: #283593;
-        padding: 15px;
-    }
-
-    .resume .func .skills-prog ul {
-        margin-left: 15px;
-        padding-left: 0;
-    }
-
-    .resume .func .skills-prog ul li {
-        margin-bottom: 8px;
-        display: flex;
-        align-items: center;
-        transition-duration: 0.3s;
-    }
-
-    .resume .func .skills-prog ul li span {
-        display: block;
-        width: 120px;
-    }
-
-    .resume .func .skills-prog ul li .skills-bar {
-        background: #ffffff;
-        height: 2px;
-        width: calc(100% - 120px);
-        position: relative;
-        border-radius: 2px;
-    }
-
-    .resume .func .skills-prog ul li .skills-bar .bar {
-        position: absolute;
-        top: -1px;
-        height: 4px;
-        background: #ffb300;
-        box-shadow: 0 0 0 #ffb300;
-        border-radius: 5px;
-    }
-
-    /* Page break for multi-page CV */
-    .page-break {
-        display: none;
-    }
-
-    /* Print styles */
-    @media print {
-        body {
-            margin: 0;
-            padding: 0;
-            background: white;
-        }
-
-        .page-break {
-            display: block;
-            page-break-before: always;
-        }
-
+        /* CV Styles */
         .resume {
-            box-shadow: none;
-            margin: 0;
-            width: 100%;
-            height: auto;
-            page-break-inside: avoid;
+            width: 210mm; /* A4 width */
+            min-height: 297mm; /* A4 height as minimum */
+            background: #1a237e;
+            color: #ffffff;
+            margin: 20px auto;
+            box-shadow: 10px 10px #0e1442;
+            position: relative;
+            display: flex;
+            flex-wrap: wrap; /* Allow wrapping for better responsiveness */
+            font-family: "Montserrat", sans-serif;
+            overflow: hidden; /* Prevent content from overflowing */
+        }
+
+        .resume .base,
+        .resume .func {
+            box-sizing: border-box;
+            float: left;
+            overflow: hidden; /* Prevent content overflow */
+        }
+
+        .resume .base > div,
+        .resume .func > div {
+            padding-bottom: 10px;
+        }
+
+        .resume .base > div:last-of-type,
+        .resume .func > div:last-of-type {
+            padding-bottom: 0;
         }
 
         .resume .base {
-            page-break-inside: avoid;
+            width: 30%;
+            padding: 30px 15px;
+            background: #283593;
+            color: #ffffff;
         }
 
-        .resume .func > div {
-            page-break-inside: avoid;
+        .resume .base .profile {
+            background: #ffb300;
+            padding: 30px 15px 40px 15px;
+            margin: -30px -15px 45px -15px;
+            position: relative;
+            z-index: 2;
+        }
+
+        .resume .base .profile::after {
+            content: "";
+            position: absolute;
+            background: #303f9f;
+            width: 100%;
+            height: 30px;
+            bottom: -15px;
+            left: 0;
+            transform: skewY(-5deg);
+            z-index: -1;
+        }
+
+        .resume .base .profile .photo img {
+            width: 100%;
+            border-radius: 50%;
+        }
+
+        .resume .base .profile .photo {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .resume .base .profile .fa-rocket {
+            font-size: 100px;
+            text-align: center;
+            margin: auto;
+            color: #283593;
+        }
+
+        .resume .base .profile .info {
+            text-align: center;
+            color: #ffffff;
+        }
+
+        .resume .base .profile .info .name {
+            margin-top: 10px;
+            margin-bottom: 0;
+            font-size: 1.75em;
+            text-transform: lowercase;
+            color: #1a237e;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            max-width: 100%;
+        }
+
+        .resume .base .profile .info .job {
+            margin-top: 10px;
+            margin-bottom: 0;
+            font-size: 1.5em;
+            text-transform: lowercase;
+            color: #283593;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            max-width: 100%;
+        }
+
+        .resume .base .contact div {
+            line-height: 24px;
+        }
+
+        .resume .base .contact div a {
+            color: #ffffff;
+            text-decoration: none;
+            display: block;
+            transition-duration: 0.3s;
+        }
+
+        .resume .base .contact div a:hover {
+            color: #fdd835;
+        }
+
+        .resume .base .contact div a:hover span::after {
+            width: 100%;
+        }
+
+        .resume .base .contact div:hover i {
+            color: #fdd835;
+        }
+
+        .resume .base .contact div i {
+            color: #ffb300;
+            width: 20px;
+            height: 20px;
+            font-size: 20px;
+            text-align: center;
+            margin-right: 15px;
+            transition-duration: 0.3s;
+        }
+
+        .resume .base .contact div span {
+            position: relative;
+            display: inline-block;
+            max-width: 180px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            vertical-align: bottom;
+        }
+
+        .resume .base .contact div span::after {
+            content: "";
+            position: absolute;
+            background: #fdd835;
+            height: 1px;
+            width: 0;
+            bottom: 0;
+            left: 0;
+            transition-duration: 0.3s;
+        }
+
+        .resume .base .about {
+            margin-bottom: 15px;
+        }
+
+        .resume .func {
+            width: 70%;
+            padding: 30px;
+        }
+
+        .resume .func h3 {
+            color: #ffb300;
+            margin: 10px 0;
+            text-transform: lowercase;
+            font-size: 1.25em;
+        }
+
+        .resume .func h3 i {
+            color: #283593;
+            background: #ffb300;
+            width: 42px;
+            height: 42px;
+            font-size: 20px;
+            line-height: 42px;
+            border-radius: 50%;
+            text-align: center;
+            vertical-align: middle;
+            margin-right: 8px;
+            transition-duration: 0.3s;
         }
 
         .resume .func .work,
-        .resume .func .edu {
-            page-break-after: auto;
+        .resume .func .edu,
+        .resume .func .structures-visited {
+            float: left;
+            width: 48%;
+            background: #283593;
+            padding: 15px;
+            margin: 0 4% 15px 0;
+        }
+
+        .resume .func .edu,
+        .resume .func .structures-visited {
+            margin-right: 0;
+        }
+
+        .resume .func .structures-visited {
+            clear: both;
+            width: 100%;
+        }
+
+        .resume .func .work ul li,
+        .resume .func .edu ul li,
+        .resume .func .structures-visited ul li {
+            position: relative;
+            margin-left: 15px;
+            padding-left: 25px;
+            padding-bottom: 15px;
+        }
+
+        .resume .func .work ul li span,
+        .resume .func .edu ul li span,
+        .resume .func .structures-visited ul li span {
+            display: block;
+            max-width: 100%;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .resume .func .work ul li::before,
+        .resume .func .edu ul li::before,
+        .resume .func .structures-visited ul li::before {
+            content: "";
+            display: block;
+            position: absolute;
+            width: 7px;
+            height: 7px;
+            border: 3px solid #ffffff;
+            background: #ffb300;
+            border-radius: 50%;
+            left: 3px;
+            z-index: 1;
+        }
+
+        .resume .func .work ul li::after,
+        .resume .func .edu ul li::after,
+        .resume .func .structures-visited ul li::after {
+            content: "";
+            display: block;
+            position: absolute;
+            width: 3px;
+            height: 100%;
+            background: #ffffff;
+            left: 5px;
+            top: 0;
+        }
+
+        .resume .func .work ul li:last-of-type,
+        .resume .func .edu ul li:last-of-type,
+        .resume .func .structures-visited ul li:last-of-type {
+            padding-bottom: 3px;
+        }
+
+        .resume .func .work ul li:last-of-type::after,
+        .resume .func .edu ul li:last-of-type::after,
+        .resume .func .structures-visited ul li:last-of-type::after {
+            border-radius: 1.5px;
         }
 
         .resume .func .skills-prog {
-            page-break-before: auto;
+            clear: both;
+            background: #283593;
+            padding: 15px;
         }
 
-        .no-print {
-            display: none !important;
+        .resume .func .skills-prog ul {
+            margin-left: 15px;
+            padding-left: 0;
         }
-    }
-</style>
+
+        .resume .func .skills-prog ul li {
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            transition-duration: 0.3s;
+        }
+
+        .resume .func .skills-prog ul li span {
+            display: block;
+            width: 120px;
+        }
+
+        .resume .func .skills-prog ul li .skills-bar {
+            background: #ffffff;
+            height: 2px;
+            width: calc(100% - 120px);
+            position: relative;
+            border-radius: 2px;
+        }
+
+        .resume .func .skills-prog ul li .skills-bar .bar {
+            position: absolute;
+            top: -1px;
+            height: 4px;
+            background: #ffb300;
+            box-shadow: 0 0 0 #ffb300;
+            border-radius: 5px;
+        }
+
+        /* Page break for multi-page CV */
+        .page-break {
+            display: none;
+        }
+
+        /* Print styles */
+        @media print {
+            body {
+                margin: 0;
+                padding: 0;
+                background: white;
+            }
+
+            .page-break {
+                display: block;
+                page-break-before: always;
+            }
+
+            .resume {
+                box-shadow: none;
+                margin: 0;
+                width: 100%;
+                height: auto;
+                page-break-inside: avoid;
+            }
+
+            .resume .base {
+                page-break-inside: avoid;
+            }
+
+            .resume .func > div {
+                page-break-inside: avoid;
+            }
+
+            .resume .func .work,
+            .resume .func .edu {
+                page-break-after: auto;
+            }
+
+            .resume .func .skills-prog {
+                page-break-before: auto;
+            }
+
+            .no-print {
+                display: none !important;
+            }
+        }
+    </style>
 {% endblock %}
 
 {% block content %}
-<div class="container-fluid mb-4 no-print">
-    <div class="row">
-        <div class="col-12">
-            <a href="{% url 'core:user-detail' pk=user.pk %}" class="btn btn-secondary">
-                <i class="fas fa-arrow-left"></i> Retour au profil
-            </a>
-            <a href="{% url 'core:user-cv' pk=user.pk %}?template=bootstrap" class="btn btn-outline-primary">
-                <i class="fas fa-file-alt"></i> Version Bootstrap
-            </a>
-            <a href="{% url 'core:user-cv' pk=user.pk %}?template=material" class="btn btn-outline-primary">
-                <i class="fas fa-file-alt"></i> Version Material Design
-            </a>
-            <a href="{% url 'core:user-cv' pk=user.pk %}?template=liquid_glass" class="btn btn-outline-primary">
-                <i class="fas fa-file-alt"></i> Version Apple Liquid Glass
-            </a>
-            <button class="btn btn-primary" onclick="window.print()">
-                <i class="fas fa-print"></i> Imprimer le CV
-            </button>
-        </div>
-    </div>
-</div>
-
-{% if badges %}
-    {% regroup badges by issuing_structure as structure_badges %}
-{% endif %}
-
-<div class="resume">
-    <div class="base">
-        <div class="profile">
-            <div class="photo">
-                {% if user and user.avatar %}
-                    {% picture user.avatar img_alt="Avatar de "|add:user.get_full_name|default:user.username img_class="img-fluid rounded-circle" ratio="1/1" %}
-                {% else %}
-                    <i class="fas fa-user-circle"></i>
-                {% endif %}
-            </div>
-            <div class="info">
-                <h1 class="name">{{ user.get_full_name|default:user.username }}</h1>
-                <h2 class="job">Développeur Open Source</h2>
-            </div>
-        </div>
-
-        <div class="about">
-            <h3>À propos de moi</h3>
-            <p>
-                {% if user and user.bio %}
-                    {{ user.bio }}
-                {% else %}
-                    Je suis un développeur passionné par l'open source et les technologies web. J'aime contribuer à des projets qui ont un impact positif sur la communauté.
-                {% endif %}
-            </p>
-        </div>
-
-        <div class="contact">
-            <h3>Contact</h3>
-            <div class="call">
-                <a href="tel:{% if user and user.phone %}{{ user.phone }}{% else %}123-456-7890{% endif %}">
-                    <i class="fas fa-phone"></i>
-                    <span>{% if user and user.phone %}{{ user.phone }}{% else %}123-456-7890{% endif %}</span>
+    <div class="container-fluid mb-4 no-print">
+        <div class="row">
+            <div class="col-12">
+                <a href="{% url 'core:user-detail' pk=user.pk %}" class="btn btn-secondary">
+                    <i class="fas fa-arrow-left"></i> Retour au profil
                 </a>
-            </div>
-            <div class="address">
-                <a href="#">
-                    <i class="fas fa-map-marker"></i>
-                    <span>{% if user and user.address %}{{ user.address }}{% else %}Paris, France{% endif %}</span>
+                <a href="{% url 'core:user-cv' pk=user.pk %}?template=bootstrap" class="btn btn-outline-primary">
+                    <i class="fas fa-file-alt"></i> Version Bootstrap
                 </a>
-            </div>
-            <div class="email">
-                <a href="mailto:{{ user.email }}">
-                    <i class="fas fa-envelope"></i>
-                    <span>{{ user.email }}</span>
+                <a href="{% url 'core:user-cv' pk=user.pk %}?template=material" class="btn btn-outline-primary">
+                    <i class="fas fa-file-alt"></i> Version Material Design
                 </a>
-            </div>
-            <div class="website">
-                <a href="{% if user and user.website %}{{ user.website }}{% else %}#{% endif %}" target="_blank">
-                    <i class="fas fa-home"></i>
-                    <span>{% if user and user.website %}{{ user.website }}{% else %}monsite.com{% endif %}</span>
+                <a href="{% url 'core:user-cv' pk=user.pk %}?template=liquid_glass" class="btn btn-outline-primary">
+                    <i class="fas fa-file-alt"></i> Version Apple Liquid Glass
                 </a>
+                <button class="btn btn-primary" onclick="window.print()">
+                    <i class="fas fa-print"></i> Imprimer le CV
+                </button>
             </div>
         </div>
     </div>
 
-    <div class="func">
-        <div class="work">
-            <h3><i class="fa fa-briefcase"></i>Expérience</h3>
-            <ul>
-                {% if badges %}
-                    {% for badge in badges|slice:":5" %}
-                        {% with assignment=badge_assignment_dict|get_item:badge.pk %}
-                            {% if assignment %}
-                                <li>
-                                    <span>{{ badge.name }}</span>
-                                    <small>{{ badge.issuing_structure.name }}</small>
-                                    <small>{{ assignment.assigned_date|date:"M Y" }} - Présent</small>
-                                </li>
-                            {% endif %}
-                        {% endwith %}
-                    {% endfor %}
-                {% else %}
-                    <li>
-                        <span>Développeur Web</span>
-                        <small>Entreprise XYZ</small>
-                        <small>Jan 2020 - Présent</small>
-                    </li>
-                    <li>
-                        <span>Stagiaire Développeur</span>
-                        <small>Startup ABC</small>
-                        <small>Jun 2019 - Dec 2019</small>
-                    </li>
-                {% endif %}
-            </ul>
+    {% if badges %}
+        {% regroup badges by issuing_structure as structure_badges %}
+    {% endif %}
+
+    <div class="resume">
+        <div class="base">
+            <div class="profile">
+                <div class="photo">
+                    {% if user and user.avatar %}
+                        {% picture user.avatar img_alt="Avatar de "|add:user.get_full_name|default:user.username img_class="img-fluid rounded-circle" ratio="1/1" %}
+                    {% else %}
+                        <i class="fas fa-user-circle"></i>
+                    {% endif %}
+                </div>
+                <div class="info">
+                    <h1 class="name">{{ user.get_full_name|default:user.username }}</h1>
+                    <h2 class="job">Développeur Open Source</h2>
+                </div>
+            </div>
+
+            <div class="about">
+                <h3>À propos de moi</h3>
+                <p>
+                    {% if user and user.bio %}
+                        {{ user.bio }}
+                    {% else %}
+                        Je suis un développeur passionné par l'open source et les technologies web. J'aime contribuer à
+                        des projets qui ont un impact positif sur la communauté.
+                    {% endif %}
+                </p>
+            </div>
+
+            <div class="contact">
+                <h3>Contact</h3>
+                <div class="call">
+                    <a href="tel:{% if user and user.phone %}{{ user.phone }}{% else %}123-456-7890{% endif %}">
+                        <i class="fas fa-phone"></i>
+                        <span>{% if user and user.phone %}{{ user.phone }}{% else %}123-456-7890{% endif %}</span>
+                    </a>
+                </div>
+                <div class="address">
+                    <a href="#">
+                        <i class="fas fa-map-marker"></i>
+                        <span>{% if user and user.address %}{{ user.address }}{% else %}Paris, France{% endif %}</span>
+                    </a>
+                </div>
+                <div class="email">
+                    <a href="mailto:{{ user.email }}">
+                        <i class="fas fa-envelope"></i>
+                        <span>{{ user.email }}</span>
+                    </a>
+                </div>
+                <div class="website">
+                    <a href="{% if user and user.website %}{{ user.website }}{% else %}#{% endif %}" target="_blank">
+                        <i class="fas fa-home"></i>
+                        <span>{% if user and user.website %}{{ user.website }}{% else %}monsite.com{% endif %}</span>
+                    </a>
+                </div>
+            </div>
         </div>
 
-        <div class="edu">
-            <h3><i class="fa fa-graduation-cap"></i>Éducation</h3>
-            <ul>
-                <li>
-                    <span>Master en Informatique</span>
-                    <small>Université de Paris</small>
-                    <small>2018 - 2020</small>
-                </li>
-                <li>
-                    <span>Licence en Informatique</span>
-                    <small>Université de Lyon</small>
-                    <small>2015 - 2018</small>
-                </li>
-            </ul>
-        </div>
+        <div class="func">
+            <div class="work">
+                <h3><i class="fa fa-briefcase"></i>Expérience</h3>
+                <ul>
+                    {% if badges %}
+                        {% for badge in badges|slice:":5" %}
+                            {% with assignment=badge_assignment_dict|get_item:badge.pk %}
+                                {% if assignment %}
+                                    <li>
+                                        <span>{{ badge.name }}</span>
+                                        <small>{{ badge.issuing_structure.name }}</small>
+                                        <small>{{ assignment.assigned_date|date:"M Y" }} - Présent</small>
+                                    </li>
+                                {% endif %}
+                            {% endwith %}
+                        {% endfor %}
+                    {% else %}
+                        <li>
+                            <span>Développeur Web</span>
+                            <small>Entreprise XYZ</small>
+                            <small>Jan 2020 - Présent</small>
+                        </li>
+                        <li>
+                            <span>Stagiaire Développeur</span>
+                            <small>Startup ABC</small>
+                            <small>Jun 2019 - Dec 2019</small>
+                        </li>
+                    {% endif %}
+                </ul>
+            </div>
 
-        <div class="skills-prog">
-            <h3><i class="fas fa-code"></i>Compétences</h3>
-            <ul>
-                {% if badges %}
-                    {% for badge in badges|slice:":8" %}
-                        <li data-percent="{% if badge.level == 'beginner' %}60{% elif badge.level == 'intermediate' %}80{% elif badge.level == 'expert' %}95{% else %}70{% endif %}">
-                            <span>{{ badge.name }}</span>
+            <div class="edu">
+                <h3><i class="fa fa-graduation-cap"></i>Éducation</h3>
+                <ul>
+                    <li>
+                        <span>Master en Informatique</span>
+                        <small>Université de Paris</small>
+                        <small>2018 - 2020</small>
+                    </li>
+                    <li>
+                        <span>Licence en Informatique</span>
+                        <small>Université de Lyon</small>
+                        <small>2015 - 2018</small>
+                    </li>
+                </ul>
+            </div>
+
+            <div class="skills-prog">
+                <h3><i class="fas fa-code"></i>Compétences</h3>
+                <ul>
+                    {% if badges %}
+                        {% for badge in badges|slice:":8" %}
+                            <li data-percent="{% if badge.level == 'beginner' %}60{% elif badge.level == 'intermediate' %}80{% elif badge.level == 'expert' %}95{% else %}70{% endif %}">
+                                <span>{{ badge.name }}</span>
+                                <div class="skills-bar">
+                                    <div class="bar"
+                                         style="width: {% if badge.level == 'beginner' %}60%{% elif badge.level == 'intermediate' %}80%{% elif badge.level == 'expert' %}95%{% else %}70%{% endif %}"></div>
+                                </div>
+                            </li>
+                        {% endfor %}
+                    {% else %}
+                        <li data-percent="95">
+                            <span>HTML5</span>
                             <div class="skills-bar">
-                                <div class="bar" style="width: {% if badge.level == 'beginner' %}60%{% elif badge.level == 'intermediate' %}80%{% elif badge.level == 'expert' %}95%{% else %}70%{% endif %}"></div>
+                                <div class="bar" style="width: 95%"></div>
                             </div>
                         </li>
-                    {% endfor %}
-                {% else %}
-                    <li data-percent="95">
-                        <span>HTML5</span>
-                        <div class="skills-bar">
-                            <div class="bar" style="width: 95%"></div>
-                        </div>
-                    </li>
-                    <li data-percent="90">
-                        <span>CSS3 & SCSS</span>
-                        <div class="skills-bar">
-                            <div class="bar" style="width: 90%"></div>
-                        </div>
-                    </li>
-                    <li data-percent="80">
-                        <span>JavaScript</span>
-                        <div class="skills-bar">
-                            <div class="bar" style="width: 80%"></div>
-                        </div>
-                    </li>
-                    <li data-percent="85">
-                        <span>Python</span>
-                        <div class="skills-bar">
-                            <div class="bar" style="width: 85%"></div>
-                        </div>
-                    </li>
-                {% endif %}
-            </ul>
-        </div>
-
-        <div class="structures-visited">
-            <h3><i class="fas fa-building"></i>Structures visitées</h3>
-            <ul>
-                {% if structure_badges %}
-                    {% for structure_group in structure_badges|slice:":5" %}
-                        <li>
-                            <span>{{ structure_group.grouper.name }}</span>
-                            <small>{{ structure_group.list|length }} badge{% if structure_group.list|length > 1 %}s{% endif %}</small>
-                            <small>
-                                {% with first_badge=structure_group.list.0 %}
-                                    {% with assignment=badge_assignment_dict|get_item:first_badge.pk %}
-                                        {% if assignment %}
-                                            Depuis {{ assignment.assigned_date|date:"M Y" }}
-                                        {% endif %}
-                                    {% endwith %}
-                                {% endwith %}
-                            </small>
+                        <li data-percent="90">
+                            <span>CSS3 & SCSS</span>
+                            <div class="skills-bar">
+                                <div class="bar" style="width: 90%"></div>
+                            </div>
                         </li>
-                    {% endfor %}
-                {% else %}
-                    <li>
-                        <span>Aucune structure visitée</span>
-                        <small>Pas encore de badges</small>
-                    </li>
-                {% endif %}
-            </ul>
-        </div>
-
-        <div class="interests">
-            <h3><i class="fas fa-star"></i>Centres d'intérêt</h3>
-            <div class="interests-items" style="display: flex; justify-content: space-around; text-align: center;">
-                <div><i class="fas fa-code"></i><span>Programmation</span></div>
-                <div><i class="fas fa-book"></i><span>Lecture</span></div>
-                <div><i class="fas fa-music"></i><span>Musique</span></div>
-                <div><i class="fas fa-hiking"></i><span>Randonnée</span></div>
+                        <li data-percent="80">
+                            <span>JavaScript</span>
+                            <div class="skills-bar">
+                                <div class="bar" style="width: 80%"></div>
+                            </div>
+                        </li>
+                        <li data-percent="85">
+                            <span>Python</span>
+                            <div class="skills-bar">
+                                <div class="bar" style="width: 85%"></div>
+                            </div>
+                        </li>
+                    {% endif %}
+                </ul>
             </div>
-        </div>
-    </div>
-</div>
 
-<!-- Second page for additional badges and structures if needed -->
-{% if badges.count > 8 or structure_badges|length > 5 %}
-<div class="page-break"></div>
-<div class="resume" style="margin-top: 50px;">
-    <div class="base">
-        <div class="profile">
-            <div class="info">
-                <h1 class="name">{{ user.get_full_name|default:user.username }}</h1>
-                <h2 class="job">Informations supplémentaires</h2>
-            </div>
-        </div>
-    </div>
-
-    <div class="func" style="width: 100%;">
-        {% if badges.count > 8 %}
-        <div class="skills-prog" style="width: 100%; margin-right: 0;">
-            <h3><i class="fas fa-code"></i>Compétences supplémentaires</h3>
-            <ul>
-                {% for badge in badges|slice:"8:" %}
-                    <li data-percent="{% if badge.level == 'beginner' %}60{% elif badge.level == 'intermediate' %}80{% elif badge.level == 'expert' %}95{% else %}70{% endif %}">
-                        <span>{{ badge.name }}</span>
-                        <div class="skills-bar">
-                            <div class="bar" style="width: {% if badge.level == 'beginner' %}60%{% elif badge.level == 'intermediate' %}80%{% elif badge.level == 'expert' %}95%{% else %}70%{% endif %}"></div>
-                        </div>
-                    </li>
-                {% endfor %}
-            </ul>
-        </div>
-        {% endif %}
-
-        {% if badges.count > 5 %}
-        <div class="work" style="width: 100%; margin-right: 0;">
-            <h3><i class="fa fa-briefcase"></i>Expérience supplémentaire</h3>
-            <ul>
-                {% for badge in badges|slice:"5:" %}
-                    {% with assignment=badge_assignment_dict|get_item:badge.pk %}
-                        {% if assignment %}
+            <div class="structures-visited">
+                <h3><i class="fas fa-building"></i>Structures visitées</h3>
+                <ul>
+                    {% if structure_badges %}
+                        {% for structure_group in structure_badges|slice:":5" %}
                             <li>
-                                <span>{{ badge.name }}</span>
-                                <small>{{ badge.issuing_structure.name }}</small>
-                                <small>{{ assignment.assigned_date|date:"M Y" }} - Présent</small>
+                                <span>{{ structure_group.grouper.name }}</span>
+                                <small>{{ structure_group.list|length }} badge{% if structure_group.list|length > 1 %}
+                                    s{% endif %}</small>
+                                <small>
+                                    {% with first_badge=structure_group.list.0 %}
+                                        {% with assignment=badge_assignment_dict|get_item:first_badge.pk %}
+                                            {% if assignment %}
+                                                Depuis {{ assignment.assigned_date|date:"M Y" }}
+                                            {% endif %}
+                                        {% endwith %}
+                                    {% endwith %}
+                                </small>
                             </li>
-                        {% endif %}
-                    {% endwith %}
-                {% endfor %}
-            </ul>
-        </div>
-        {% endif %}
+                        {% endfor %}
+                    {% else %}
+                        <li>
+                            <span>Aucune structure visitée</span>
+                            <small>Pas encore de badges</small>
+                        </li>
+                    {% endif %}
+                </ul>
+            </div>
 
-        {% if structure_badges|length > 5 %}
-        <div class="structures-visited" style="width: 100%; margin-right: 0;">
-            <h3><i class="fas fa-building"></i>Structures visitées supplémentaires</h3>
-            <ul>
-                {% for structure_group in structure_badges|slice:"5:" %}
-                    <li>
-                        <span>{{ structure_group.grouper.name }}</span>
-                        <small>{{ structure_group.list|length }} badge{% if structure_group.list|length > 1 %}s{% endif %}</small>
-                        <small>
-                            {% with first_badge=structure_group.list.0 %}
-                                {% with assignment=badge_assignment_dict|get_item:first_badge.pk %}
+            <div class="interests">
+                <h3><i class="fas fa-star"></i>Centres d'intérêt</h3>
+                <div class="interests-items" style="display: flex; justify-content: space-around; text-align: center;">
+                    <div><i class="fas fa-code"></i><span>Programmation</span></div>
+                    <div><i class="fas fa-book"></i><span>Lecture</span></div>
+                    <div><i class="fas fa-music"></i><span>Musique</span></div>
+                    <div><i class="fas fa-hiking"></i><span>Randonnée</span></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Second page for additional badges and structures if needed -->
+    {% if badges.count > 8 or structure_badges|length > 5 %}
+        <div class="page-break"></div>
+        <div class="resume" style="margin-top: 50px;">
+            <div class="base">
+                <div class="profile">
+                    <div class="info">
+                        <h1 class="name">{{ user.get_full_name|default:user.username }}</h1>
+                        <h2 class="job">Informations supplémentaires</h2>
+                    </div>
+                </div>
+            </div>
+
+            <div class="func" style="width: 100%;">
+                {% if badges.count > 8 %}
+                    <div class="skills-prog" style="width: 100%; margin-right: 0;">
+                        <h3><i class="fas fa-code"></i>Compétences supplémentaires</h3>
+                        <ul>
+                            {% for badge in badges|slice:"8:" %}
+                                <li data-percent="{% if badge.level == 'beginner' %}60{% elif badge.level == 'intermediate' %}80{% elif badge.level == 'expert' %}95{% else %}70{% endif %}">
+                                    <span>{{ badge.name }}</span>
+                                    <div class="skills-bar">
+                                        <div class="bar"
+                                             style="width: {% if badge.level == 'beginner' %}60%{% elif badge.level == 'intermediate' %}80%{% elif badge.level == 'expert' %}95%{% else %}70%{% endif %}"></div>
+                                    </div>
+                                </li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                {% endif %}
+
+                {% if badges.count > 5 %}
+                    <div class="work" style="width: 100%; margin-right: 0;">
+                        <h3><i class="fa fa-briefcase"></i>Expérience supplémentaire</h3>
+                        <ul>
+                            {% for badge in badges|slice:"5:" %}
+                                {% with assignment=badge_assignment_dict|get_item:badge.pk %}
                                     {% if assignment %}
-                                        Depuis {{ assignment.assigned_date|date:"M Y" }}
+                                        <li>
+                                            <span>{{ badge.name }}</span>
+                                            <small>{{ badge.issuing_structure.name }}</small>
+                                            <small>{{ assignment.assigned_date|date:"M Y" }} - Présent</small>
+                                        </li>
                                     {% endif %}
                                 {% endwith %}
-                            {% endwith %}
-                        </small>
-                    </li>
-                {% endfor %}
-            </ul>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                {% endif %}
+
+                {% if structure_badges|length > 5 %}
+                    <div class="structures-visited" style="width: 100%; margin-right: 0;">
+                        <h3><i class="fas fa-building"></i>Structures visitées supplémentaires</h3>
+                        <ul>
+                            {% for structure_group in structure_badges|slice:"5:" %}
+                                <li>
+                                    <span>{{ structure_group.grouper.name }}</span>
+                                    <small>{{ structure_group.list|length }} badge
+                                        {% if structure_group.list|length > 1 %}s{% endif %}</small>
+                                    <small>
+                                        {% with first_badge=structure_group.list.0 %}
+                                            {% with assignment=badge_assignment_dict|get_item:first_badge.pk %}
+                                                {% if assignment %}
+                                                    Depuis {{ assignment.assigned_date|date:"M Y" }}
+                                                {% endif %}
+                                            {% endwith %}
+                                        {% endwith %}
+                                    </small>
+                                </li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                {% endif %}
+            </div>
         </div>
-        {% endif %}
-    </div>
-</div>
-{% endif %}
+    {% endif %}
 {% endblock %}

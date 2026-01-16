@@ -41,10 +41,10 @@
             <div class="nav-item">
                 {% if request.user.is_authenticated == False %}
                     <button
-                        class="nav-link"
-                        data-bs-toggle="offcanvas"
-                        data-bs-target="#loginPanel"
-                        aria-controls="loginPanel">
+                            class="nav-link"
+                            data-bs-toggle="offcanvas"
+                            data-bs-target="#loginPanel"
+                            aria-controls="loginPanel">
                         Se connecter
                     </button>
                 {% else %}
@@ -53,8 +53,8 @@
                         Mon compte
                     </a>
 
-            {% endif %}
-          </div>
+                {% endif %}
+            </div>
         </div>
     </div>
 </nav>

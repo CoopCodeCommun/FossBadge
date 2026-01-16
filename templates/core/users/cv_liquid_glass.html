@@ -6,446 +6,678 @@
 {% block title %}CV de {{ user.get_full_name|default:user.username }}{% endblock %}
 
 {% block extra_css %}
-<style>
-    /* Apple Liquid Glass Design Colors */
-    :root {
-        --apple-bg: #f5f7fa;
-        --apple-card-bg: rgba(255, 255, 255, 0.7);
-        --apple-primary: #0071e3;
-        --apple-secondary: #06c;
-        --apple-text: #1d1d1f;
-        --apple-text-secondary: #86868b;
-        --apple-success: #34c759;
-        --apple-warning: #ff9500;
-        --apple-danger: #ff3b30;
-        --apple-border: rgba(0, 0, 0, 0.1);
-    }
+    <style>
+        /* Apple Liquid Glass Design Colors */
+        :root {
+            --apple-bg: #f5f7fa;
+            --apple-card-bg: rgba(255, 255, 255, 0.7);
+            --apple-primary: #0071e3;
+            --apple-secondary: #06c;
+            --apple-text: #1d1d1f;
+            --apple-text-secondary: #86868b;
+            --apple-success: #34c759;
+            --apple-warning: #ff9500;
+            --apple-danger: #ff3b30;
+            --apple-border: rgba(0, 0, 0, 0.1);
+        }
 
-    /* Print styles */
-    @media print {
+        /* Print styles */
+        @media print {
+            body {
+                margin: 0;
+                padding: 0;
+                background: white;
+            }
+
+            .page-break {
+                display: block;
+                page-break-before: always;
+            }
+
+            .no-print {
+                display: none !important;
+            }
+
+            .glass-card {
+                box-shadow: none !important;
+                margin-bottom: 20px !important;
+                background: white !important;
+                backdrop-filter: none !important;
+                -webkit-backdrop-filter: none !important;
+            }
+        }
+
+        /* Apple Liquid Glass Styles */
         body {
-            margin: 0;
-            padding: 0;
-            background: white;
+            background-color: var(--apple-bg);
+            color: var(--apple-text);
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+            line-height: 1.5;
         }
 
-        .page-break {
-            display: block;
-            page-break-before: always;
+        .glass-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            position: relative;
         }
 
-        .no-print {
-            display: none !important;
+        /* Background gradient blobs */
+        .glass-container::before {
+            content: '';
+            position: fixed;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle at 30% 30%, rgba(255, 0, 128, 0.08), transparent 20%),
+            radial-gradient(circle at 70% 20%, rgba(0, 112, 255, 0.08), transparent 20%),
+            radial-gradient(circle at 20% 80%, rgba(0, 223, 216, 0.08), transparent 20%),
+            radial-gradient(circle at 80% 70%, rgba(255, 196, 0, 0.08), transparent 20%);
+            z-index: -1;
         }
 
         .glass-card {
-            box-shadow: none !important;
-            margin-bottom: 20px !important;
-            background: white !important;
-            backdrop-filter: none !important;
-            -webkit-backdrop-filter: none !important;
+            background-color: var(--apple-card-bg);
+            border-radius: 20px;
+            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.05);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            margin-bottom: 24px;
+            overflow: hidden;
+            transition: all 0.3s ease;
         }
-    }
 
-    /* Apple Liquid Glass Styles */
-    body {
-        background-color: var(--apple-bg);
-        color: var(--apple-text);
-        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
-        line-height: 1.5;
-    }
-
-    .glass-container {
-        max-width: 1200px;
-        margin: 0 auto;
-        padding: 20px;
-        position: relative;
-    }
-
-    /* Background gradient blobs */
-    .glass-container::before {
-        content: '';
-        position: fixed;
-        top: -50%;
-        left: -50%;
-        width: 200%;
-        height: 200%;
-        background: radial-gradient(circle at 30% 30%, rgba(255, 0, 128, 0.08), transparent 20%),
-                    radial-gradient(circle at 70% 20%, rgba(0, 112, 255, 0.08), transparent 20%),
-                    radial-gradient(circle at 20% 80%, rgba(0, 223, 216, 0.08), transparent 20%),
-                    radial-gradient(circle at 80% 70%, rgba(255, 196, 0, 0.08), transparent 20%);
-        z-index: -1;
-    }
-
-    .glass-card {
-        background-color: var(--apple-card-bg);
-        border-radius: 20px;
-        box-shadow: 0 4px 30px rgba(0, 0, 0, 0.05);
-        backdrop-filter: blur(20px);
-        -webkit-backdrop-filter: blur(20px);
-        border: 1px solid rgba(255, 255, 255, 0.3);
-        margin-bottom: 24px;
-        overflow: hidden;
-        transition: all 0.3s ease;
-    }
-
-    .glass-card:hover {
-        transform: translateY(-5px);
-        box-shadow: 0 8px 40px rgba(0, 0, 0, 0.1);
-    }
-
-    .glass-card-header {
-        background: linear-gradient(135deg, var(--apple-primary), #00a2ff);
-        color: white;
-        padding: 30px;
-        position: relative;
-        overflow: hidden;
-    }
-
-    .glass-card-header::after {
-        content: '';
-        position: absolute;
-        top: 0;
-        left: 0;
-        right: 0;
-        bottom: 0;
-        background: linear-gradient(135deg, rgba(255, 255, 255, 0.2), rgba(255, 255, 255, 0));
-        backdrop-filter: blur(5px);
-        -webkit-backdrop-filter: blur(5px);
-    }
-
-    .glass-card-content {
-        padding: 30px;
-        position: relative;
-    }
-
-    .glass-card-title {
-        font-size: 1.5rem;
-        font-weight: 600;
-        margin-bottom: 20px;
-        color: var(--apple-text);
-        display: flex;
-        align-items: center;
-    }
-
-    .glass-card-title i {
-        margin-right: 12px;
-        color: var(--apple-primary);
-        font-size: 1.2em;
-    }
-
-    .glass-divider {
-        height: 1px;
-        background: linear-gradient(to right, rgba(0, 0, 0, 0.05), rgba(0, 0, 0, 0.1), rgba(0, 0, 0, 0.05));
-        margin: 20px 0;
-    }
-
-    .glass-avatar {
-        width: 140px;
-        height: 140px;
-        border-radius: 50%;
-        overflow: hidden;
-        margin: 0 auto;
-        border: 4px solid rgba(255, 255, 255, 0.8);
-        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
-        position: relative;
-        z-index: 1;
-    }
-
-    .glass-avatar img {
-        width: 100%;
-        height: 100%;
-        object-fit: cover;
-    }
-
-    .glass-tag {
-        display: inline-block;
-        padding: 6px 12px;
-        border-radius: 20px;
-        background-color: rgba(0, 113, 227, 0.1);
-        color: var(--apple-primary);
-        margin-right: 8px;
-        margin-bottom: 8px;
-        font-size: 0.875rem;
-        font-weight: 500;
-        backdrop-filter: blur(5px);
-        -webkit-backdrop-filter: blur(5px);
-        border: 1px solid rgba(0, 113, 227, 0.2);
-    }
-
-    .glass-tag.primary {
-        background-color: rgba(0, 113, 227, 0.1);
-        color: var(--apple-primary);
-        border-color: rgba(0, 113, 227, 0.2);
-    }
-
-    .glass-tag.success {
-        background-color: rgba(52, 199, 89, 0.1);
-        color: var(--apple-success);
-        border-color: rgba(52, 199, 89, 0.2);
-    }
-
-    .glass-tag.warning {
-        background-color: rgba(255, 149, 0, 0.1);
-        color: var(--apple-warning);
-        border-color: rgba(255, 149, 0, 0.2);
-    }
-
-    .glass-timeline {
-        position: relative;
-        padding-left: 30px;
-    }
-
-    .glass-timeline::before {
-        content: '';
-        position: absolute;
-        left: 0;
-        top: 8px;
-        height: calc(100% - 16px);
-        width: 2px;
-        background: linear-gradient(to bottom, var(--apple-primary), #00a2ff);
-        border-radius: 1px;
-    }
-
-    .glass-timeline-item {
-        position: relative;
-        margin-bottom: 30px;
-    }
-
-    .glass-timeline-item::before {
-        content: '';
-        position: absolute;
-        left: -30px;
-        top: 8px;
-        width: 12px;
-        height: 12px;
-        border-radius: 50%;
-        background: linear-gradient(135deg, var(--apple-primary), #00a2ff);
-        border: 2px solid white;
-        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-    }
-
-    .glass-timeline-content {
-        background-color: rgba(255, 255, 255, 0.5);
-        border-radius: 12px;
-        padding: 20px;
-        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
-        backdrop-filter: blur(10px);
-        -webkit-backdrop-filter: blur(10px);
-        border: 1px solid rgba(255, 255, 255, 0.5);
-    }
-
-    .glass-timeline-title {
-        font-weight: 600;
-        margin-bottom: 8px;
-        color: var(--apple-text);
-    }
-
-    .glass-timeline-subtitle {
-        color: var(--apple-text-secondary);
-        font-size: 0.875rem;
-        margin-bottom: 8px;
-    }
-
-    .glass-skill-bar {
-        height: 6px;
-        background-color: rgba(0, 0, 0, 0.05);
-        border-radius: 3px;
-        margin-bottom: 24px;
-        overflow: hidden;
-        position: relative;
-    }
-
-    .glass-skill-progress {
-        height: 100%;
-        background: linear-gradient(to right, var(--apple-primary), #00a2ff);
-        border-radius: 3px;
-        position: relative;
-    }
-
-    .glass-skill-progress::after {
-        content: '';
-        position: absolute;
-        top: 0;
-        left: 0;
-        right: 0;
-        bottom: 0;
-        background: linear-gradient(to right, rgba(255, 255, 255, 0), rgba(255, 255, 255, 0.3), rgba(255, 255, 255, 0));
-        animation: shine 2s infinite linear;
-    }
-
-    @keyframes shine {
-        0% {
-            transform: translateX(-100%);
+        .glass-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 40px rgba(0, 0, 0, 0.1);
         }
-        100% {
-            transform: translateX(100%);
+
+        .glass-card-header {
+            background: linear-gradient(135deg, var(--apple-primary), #00a2ff);
+            color: white;
+            padding: 30px;
+            position: relative;
+            overflow: hidden;
         }
-    }
 
-    .glass-btn {
-        display: inline-block;
-        padding: 10px 20px;
-        border-radius: 20px;
-        text-decoration: none;
-        font-weight: 500;
-        letter-spacing: 0.5px;
-        transition: all 0.3s ease;
-        border: none;
-        cursor: pointer;
-        margin-right: 10px;
-        backdrop-filter: blur(5px);
-        -webkit-backdrop-filter: blur(5px);
-    }
-
-    .glass-btn-primary {
-        background: linear-gradient(135deg, var(--apple-primary), #00a2ff);
-        color: white;
-        box-shadow: 0 4px 10px rgba(0, 113, 227, 0.3);
-    }
-
-    .glass-btn-primary:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 6px 15px rgba(0, 113, 227, 0.4);
-        color: white;
-    }
-
-    .glass-btn-secondary {
-        background: rgba(0, 0, 0, 0.05);
-        color: var(--apple-text);
-        border: 1px solid rgba(0, 0, 0, 0.1);
-    }
-
-    .glass-btn-secondary:hover {
-        background: rgba(0, 0, 0, 0.1);
-        color: var(--apple-text);
-    }
-
-    .glass-btn-outline {
-        background: transparent;
-        color: var(--apple-primary);
-        border: 1px solid var(--apple-primary);
-    }
-
-    .glass-btn-outline:hover {
-        background: rgba(0, 113, 227, 0.1);
-        color: var(--apple-primary);
-    }
-
-    .glass-contact-item {
-        display: flex;
-        align-items: center;
-        margin-bottom: 15px;
-    }
-
-    .glass-contact-item i {
-        color: var(--apple-primary);
-        margin-right: 12px;
-        width: 24px;
-        text-align: center;
-    }
-
-    .glass-interest-item {
-        text-align: center;
-        margin-bottom: 20px;
-    }
-
-    .glass-interest-icon {
-        font-size: 2.5rem;
-        color: var(--apple-primary);
-        margin-bottom: 10px;
-        background: linear-gradient(135deg, var(--apple-primary), #00a2ff);
-        -webkit-background-clip: text;
-        -webkit-text-fill-color: transparent;
-    }
-
-    /* Floating elements animation */
-    .floating {
-        animation: floating 3s ease-in-out infinite;
-    }
-
-    @keyframes floating {
-        0% {
-            transform: translateY(0px);
+        .glass-card-header::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.2), rgba(255, 255, 255, 0));
+            backdrop-filter: blur(5px);
+            -webkit-backdrop-filter: blur(5px);
         }
-        50% {
-            transform: translateY(-10px);
+
+        .glass-card-content {
+            padding: 30px;
+            position: relative;
         }
-        100% {
-            transform: translateY(0px);
+
+        .glass-card-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin-bottom: 20px;
+            color: var(--apple-text);
+            display: flex;
+            align-items: center;
         }
-    }
-</style>
+
+        .glass-card-title i {
+            margin-right: 12px;
+            color: var(--apple-primary);
+            font-size: 1.2em;
+        }
+
+        .glass-divider {
+            height: 1px;
+            background: linear-gradient(to right, rgba(0, 0, 0, 0.05), rgba(0, 0, 0, 0.1), rgba(0, 0, 0, 0.05));
+            margin: 20px 0;
+        }
+
+        .glass-avatar {
+            width: 140px;
+            height: 140px;
+            border-radius: 50%;
+            overflow: hidden;
+            margin: 0 auto;
+            border: 4px solid rgba(255, 255, 255, 0.8);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            position: relative;
+            z-index: 1;
+        }
+
+        .glass-avatar img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .glass-tag {
+            display: inline-block;
+            padding: 6px 12px;
+            border-radius: 20px;
+            background-color: rgba(0, 113, 227, 0.1);
+            color: var(--apple-primary);
+            margin-right: 8px;
+            margin-bottom: 8px;
+            font-size: 0.875rem;
+            font-weight: 500;
+            backdrop-filter: blur(5px);
+            -webkit-backdrop-filter: blur(5px);
+            border: 1px solid rgba(0, 113, 227, 0.2);
+        }
+
+        .glass-tag.primary {
+            background-color: rgba(0, 113, 227, 0.1);
+            color: var(--apple-primary);
+            border-color: rgba(0, 113, 227, 0.2);
+        }
+
+        .glass-tag.success {
+            background-color: rgba(52, 199, 89, 0.1);
+            color: var(--apple-success);
+            border-color: rgba(52, 199, 89, 0.2);
+        }
+
+        .glass-tag.warning {
+            background-color: rgba(255, 149, 0, 0.1);
+            color: var(--apple-warning);
+            border-color: rgba(255, 149, 0, 0.2);
+        }
+
+        .glass-timeline {
+            position: relative;
+            padding-left: 30px;
+        }
+
+        .glass-timeline::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 8px;
+            height: calc(100% - 16px);
+            width: 2px;
+            background: linear-gradient(to bottom, var(--apple-primary), #00a2ff);
+            border-radius: 1px;
+        }
+
+        .glass-timeline-item {
+            position: relative;
+            margin-bottom: 30px;
+        }
+
+        .glass-timeline-item::before {
+            content: '';
+            position: absolute;
+            left: -30px;
+            top: 8px;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--apple-primary), #00a2ff);
+            border: 2px solid white;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .glass-timeline-content {
+            background-color: rgba(255, 255, 255, 0.5);
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.5);
+        }
+
+        .glass-timeline-title {
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: var(--apple-text);
+        }
+
+        .glass-timeline-subtitle {
+            color: var(--apple-text-secondary);
+            font-size: 0.875rem;
+            margin-bottom: 8px;
+        }
+
+        .glass-skill-bar {
+            height: 6px;
+            background-color: rgba(0, 0, 0, 0.05);
+            border-radius: 3px;
+            margin-bottom: 24px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .glass-skill-progress {
+            height: 100%;
+            background: linear-gradient(to right, var(--apple-primary), #00a2ff);
+            border-radius: 3px;
+            position: relative;
+        }
+
+        .glass-skill-progress::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(to right, rgba(255, 255, 255, 0), rgba(255, 255, 255, 0.3), rgba(255, 255, 255, 0));
+            animation: shine 2s infinite linear;
+        }
+
+        @keyframes shine {
+            0% {
+                transform: translateX(-100%);
+            }
+            100% {
+                transform: translateX(100%);
+            }
+        }
+
+        .glass-btn {
+            display: inline-block;
+            padding: 10px 20px;
+            border-radius: 20px;
+            text-decoration: none;
+            font-weight: 500;
+            letter-spacing: 0.5px;
+            transition: all 0.3s ease;
+            border: none;
+            cursor: pointer;
+            margin-right: 10px;
+            backdrop-filter: blur(5px);
+            -webkit-backdrop-filter: blur(5px);
+        }
+
+        .glass-btn-primary {
+            background: linear-gradient(135deg, var(--apple-primary), #00a2ff);
+            color: white;
+            box-shadow: 0 4px 10px rgba(0, 113, 227, 0.3);
+        }
+
+        .glass-btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 15px rgba(0, 113, 227, 0.4);
+            color: white;
+        }
+
+        .glass-btn-secondary {
+            background: rgba(0, 0, 0, 0.05);
+            color: var(--apple-text);
+            border: 1px solid rgba(0, 0, 0, 0.1);
+        }
+
+        .glass-btn-secondary:hover {
+            background: rgba(0, 0, 0, 0.1);
+            color: var(--apple-text);
+        }
+
+        .glass-btn-outline {
+            background: transparent;
+            color: var(--apple-primary);
+            border: 1px solid var(--apple-primary);
+        }
+
+        .glass-btn-outline:hover {
+            background: rgba(0, 113, 227, 0.1);
+            color: var(--apple-primary);
+        }
+
+        .glass-contact-item {
+            display: flex;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .glass-contact-item i {
+            color: var(--apple-primary);
+            margin-right: 12px;
+            width: 24px;
+            text-align: center;
+        }
+
+        .glass-interest-item {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .glass-interest-icon {
+            font-size: 2.5rem;
+            color: var(--apple-primary);
+            margin-bottom: 10px;
+            background: linear-gradient(135deg, var(--apple-primary), #00a2ff);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        /* Floating elements animation */
+        .floating {
+            animation: floating 3s ease-in-out infinite;
+        }
+
+        @keyframes floating {
+            0% {
+                transform: translateY(0px);
+            }
+            50% {
+                transform: translateY(-10px);
+            }
+            100% {
+                transform: translateY(0px);
+            }
+        }
+    </style>
 {% endblock %}
 
 {% block content %}
-<!-- Navigation buttons -->
-<div class="container mb-4 no-print">
-    <div class="row">
-        <div class="col-12">
-            <a href="{% url 'core:user-detail' pk=user.pk %}" class="glass-btn glass-btn-secondary">
-                <i class="fas fa-arrow-left"></i> Retour au profil
-            </a>
-            <a href="{% url 'core:user-cv' pk=user.pk %}?template=classic" class="glass-btn glass-btn-outline">
-                <i class="fas fa-file-alt"></i> Version classique
-            </a>
-            <a href="{% url 'core:user-cv' pk=user.pk %}?template=bootstrap" class="glass-btn glass-btn-outline">
-                <i class="fas fa-file-alt"></i> Version Bootstrap
-            </a>
-            <a href="{% url 'core:user-cv' pk=user.pk %}?template=material" class="glass-btn glass-btn-outline">
-                <i class="fas fa-file-alt"></i> Version Material Design
-            </a>
-            <button class="glass-btn glass-btn-primary" onclick="window.print()">
-                <i class="fas fa-print"></i> Imprimer le CV
-            </button>
+    <!-- Navigation buttons -->
+    <div class="container mb-4 no-print">
+        <div class="row">
+            <div class="col-12">
+                <a href="{% url 'core:user-detail' pk=user.pk %}" class="glass-btn glass-btn-secondary">
+                    <i class="fas fa-arrow-left"></i> Retour au profil
+                </a>
+                <a href="{% url 'core:user-cv' pk=user.pk %}?template=classic" class="glass-btn glass-btn-outline">
+                    <i class="fas fa-file-alt"></i> Version classique
+                </a>
+                <a href="{% url 'core:user-cv' pk=user.pk %}?template=bootstrap" class="glass-btn glass-btn-outline">
+                    <i class="fas fa-file-alt"></i> Version Bootstrap
+                </a>
+                <a href="{% url 'core:user-cv' pk=user.pk %}?template=material" class="glass-btn glass-btn-outline">
+                    <i class="fas fa-file-alt"></i> Version Material Design
+                </a>
+                <button class="glass-btn glass-btn-primary" onclick="window.print()">
+                    <i class="fas fa-print"></i> Imprimer le CV
+                </button>
+            </div>
         </div>
     </div>
-</div>
 
-{% if badges %}
-    {% regroup badges by issuing_structure as structure_badges %}
-{% endif %}
+    {% if badges %}
+        {% regroup badges by issuing_structure as structure_badges %}
+    {% endif %}
 
-<!-- CV Content -->
-<div class="glass-container">
-    <!-- Header Section -->
-    <div class="glass-card">
-        <div class="glass-card-header">
-            <div class="row align-items-center position-relative" style="z-index: 1;">
-                <div class="col-md-3 text-center">
-                    {% if user and user.avatar %}
-                        <div class="glass-avatar floating">
-                            {% picture user.avatar img_alt="Avatar de "|add:user.get_full_name|default:user.username img_class="img-fluid" ratio="1/1" %}
+    <!-- CV Content -->
+    <div class="glass-container">
+        <!-- Header Section -->
+        <div class="glass-card">
+            <div class="glass-card-header">
+                <div class="row align-items-center position-relative" style="z-index: 1;">
+                    <div class="col-md-3 text-center">
+                        {% if user and user.avatar %}
+                            <div class="glass-avatar floating">
+                                {% picture user.avatar img_alt="Avatar de "|add:user.get_full_name|default:user.username img_class="img-fluid" ratio="1/1" %}
+                            </div>
+                        {% else %}
+                            <div class="glass-avatar floating d-flex align-items-center justify-content-center bg-light">
+                                <i class="fas fa-user-circle fa-5x" style="color: var(--apple-primary);"></i>
+                            </div>
+                        {% endif %}
+                    </div>
+                    <div class="col-md-9">
+                        <h1 class="display-4 fw-bold">{{ user.get_full_name|default:user.username }}</h1>
+                        <h3 class="text-white-50 mb-4">Développeur Open Source</h3>
+                        <div class="row mt-3">
+                            <div class="col-md-6">
+                                <div class="glass-contact-item">
+                                    <i class="fas fa-phone"></i>
+                                    <span>{% if user and user.phone %}{{ user.phone }}{% else %}
+                                        123-456-7890{% endif %}</span>
+                                </div>
+                                <div class="glass-contact-item">
+                                    <i class="fas fa-envelope"></i>
+                                    <span>{{ user.email }}</span>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="glass-contact-item">
+                                    <i class="fas fa-map-marker-alt"></i>
+                                    <span>{% if user and user.address %}{{ user.address }}{% else %}Paris,
+                                        France{% endif %}</span>
+                                </div>
+                                <div class="glass-contact-item">
+                                    <i class="fas fa-globe"></i>
+                                    <span>{% if user and user.website %}{{ user.website }}{% else %}
+                                        monsite.com{% endif %}</span>
+                                </div>
+                            </div>
                         </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- About Me Section -->
+        <div class="glass-card">
+            <div class="glass-card-content">
+                <h2 class="glass-card-title"><i class="fas fa-user"></i>À propos de moi</h2>
+                <div class="glass-divider"></div>
+                <p>
+                    {% if user and user.bio %}
+                        {{ user.bio }}
                     {% else %}
-                        <div class="glass-avatar floating d-flex align-items-center justify-content-center bg-light">
-                            <i class="fas fa-user-circle fa-5x" style="color: var(--apple-primary);"></i>
+                        Je suis un développeur passionné par l'open source et les technologies web. J'aime contribuer à
+                        des projets qui ont un impact positif sur la communauté.
+                    {% endif %}
+                </p>
+            </div>
+        </div>
+
+        <div class="row">
+            <!-- Experience Section -->
+            <div class="col-md-6">
+                <div class="glass-card h-100">
+                    <div class="glass-card-content">
+                        <h2 class="glass-card-title"><i class="fas fa-briefcase"></i>Expérience</h2>
+                        <div class="glass-divider"></div>
+                        <div class="glass-timeline">
+                            {% if badges %}
+                                {% for badge in badges|slice:":5" %}
+                                    {% with assignment=badge_assignment_dict|get_item:badge.pk %}
+                                        {% if assignment %}
+                                            <div class="glass-timeline-item">
+                                                <div class="glass-timeline-content">
+                                                    <h5 class="glass-timeline-title">{{ badge.name }}</h5>
+                                                    <p class="glass-timeline-subtitle">{{ badge.issuing_structure.name }}</p>
+                                                    <p class="small">{{ assignment.assigned_date|date:"M Y" }} -
+                                                        Présent</p>
+                                                    <p>{{ badge.description|truncatewords:20 }}</p>
+                                                </div>
+                                            </div>
+                                        {% endif %}
+                                    {% endwith %}
+                                {% endfor %}
+                            {% else %}
+                                <div class="glass-timeline-item">
+                                    <div class="glass-timeline-content">
+                                        <h5 class="glass-timeline-title">Développeur Web</h5>
+                                        <p class="glass-timeline-subtitle">Entreprise XYZ</p>
+                                        <p class="small">Jan 2020 - Présent</p>
+                                        <p>Développement d'applications web avec les dernières technologies.</p>
+                                    </div>
+                                </div>
+                                <div class="glass-timeline-item">
+                                    <div class="glass-timeline-content">
+                                        <h5 class="glass-timeline-title">Stagiaire Développeur</h5>
+                                        <p class="glass-timeline-subtitle">Startup ABC</p>
+                                        <p class="small">Jun 2019 - Dec 2019</p>
+                                        <p>Participation au développement de fonctionnalités clés.</p>
+                                    </div>
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Education Section -->
+            <div class="col-md-6">
+                <div class="glass-card h-100">
+                    <div class="glass-card-content">
+                        <h2 class="glass-card-title"><i class="fas fa-graduation-cap"></i>Éducation</h2>
+                        <div class="glass-divider"></div>
+                        <div class="glass-timeline">
+                            <div class="glass-timeline-item">
+                                <div class="glass-timeline-content">
+                                    <h5 class="glass-timeline-title">Master en Informatique</h5>
+                                    <p class="glass-timeline-subtitle">Université de Paris</p>
+                                    <p class="small">2018 - 2020</p>
+                                    <p>Spécialisation en développement web et applications mobiles.</p>
+                                </div>
+                            </div>
+                            <div class="glass-timeline-item">
+                                <div class="glass-timeline-content">
+                                    <h5 class="glass-timeline-title">Licence en Informatique</h5>
+                                    <p class="glass-timeline-subtitle">Université de Lyon</p>
+                                    <p class="small">2015 - 2018</p>
+                                    <p>Formation générale en informatique et programmation.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Skills Section -->
+        <div class="glass-card">
+            <div class="glass-card-content">
+                <h2 class="glass-card-title"><i class="fas fa-code"></i>Compétences</h2>
+                <div class="glass-divider"></div>
+                <div class="row">
+                    {% if badges %}
+                        {% for badge in badges|slice:":8" %}
+                            <div class="col-md-6 mb-3">
+                                <div class="d-flex align-items-center justify-content-between mb-2">
+                                    <span class="fw-medium">{{ badge.name }}</span>
+                                    <span class="glass-tag {% if badge.level == 'beginner' %}primary{% elif badge.level == 'intermediate' %}warning{% elif badge.level == 'expert' %}success{% endif %}">
+                                    {{ badge.get_level_display }}
+                                </span>
+                                </div>
+                                <div class="glass-skill-bar">
+                                    <div class="glass-skill-progress"
+                                         style="width: {% if badge.level == 'beginner' %}60%{% elif badge.level == 'intermediate' %}80%{% elif badge.level == 'expert' %}95%{% else %}70%{% endif %}"></div>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    {% else %}
+                        <div class="col-md-6 mb-3">
+                            <div class="d-flex align-items-center justify-content-between mb-2">
+                                <span class="fw-medium">HTML5</span>
+                                <span class="glass-tag success">Expert</span>
+                            </div>
+                            <div class="glass-skill-bar">
+                                <div class="glass-skill-progress" style="width: 95%"></div>
+                            </div>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <div class="d-flex align-items-center justify-content-between mb-2">
+                                <span class="fw-medium">CSS3 & SCSS</span>
+                                <span class="glass-tag success">Expert</span>
+                            </div>
+                            <div class="glass-skill-bar">
+                                <div class="glass-skill-progress" style="width: 90%"></div>
+                            </div>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <div class="d-flex align-items-center justify-content-between mb-2">
+                                <span class="fw-medium">JavaScript</span>
+                                <span class="glass-tag warning">Intermédiaire</span>
+                            </div>
+                            <div class="glass-skill-bar">
+                                <div class="glass-skill-progress" style="width: 80%"></div>
+                            </div>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <div class="d-flex align-items-center justify-content-between mb-2">
+                                <span class="fw-medium">Python</span>
+                                <span class="glass-tag success">Expert</span>
+                            </div>
+                            <div class="glass-skill-bar">
+                                <div class="glass-skill-progress" style="width: 85%"></div>
+                            </div>
                         </div>
                     {% endif %}
                 </div>
-                <div class="col-md-9">
-                    <h1 class="display-4 fw-bold">{{ user.get_full_name|default:user.username }}</h1>
-                    <h3 class="text-white-50 mb-4">Développeur Open Source</h3>
-                    <div class="row mt-3">
-                        <div class="col-md-6">
-                            <div class="glass-contact-item">
-                                <i class="fas fa-phone"></i>
-                                <span>{% if user and user.phone %}{{ user.phone }}{% else %}123-456-7890{% endif %}</span>
+            </div>
+        </div>
+
+        <!-- Structures Visited Section -->
+        <div class="glass-card">
+            <div class="glass-card-content">
+                <h2 class="glass-card-title"><i class="fas fa-building"></i>Structures visitées</h2>
+                <div class="glass-divider"></div>
+                <div class="row">
+                    {% if structure_badges %}
+                        {% for structure_group in structure_badges|slice:":5" %}
+                            <div class="col-md-6 mb-3">
+                                <div class="glass-card">
+                                    <div class="glass-card-content">
+                                        <h5 class="glass-card-title"
+                                            style="margin-bottom: 8px; font-size: 1.1rem;">{{ structure_group.grouper.name }}</h5>
+                                        <div class="glass-tag primary">{{ structure_group.list|length }} badge
+                                            {% if structure_group.list|length > 1 %}s{% endif %}</div>
+                                        <p class="small text-muted mt-2">
+                                            {% with first_badge=structure_group.list.0 %}
+                                                {% with assignment=badge_assignment_dict|get_item:first_badge.pk %}
+                                                    {% if assignment %}
+                                                        Depuis {{ assignment.assigned_date|date:"M Y" }}
+                                                    {% endif %}
+                                                {% endwith %}
+                                            {% endwith %}
+                                        </p>
+                                    </div>
+                                </div>
                             </div>
-                            <div class="glass-contact-item">
-                                <i class="fas fa-envelope"></i>
-                                <span>{{ user.email }}</span>
+                        {% endfor %}
+                    {% else %}
+                        <div class="col-12">
+                            <div class="alert alert-info">
+                                Aucune structure visitée. Pas encore de badges.
                             </div>
                         </div>
-                        <div class="col-md-6">
-                            <div class="glass-contact-item">
-                                <i class="fas fa-map-marker-alt"></i>
-                                <span>{% if user and user.address %}{{ user.address }}{% else %}Paris, France{% endif %}</span>
-                            </div>
-                            <div class="glass-contact-item">
-                                <i class="fas fa-globe"></i>
-                                <span>{% if user and user.website %}{{ user.website }}{% else %}monsite.com{% endif %}</span>
-                            </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Interests Section -->
+        <div class="glass-card">
+            <div class="glass-card-content">
+                <h2 class="glass-card-title"><i class="fas fa-star"></i>Centres d'intérêt</h2>
+                <div class="glass-divider"></div>
+                <div class="row text-center">
+                    <div class="col-md-3 col-6">
+                        <div class="glass-interest-item">
+                            <i class="fas fa-code glass-interest-icon floating"></i>
+                            <p>Programmation</p>
+                        </div>
+                    </div>
+                    <div class="col-md-3 col-6">
+                        <div class="glass-interest-item">
+                            <i class="fas fa-book glass-interest-icon floating"></i>
+                            <p>Lecture</p>
+                        </div>
+                    </div>
+                    <div class="col-md-3 col-6">
+                        <div class="glass-interest-item">
+                            <i class="fas fa-music glass-interest-icon floating"></i>
+                            <p>Musique</p>
+                        </div>
+                    </div>
+                    <div class="col-md-3 col-6">
+                        <div class="glass-interest-item">
+                            <i class="fas fa-hiking glass-interest-icon floating"></i>
+                            <p>Randonnée</p>
                         </div>
                     </div>
                 </div>
@@ -453,31 +685,47 @@
         </div>
     </div>
 
-    <!-- About Me Section -->
-    <div class="glass-card">
-        <div class="glass-card-content">
-            <h2 class="glass-card-title"><i class="fas fa-user"></i>À propos de moi</h2>
-            <div class="glass-divider"></div>
-            <p>
-                {% if user and user.bio %}
-                    {{ user.bio }}
-                {% else %}
-                    Je suis un développeur passionné par l'open source et les technologies web. J'aime contribuer à des projets qui ont un impact positif sur la communauté.
-                {% endif %}
-            </p>
-        </div>
-    </div>
+    <!-- Second page for additional content if needed -->
+    {% if badges.count > 8 or structure_badges|length > 5 %}
+        <div class="page-break"></div>
 
-    <div class="row">
-        <!-- Experience Section -->
-        <div class="col-md-6">
-            <div class="glass-card h-100">
-                <div class="glass-card-content">
-                    <h2 class="glass-card-title"><i class="fas fa-briefcase"></i>Expérience</h2>
-                    <div class="glass-divider"></div>
-                    <div class="glass-timeline">
-                        {% if badges %}
-                            {% for badge in badges|slice:":5" %}
+        <div class="glass-container">
+            <div class="glass-card">
+                <div class="glass-card-header">
+                    <h2 class="mb-0 position-relative"
+                        style="z-index: 1;">{{ user.get_full_name|default:user.username }} - Informations
+                        supplémentaires</h2>
+                </div>
+
+                {% if badges.count > 8 %}
+                    <div class="glass-card-content">
+                        <h3 class="glass-card-title"><i class="fas fa-code"></i>Compétences supplémentaires</h3>
+                        <div class="glass-divider"></div>
+                        <div class="row">
+                            {% for badge in badges|slice:"8:" %}
+                                <div class="col-md-6 mb-3">
+                                    <div class="d-flex align-items-center justify-content-between mb-2">
+                                        <span class="fw-medium">{{ badge.name }}</span>
+                                        <span class="glass-tag {% if badge.level == 'beginner' %}primary{% elif badge.level == 'intermediate' %}warning{% elif badge.level == 'expert' %}success{% endif %}">
+                                {{ badge.get_level_display }}
+                            </span>
+                                    </div>
+                                    <div class="glass-skill-bar">
+                                        <div class="glass-skill-progress"
+                                             style="width: {% if badge.level == 'beginner' %}60%{% elif badge.level == 'intermediate' %}80%{% elif badge.level == 'expert' %}95%{% else %}70%{% endif %}"></div>
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                {% endif %}
+
+                {% if badges.count > 5 %}
+                    <div class="glass-card-content">
+                        <h3 class="glass-card-title"><i class="fas fa-briefcase"></i>Expérience supplémentaire</h3>
+                        <div class="glass-divider"></div>
+                        <div class="glass-timeline">
+                            {% for badge in badges|slice:"5:" %}
                                 {% with assignment=badge_assignment_dict|get_item:badge.pk %}
                                     {% if assignment %}
                                         <div class="glass-timeline-item">
@@ -491,275 +739,41 @@
                                     {% endif %}
                                 {% endwith %}
                             {% endfor %}
-                        {% else %}
-                            <div class="glass-timeline-item">
-                                <div class="glass-timeline-content">
-                                    <h5 class="glass-timeline-title">Développeur Web</h5>
-                                    <p class="glass-timeline-subtitle">Entreprise XYZ</p>
-                                    <p class="small">Jan 2020 - Présent</p>
-                                    <p>Développement d'applications web avec les dernières technologies.</p>
-                                </div>
-                            </div>
-                            <div class="glass-timeline-item">
-                                <div class="glass-timeline-content">
-                                    <h5 class="glass-timeline-title">Stagiaire Développeur</h5>
-                                    <p class="glass-timeline-subtitle">Startup ABC</p>
-                                    <p class="small">Jun 2019 - Dec 2019</p>
-                                    <p>Participation au développement de fonctionnalités clés.</p>
-                                </div>
-                            </div>
-                        {% endif %}
+                        </div>
                     </div>
-                </div>
-            </div>
-        </div>
+                {% endif %}
 
-        <!-- Education Section -->
-        <div class="col-md-6">
-            <div class="glass-card h-100">
-                <div class="glass-card-content">
-                    <h2 class="glass-card-title"><i class="fas fa-graduation-cap"></i>Éducation</h2>
-                    <div class="glass-divider"></div>
-                    <div class="glass-timeline">
-                        <div class="glass-timeline-item">
-                            <div class="glass-timeline-content">
-                                <h5 class="glass-timeline-title">Master en Informatique</h5>
-                                <p class="glass-timeline-subtitle">Université de Paris</p>
-                                <p class="small">2018 - 2020</p>
-                                <p>Spécialisation en développement web et applications mobiles.</p>
-                            </div>
-                        </div>
-                        <div class="glass-timeline-item">
-                            <div class="glass-timeline-content">
-                                <h5 class="glass-timeline-title">Licence en Informatique</h5>
-                                <p class="glass-timeline-subtitle">Université de Lyon</p>
-                                <p class="small">2015 - 2018</p>
-                                <p>Formation générale en informatique et programmation.</p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Skills Section -->
-    <div class="glass-card">
-        <div class="glass-card-content">
-            <h2 class="glass-card-title"><i class="fas fa-code"></i>Compétences</h2>
-            <div class="glass-divider"></div>
-            <div class="row">
-                {% if badges %}
-                    {% for badge in badges|slice:":8" %}
-                        <div class="col-md-6 mb-3">
-                            <div class="d-flex align-items-center justify-content-between mb-2">
-                                <span class="fw-medium">{{ badge.name }}</span>
-                                <span class="glass-tag {% if badge.level == 'beginner' %}primary{% elif badge.level == 'intermediate' %}warning{% elif badge.level == 'expert' %}success{% endif %}">
-                                    {{ badge.get_level_display }}
-                                </span>
-                            </div>
-                            <div class="glass-skill-bar">
-                                <div class="glass-skill-progress" style="width: {% if badge.level == 'beginner' %}60%{% elif badge.level == 'intermediate' %}80%{% elif badge.level == 'expert' %}95%{% else %}70%{% endif %}"></div>
-                            </div>
-                        </div>
-                    {% endfor %}
-                {% else %}
-                    <div class="col-md-6 mb-3">
-                        <div class="d-flex align-items-center justify-content-between mb-2">
-                            <span class="fw-medium">HTML5</span>
-                            <span class="glass-tag success">Expert</span>
-                        </div>
-                        <div class="glass-skill-bar">
-                            <div class="glass-skill-progress" style="width: 95%"></div>
-                        </div>
-                    </div>
-                    <div class="col-md-6 mb-3">
-                        <div class="d-flex align-items-center justify-content-between mb-2">
-                            <span class="fw-medium">CSS3 & SCSS</span>
-                            <span class="glass-tag success">Expert</span>
-                        </div>
-                        <div class="glass-skill-bar">
-                            <div class="glass-skill-progress" style="width: 90%"></div>
-                        </div>
-                    </div>
-                    <div class="col-md-6 mb-3">
-                        <div class="d-flex align-items-center justify-content-between mb-2">
-                            <span class="fw-medium">JavaScript</span>
-                            <span class="glass-tag warning">Intermédiaire</span>
-                        </div>
-                        <div class="glass-skill-bar">
-                            <div class="glass-skill-progress" style="width: 80%"></div>
-                        </div>
-                    </div>
-                    <div class="col-md-6 mb-3">
-                        <div class="d-flex align-items-center justify-content-between mb-2">
-                            <span class="fw-medium">Python</span>
-                            <span class="glass-tag success">Expert</span>
-                        </div>
-                        <div class="glass-skill-bar">
-                            <div class="glass-skill-progress" style="width: 85%"></div>
+                {% if structure_badges|length > 5 %}
+                    <div class="glass-card-content">
+                        <h3 class="glass-card-title"><i class="fas fa-building"></i>Structures visitées supplémentaires
+                        </h3>
+                        <div class="glass-divider"></div>
+                        <div class="row">
+                            {% for structure_group in structure_badges|slice:"5:" %}
+                                <div class="col-md-6 mb-3">
+                                    <div class="glass-card">
+                                        <div class="glass-card-content">
+                                            <h5 class="glass-card-title"
+                                                style="margin-bottom: 8px; font-size: 1.1rem;">{{ structure_group.grouper.name }}</h5>
+                                            <div class="glass-tag primary">{{ structure_group.list|length }} badge
+                                                {% if structure_group.list|length > 1 %}s{% endif %}</div>
+                                            <p class="small text-muted mt-2">
+                                                {% with first_badge=structure_group.list.0 %}
+                                                    {% with assignment=badge_assignment_dict|get_item:first_badge.pk %}
+                                                        {% if assignment %}
+                                                            Depuis {{ assignment.assigned_date|date:"M Y" }}
+                                                        {% endif %}
+                                                    {% endwith %}
+                                                {% endwith %}
+                                            </p>
+                                        </div>
+                                    </div>
+                                </div>
+                            {% endfor %}
                         </div>
                     </div>
                 {% endif %}
             </div>
         </div>
-    </div>
-
-    <!-- Structures Visited Section -->
-    <div class="glass-card">
-        <div class="glass-card-content">
-            <h2 class="glass-card-title"><i class="fas fa-building"></i>Structures visitées</h2>
-            <div class="glass-divider"></div>
-            <div class="row">
-                {% if structure_badges %}
-                    {% for structure_group in structure_badges|slice:":5" %}
-                        <div class="col-md-6 mb-3">
-                            <div class="glass-card">
-                                <div class="glass-card-content">
-                                    <h5 class="glass-card-title" style="margin-bottom: 8px; font-size: 1.1rem;">{{ structure_group.grouper.name }}</h5>
-                                    <div class="glass-tag primary">{{ structure_group.list|length }} badge{% if structure_group.list|length > 1 %}s{% endif %}</div>
-                                    <p class="small text-muted mt-2">
-                                        {% with first_badge=structure_group.list.0 %}
-                                            {% with assignment=badge_assignment_dict|get_item:first_badge.pk %}
-                                                {% if assignment %}
-                                                    Depuis {{ assignment.assigned_date|date:"M Y" }}
-                                                {% endif %}
-                                            {% endwith %}
-                                        {% endwith %}
-                                    </p>
-                                </div>
-                            </div>
-                        </div>
-                    {% endfor %}
-                {% else %}
-                    <div class="col-12">
-                        <div class="alert alert-info">
-                            Aucune structure visitée. Pas encore de badges.
-                        </div>
-                    </div>
-                {% endif %}
-            </div>
-        </div>
-    </div>
-
-    <!-- Interests Section -->
-    <div class="glass-card">
-        <div class="glass-card-content">
-            <h2 class="glass-card-title"><i class="fas fa-star"></i>Centres d'intérêt</h2>
-            <div class="glass-divider"></div>
-            <div class="row text-center">
-                <div class="col-md-3 col-6">
-                    <div class="glass-interest-item">
-                        <i class="fas fa-code glass-interest-icon floating"></i>
-                        <p>Programmation</p>
-                    </div>
-                </div>
-                <div class="col-md-3 col-6">
-                    <div class="glass-interest-item">
-                        <i class="fas fa-book glass-interest-icon floating"></i>
-                        <p>Lecture</p>
-                    </div>
-                </div>
-                <div class="col-md-3 col-6">
-                    <div class="glass-interest-item">
-                        <i class="fas fa-music glass-interest-icon floating"></i>
-                        <p>Musique</p>
-                    </div>
-                </div>
-                <div class="col-md-3 col-6">
-                    <div class="glass-interest-item">
-                        <i class="fas fa-hiking glass-interest-icon floating"></i>
-                        <p>Randonnée</p>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
-
-<!-- Second page for additional content if needed -->
-{% if badges.count > 8 or structure_badges|length > 5 %}
-<div class="page-break"></div>
-
-<div class="glass-container">
-    <div class="glass-card">
-        <div class="glass-card-header">
-            <h2 class="mb-0 position-relative" style="z-index: 1;">{{ user.get_full_name|default:user.username }} - Informations supplémentaires</h2>
-        </div>
-
-        {% if badges.count > 8 %}
-        <div class="glass-card-content">
-            <h3 class="glass-card-title"><i class="fas fa-code"></i>Compétences supplémentaires</h3>
-            <div class="glass-divider"></div>
-            <div class="row">
-                {% for badge in badges|slice:"8:" %}
-                    <div class="col-md-6 mb-3">
-                        <div class="d-flex align-items-center justify-content-between mb-2">
-                            <span class="fw-medium">{{ badge.name }}</span>
-                            <span class="glass-tag {% if badge.level == 'beginner' %}primary{% elif badge.level == 'intermediate' %}warning{% elif badge.level == 'expert' %}success{% endif %}">
-                                {{ badge.get_level_display }}
-                            </span>
-                        </div>
-                        <div class="glass-skill-bar">
-                            <div class="glass-skill-progress" style="width: {% if badge.level == 'beginner' %}60%{% elif badge.level == 'intermediate' %}80%{% elif badge.level == 'expert' %}95%{% else %}70%{% endif %}"></div>
-                        </div>
-                    </div>
-                {% endfor %}
-            </div>
-        </div>
-        {% endif %}
-
-        {% if badges.count > 5 %}
-        <div class="glass-card-content">
-            <h3 class="glass-card-title"><i class="fas fa-briefcase"></i>Expérience supplémentaire</h3>
-            <div class="glass-divider"></div>
-            <div class="glass-timeline">
-                {% for badge in badges|slice:"5:" %}
-                    {% with assignment=badge_assignment_dict|get_item:badge.pk %}
-                        {% if assignment %}
-                            <div class="glass-timeline-item">
-                                <div class="glass-timeline-content">
-                                    <h5 class="glass-timeline-title">{{ badge.name }}</h5>
-                                    <p class="glass-timeline-subtitle">{{ badge.issuing_structure.name }}</p>
-                                    <p class="small">{{ assignment.assigned_date|date:"M Y" }} - Présent</p>
-                                    <p>{{ badge.description|truncatewords:20 }}</p>
-                                </div>
-                            </div>
-                        {% endif %}
-                    {% endwith %}
-                {% endfor %}
-            </div>
-        </div>
-        {% endif %}
-
-        {% if structure_badges|length > 5 %}
-        <div class="glass-card-content">
-            <h3 class="glass-card-title"><i class="fas fa-building"></i>Structures visitées supplémentaires</h3>
-            <div class="glass-divider"></div>
-            <div class="row">
-                {% for structure_group in structure_badges|slice:"5:" %}
-                    <div class="col-md-6 mb-3">
-                        <div class="glass-card">
-                            <div class="glass-card-content">
-                                <h5 class="glass-card-title" style="margin-bottom: 8px; font-size: 1.1rem;">{{ structure_group.grouper.name }}</h5>
-                                <div class="glass-tag primary">{{ structure_group.list|length }} badge{% if structure_group.list|length > 1 %}s{% endif %}</div>
-                                <p class="small text-muted mt-2">
-                                    {% with first_badge=structure_group.list.0 %}
-                                        {% with assignment=badge_assignment_dict|get_item:first_badge.pk %}
-                                            {% if assignment %}
-                                                Depuis {{ assignment.assigned_date|date:"M Y" }}
-                                            {% endif %}
-                                        {% endwith %}
-                                    {% endwith %}
-                                </p>
-                            </div>
-                        </div>
-                    </div>
-                {% endfor %}
-            </div>
-        </div>
-        {% endif %}
-    </div>
-</div>
-{% endif %}
+    {% endif %}
 {% endblock %}

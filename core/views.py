@@ -70,7 +70,7 @@ class BadgeViewSet(viewsets.ViewSet):
 
         # Apply structure filter if provided
         if structure_filter:
-            badges = badges.filter(issuing_structure_id=structure_filter)
+            badges = badges.filter(issuing_structure_pk=structure_filter)
 
         # Get all structures for the filter dropdown
         structures = Structure.objects.all()
@@ -204,8 +204,8 @@ class StructureViewSet(viewsets.ViewSet):
         # Apply badge filter if provided
         if badge_filter:
             structures = structures.filter(
-                Q(issued_badges__id=badge_filter) | 
-                Q(valid_badges__id=badge_filter)
+                Q(issued_badges__pk=badge_filter) |
+                Q(valid_badges__pk=badge_filter)
             ).distinct()
 
         # Check if this is an HTMX request
@@ -238,7 +238,7 @@ class StructureViewSet(viewsets.ViewSet):
 
         # Get badges issued by this structure
         issued_badges = structure.issued_badges.all()
-
+        #print(vars(structure))
         return render(request, 'core/structures/detail.html', {
             'title': f'FossBadge - Structure {structure.name}',
             'structure': structure,
@@ -362,11 +362,11 @@ class UserViewSet(viewsets.ViewSet):
 
         # Apply badge filter if provided
         if badge_filter:
-            users = users.filter(badge_assignments__badge__id=badge_filter).distinct()
+            users = users.filter(badge_assignments__badge__pk=badge_filter).distinct()
 
         # Apply structure filter if provided
         if structure_filter:
-            users = users.filter(structures__id=structure_filter).distinct()
+            users = users.filter(structures__pk=structure_filter).distinct()
 
         # Apply level filter if provided
         if level_filter:

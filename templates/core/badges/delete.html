@@ -4,101 +4,105 @@
 {% block title %}Supprimer un badge{% endblock %}
 
 {% block content %}
-<div class="row">
-    <div class="col-md-12">
-        <h1 class="display-4 mb-4">Supprimer un badge</h1>
+    <div class="row">
+        <div class="col-md-12">
+            <h1 class="display-4 mb-4">Supprimer un badge</h1>
+        </div>
     </div>
-</div>
 
-<div class="row">
-    <div class="col-md-10 mx-auto">
-        <div class="card">
-            <div class="card-body">
-                <h2 class="card-title mb-4">Êtes-vous sûr de vouloir supprimer le badge "{{ badge.name }}" ?</h2>
+    <div class="row">
+        <div class="col-md-10 mx-auto">
+            <div class="card">
+                <div class="card-body">
+                    <h2 class="card-title mb-4">Êtes-vous sûr de vouloir supprimer le badge "{{ badge.name }}" ?</h2>
 
-                <!-- Valid Structures -->
-                <div class="card mb-4">
-                    <div class="card-body">
-                        <h3 class="card-title">Structures où ce badge est actuellement valable</h3>
-                        <div class="row">
-                            {% if badge.valid_structures.all %}
-                                {% for structure in badge.valid_structures.all %}
-                                    <div class="col-4 text-center mb-3">
-                                        {% if structure.logo %}
-                                            <div class="mb-2" style="max-width: 80px; margin: 0 auto;">
-                                                {% picture structure.logo img_alt="Logo "|add:structure.name img_class="img-fluid" ratio="1/1" %}
-                                            </div>
-                                        {% else %}
-                                            <img src="{{ placeholder_image }}" alt="Logo {{ structure.name }}"
-                                                 class="img-fluid mb-2" style="max-width: 80px;">
-                                        {% endif %}
-                                        <p>{{ structure.name }}</p>
+                    <!-- Valid Structures -->
+                    <div class="card mb-4">
+                        <div class="card-body">
+                            <h3 class="card-title">Structures où ce badge est actuellement valable</h3>
+                            <div class="row">
+                                {% if badge.valid_structures.all %}
+                                    {% for structure in badge.valid_structures.all %}
+                                        <div class="col-4 text-center mb-3">
+                                            {% if structure.logo %}
+                                                <div class="mb-2" style="max-width: 80px; margin: 0 auto;">
+                                                    {% picture structure.logo img_alt="Logo "|add:structure.name img_class="img-fluid" ratio="1/1" %}
+                                                </div>
+                                            {% else %}
+                                                <img src="{{ placeholder_image }}" alt="Logo {{ structure.name }}"
+                                                     class="img-fluid mb-2" style="max-width: 80px;">
+                                            {% endif %}
+                                            <p>{{ structure.name }}</p>
+                                        </div>
+                                    {% endfor %}
+                                {% else %}
+                                    <div class="col-12">
+                                        <p class="text-muted">
+                                            Ce badge n'est valable dans aucune structure supplémentaire.
+                                        </p>
                                     </div>
-                                {% endfor %}
-                            {% else %}
-                                <div class="col-12">
-                                    <p class="text-muted">Ce badge n'est valable dans aucune structure supplémentaire.</p>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+
+
+                    <!-- Badge Holders -->
+                    <div class="card mb-4">
+                        <div class="card-body">
+                            <h3 class="card-title">Ce badge est rattaché à d'autres personnes</h3>
+                            {% if holders %}
+                                <!--<ul class="list-group list-group-flush">-->
+                                <div class="row">
+                                    {% for user in holders %}
+                                        <div class="col-4 text-center mb-3">
+                                            {% if user.profile.avatar %}
+                                                <div class="mb-2" style="max-width: 80px; margin: 0 auto;">
+                                                    {% picture user.profile.avatar img_alt=user.get_full_name img_class="img-fluid" ratio="1/1" %}
+                                                </div>
+                                            {% else %}
+                                                <img src="{{ placeholder_image }}" alt="{{ user.get_full_name }}"
+                                                     class="img-fluid mb-2" style="max-width: 80px;">
+                                            {% endif %}
+                                            <p>{{ user.get_full_name|default:user.username }}</p>
+                                        </div>
+                                    {% endfor %}
                                 </div>
+                            {% else %}
+                                <p class="text-muted">Ce badge n'est rattaché à aucune personne pour le moment.</p>
                             {% endif %}
                         </div>
                     </div>
+
+                    <!-- Badge Deletion Form -->
+                    <form method="post">
+                        {% csrf_token %}
+                        <!-- Submit Button -->
+                        <div class=" mt-4">
+                            <button type="submit" class="btn btn-danger btn-lg">Supprimer le badge</button>
+                            <a class="btn btn-primary btn-lg" href="{% url 'core:badge-detail' pk=badge.pk %}">
+                                Revenir en arrière
+                            </a>
+                        </div>
+                    </form>
                 </div>
-
-
-                <!-- Badge Holders -->
-                <div class="card mb-4">
-                    <div class="card-body">
-                        <h3 class="card-title">Ce badge est rattaché à d'autres personnes</h3>
-                        {% if holders %}
-                            <!--<ul class="list-group list-group-flush">-->
-                            <div class="row">
-                                {% for user in holders %}
-                                    <div class="col-4 text-center mb-3">
-                                        {% if user.profile.avatar %}
-                                            <div class="mb-2" style="max-width: 80px; margin: 0 auto;">
-                                                {% picture user.profile.avatar img_alt=user.get_full_name img_class="img-fluid" ratio="1/1" %}
-                                            </div>
-                                        {% else %}
-                                            <img src="{{ placeholder_image }}" alt="{{ user.get_full_name }}"
-                                                 class="img-fluid mb-2" style="max-width: 80px;">
-                                        {% endif %}
-                                        <p>{{ user.get_full_name|default:user.username }}</p>
-                                    </div>
-                                {% endfor %}
-                            </div>
-                        {% else %}
-                            <p class="text-muted">Ce badge n'est rattaché à aucune personne pour le moment.</p>
-                        {% endif %}
-                    </div>
-                </div>
-
-                <!-- Badge Deletion Form -->
-                <form method="post">
-                    {% csrf_token %}
-                    <!-- Submit Button -->
-                    <div class=" mt-4">
-                        <button type="submit" class="btn btn-danger btn-lg">Supprimer le badge</button>
-                        <a class="btn btn-primary btn-lg" href="{% url 'core:badge-detail' pk=badge.pk %}"> Revenir en arrière</a>
-                    </div>
-                </form>
             </div>
         </div>
     </div>
-</div>
 {% endblock %}
 
 {% block extra_js %}
-<script>
-    // Simple preview for uploaded logo
-    document.getElementById('{{ form.logo.auto_id }}').addEventListener('change', function(event) {
-        const file = event.target.files[0];
-        if (file) {
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                document.getElementById('logo_preview').src = e.target.result;
+    <script>
+        // Simple preview for uploaded logo
+        document.getElementById('{{ form.logo.auto_id }}').addEventListener('change', function (event) {
+            const file = event.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function (e) {
+                    document.getElementById('logo_preview').src = e.target.result;
+                }
+                reader.readAsDataURL(file);
             }
-            reader.readAsDataURL(file);
-        }
-    });
-</script>
+        });
+    </script>
 {% endblock %}

@@ -18,11 +18,13 @@
                 <button class="btn btn-outline-primary" type="submit">Rechercher</button>
             </form>
         </div>
-        <div class="col-md-6 text-end">
-            <a href="{% url 'core:create_badge' %}" class="btn btn-primary">
-                <i class="bi bi-plus-circle"></i> Forger un nouveau badge
-            </a>
-        </div>
+        {% if request.user.is_authenticated %}
+            <div class="col-md-6 text-end">
+                <a href="{% url 'core:create_badge' %}" class="btn btn-primary">
+                    <i class="bi bi-plus-circle"></i> Forger un nouveau badge
+                </a>
+            </div>
+        {% endif %}
     </div>
 
     <div class="row">

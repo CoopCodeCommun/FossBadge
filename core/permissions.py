@@ -1,6 +1,6 @@
 from rest_framework import permissions
 
-from core.models import Badge
+from core.models import Badge, Structure, User
 
 
 class IsBadgeEditor(permissions.BasePermission):
@@ -15,6 +15,39 @@ class IsBadgeEditor(permissions.BasePermission):
         structure = Badge.objects.get(pk=pk).issuing_structure
 
         return is_structure_editor(user, structure)
+
+class IsStructureAdmin(permissions.BasePermission):
+    """
+    Check if a user is structure administrator
+    """
+    message = "Utilisateur non autorisé"
+    def has_permission(self, request, view):
+        # Check if the user exist and if it has rights to edit badges
+        pk = view.kwargs.get("pk")
+        user = request.user
+        structure = Structure.objects.get(pk=pk)
+
+        return is_structure_admin(user, structure)
+
+class CanEditUser(permissions.BasePermission):
+    """
+    Check if a user can edit another user
+    """
+    message = ""
+    def has_permission(self, request, view):
+        pk = view.kwargs.get("pk")
+        edited_user = User.objects.get(pk=pk)
+        user = request.user
+        if not user:
+            return False
+
+        if not user.is_active or not user.is_authenticated:
+            return False
+
+        return any([
+            user.is_superuser,
+            edited_user == user
+        ])
 
 
 def is_structure_editor(user, structure):

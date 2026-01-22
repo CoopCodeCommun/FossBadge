@@ -19,7 +19,7 @@ from .models import Structure, Badge, User
 from .forms import BadgeForm, StructureForm, UserForm, PartialUserForm
 import sweetify
 
-from .permissions import IsBadgeEditor
+from .permissions import IsBadgeEditor, IsStructureAdmin, CanEditUser
 
 
 def raise403(request, msg=None):
@@ -215,6 +215,19 @@ class StructureViewSet(viewsets.ViewSet):
     """
     ViewSet for structure/company-related pages.
     """
+
+    def get_permissions(self):
+        permissions_list = []
+
+        if self.action in ['list', 'retrieve']:
+            permissions_list += [AllowAny]
+        elif self.action in ["create_association"]:
+            permissions_list += [IsAuthenticated]
+        elif self.action in ["edit", "delete"]:
+            permissions_list += [IsStructureAdmin]
+
+        return [permission() for permission in permissions_list]
+
     def list(self, request):
         """
         List all structures.
@@ -352,6 +365,18 @@ class UserViewSet(viewsets.ViewSet):
     """
     ViewSet for user-related pages.
     """
+    def get_permissions(self):
+        permissions_list = []
+
+        if self.action in ['list', 'retrieve', 'cv', 'login_request', 'login_from_email']:
+            permissions_list += [AllowAny]
+        elif self.action in ['logout']:
+            permissions_list += [IsAuthenticated]
+        elif self.action in ["edit", "delete"]:
+            permissions_list += [CanEditUser]
+
+        return [permission() for permission in permissions_list]
+
     @action(detail=True, methods=['get'])
     def cv(self, request, pk=None):
         """
@@ -478,6 +503,7 @@ class UserViewSet(viewsets.ViewSet):
         """
         Create a new user.
         """
+        return raise403(request)
         if request.method == 'POST':
             form = UserForm(request.POST, request.FILES)
             if form.is_valid():
@@ -500,8 +526,6 @@ class UserViewSet(viewsets.ViewSet):
         """
         Edit an existing user.
         """
-        if request.user.pk != pk:
-            return raise403(request)
 
         user = get_object_or_404(User, pk=pk)
 
@@ -524,8 +548,6 @@ class UserViewSet(viewsets.ViewSet):
         """
         # TODO when authentication will be added :
         # Send a mail containing a link to delete the account
-        if request.user.pk != pk:
-            return raise403(request)
 
         sweetify.toast(request, "L'utilisateur a bien été désactivé",showCloseButton=True, timer=10000)
         user = get_object_or_404(User, pk=pk)

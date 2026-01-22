@@ -2,7 +2,7 @@ from django.contrib import messages
 from django.http.response import Http404
 from django.shortcuts import redirect
 from rest_framework.views import exception_handler
-from rest_framework.exceptions import PermissionDenied, NotFound, NotAuthenticated
+from rest_framework.exceptions import PermissionDenied, NotFound, NotAuthenticated, MethodNotAllowed
 
 from core.views import raise403, raise404
 
@@ -26,8 +26,11 @@ def custom_exception_handler(exception, context):
     elif isinstance(exception, Http404) or isinstance(exception, NotFound):
         # Return the 404 error page
         return raise404(request, exception)
+    elif isinstance(exception, MethodNotAllowed):
+        # Error 405 -> return 403 page (make a dedicated page ?)
+        return raise403(request, exception)
 
-    # Let DRF handle the exception it is not covered
+    # Let DRF handle the exception if it is not covered
     response = exception_handler(exception, context)
 
     # Return DRF response

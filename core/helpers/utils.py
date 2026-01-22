@@ -3,11 +3,20 @@ import os
 from django.contrib.auth import get_user_model
 from django.urls import reverse
 from core.helpers import TokenHelper
+from django.conf import settings
 
 def get_or_create_user(email, password=None, send_mail=False, set_active=False):
     from core.tasks import send_login_mail
     User = get_user_model()
-    user, created = User.objects.get_or_create(email=email)
+    # TODO check si on laisse ça comme ça pour set le username
+    # Si oui il faudrait ne pas afficher les utilisateurs qui n'ont pas mis de prénom
+    # Ou meme faire un flag pour que le user puisse choisir si son profile est public ou non
+    user, created = User.objects.get_or_create(email=email, username=email)
+
+    if settings.DEBUG:
+        user.is_active=True
+        user.save()
+        return user
 
     if created:
         if password:
@@ -23,7 +32,7 @@ def get_or_create_user(email, password=None, send_mail=False, set_active=False):
         send_login_mail.delay(user.email)
 
 
-    pass
+    return user
 
 def generate_login_url(user, base_url=None):
     """

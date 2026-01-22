@@ -72,6 +72,7 @@ class Structure(models.Model):
     description = models.TextField(verbose_name="Description")
 
     # Referent person information
+    # TODO : use a foreign key to user ? and remove those fields
     referent_last_name = models.CharField(max_length=100, verbose_name="Nom du référent")
     referent_first_name = models.CharField(max_length=100, verbose_name="Prénom du référent")
     referent_position = models.CharField(max_length=100, verbose_name="Poste du référent")
@@ -98,6 +99,18 @@ class Structure(models.Model):
         Returns the number of badges associated with this structure
         """
         return self.issued_badges.count()
+
+    def is_admin(self, user):
+        """
+        Return true if the user is admin of the structure or a superuser
+        """
+        return self.admins.filter(pk=user.pk).exists() or user.is_superuser
+
+    def is_editor(self, user):
+        """
+        Return true if the user is admin of the structure or a superuser
+        """
+        return self.editors.filter(pk=user.pk).exists() or user.is_superuser
 
 
 class Badge(models.Model):
@@ -201,6 +214,10 @@ class BadgeAssignment(models.Model):
     """
     Model to track when a user receives a badge
     """
+
+    # TODO :
+    # Ajouter un champ qr code et supprimer celui de badge
+    # Ajouter un champ structure qui assigne
 
     uuid = models.UUIDField(default=uuid.uuid7, primary_key=True)
 

@@ -1,3 +1,5 @@
+from django.conf import settings
+from django.contrib import messages
 from django.contrib.auth import logout, get_user_model, authenticate, login
 from django.core.exceptions import ValidationError, PermissionDenied
 from django.core.signing import SignatureExpired
@@ -7,22 +9,38 @@ from django.shortcuts import render, get_object_or_404, redirect
 from django.db.models import Q
 from django.urls import reverse
 from rest_framework import viewsets
+from rest_framework.authentication import SessionAuthentication
+from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.response import Response
-from rest_framework.decorators import action
-
+from rest_framework.decorators import action,authentication_classes, permission_classes
 from .helpers import TokenHelper
 from .helpers.utils import get_or_create_user
 from .models import Structure, Badge, User
 from .forms import BadgeForm, StructureForm, UserForm, PartialUserForm
 import sweetify
 
-def raise403(request):
+from .permissions import IsBadgeEditor
+
+
+def raise403(request, msg=None):
     """
     Return a not authorize error (403).
     Usage example (in another method) :
         return raise403(request)
     """
-    return render(request, 'errors/403.html', status=403)
+    return render(request, 'errors/403.html', status=403, context={
+        "message": msg
+    })
+
+def raise404(request, msg=None):
+    """
+    Return a not found error (404).
+    Usage example (in another method) :
+        return raise404(request)
+    """
+    return render(request, 'errors/404.html', status=404, context={
+        "message": msg
+    })
 
 
 class HomeViewSet(viewsets.ViewSet):
@@ -44,6 +62,20 @@ class BadgeViewSet(viewsets.ViewSet):
     """
     ViewSet for badge-related pages.
     """
+    authentication_classes = [SessionAuthentication, ]
+
+    def get_permissions(self):
+        permissions_list = []
+
+        if self.action in ['list','retrieve']:
+            permissions_list += [AllowAny]
+        elif self.action in ["create_badge"]:
+            permissions_list += [IsAuthenticated]
+        elif self.action in ["edit", "delete"]:
+            permissions_list += [IsBadgeEditor]
+
+        return [permission() for permission in permissions_list]
+
     def list(self, request):
         """
         List all badges.
@@ -102,10 +134,15 @@ class BadgeViewSet(viewsets.ViewSet):
         badge = get_object_or_404(Badge, pk=pk)
         holders = badge.get_holders()
 
+        is_editor = badge.issuing_structure.is_editor(request.user)
+        is_admin = badge.issuing_structure.is_admin(request.user)
+
         return render(request, 'core/badges/detail.html', {
             'title': f'FossBadge - Badge {badge.name}',
             'badge': badge,
-            'holders': holders
+            'holders': holders,
+            'is_editor': is_editor,
+            'is_admin': is_admin,
         })
 
     @action(detail=True, methods=["get","post"])
@@ -126,7 +163,7 @@ class BadgeViewSet(viewsets.ViewSet):
         if badge.icon:
             icon = badge.icon.url
 
-        return render(request,"core/badges/edit.html",{"form":form,"icon":icon})
+        return render(request,"core/badges/edit.html",{"form":form,"icon":icon, "badge_pk":badge.pk})
 
     @action(detail=True, methods=["get", "post"])
     def delete(self, request, pk=None):
@@ -238,11 +275,15 @@ class StructureViewSet(viewsets.ViewSet):
 
         # Get badges issued by this structure
         issued_badges = structure.issued_badges.all()
-        #print(vars(structure))
+        is_editor = structure.is_editor(request.user)
+        is_admin = structure.is_admin(request.user)
+
         return render(request, 'core/structures/detail.html', {
             'title': f'FossBadge - Structure {structure.name}',
             'structure': structure,
-            'issued_badges': issued_badges
+            'issued_badges': issued_badges,
+            'is_editor': is_editor,
+            'is_admin': is_admin,
         })
 
     @action(detail=True, methods=["get","post"])
@@ -251,6 +292,9 @@ class StructureViewSet(viewsets.ViewSet):
         Edit an existing structure.
         """
         structure = get_object_or_404(Structure, pk=pk)
+        if not structure.is_admin(request.user):
+            return raise403(request)
+
         if request.method == 'POST':
             form = StructureForm(request.POST, request.FILES, instance=structure)
             if form.is_valid():
@@ -271,6 +315,10 @@ class StructureViewSet(viewsets.ViewSet):
         Delete an existing structure.
         """
         structure = get_object_or_404(Structure, pk=pk)
+        if not structure.is_admin(request.user):
+            return raise403(request)
+
+
         if request.method == 'POST':
             structure.delete()
             return redirect(reverse('core:structure-list'))
@@ -283,6 +331,10 @@ class StructureViewSet(viewsets.ViewSet):
         """
         Create a new structure/company.
         """
+        if not request.user.is_authenticated:
+            return raise403(request)
+
+
         if request.method == 'POST':
             form = StructureForm(request.POST, request.FILES)
             if form.is_valid():
@@ -495,7 +547,11 @@ class UserViewSet(viewsets.ViewSet):
             validate_email(email)
 
             # Send an email to the user
-            get_or_create_user(email,send_mail=True)
+            user = get_or_create_user(email,send_mail=True)
+            if settings.DEBUG:
+                login(request, user)
+
+
 
             return render(request, 'authentication/login.html', {
                 "success": "Le mail a bien été envoyé",

@@ -8,10 +8,12 @@
         <div class="col-md-8">
             <h1 class="display-4 mb-4">Badge: {{ badge.name }}</h1>
         </div>
-        <div class="col-md-4">
-            <a class="btn btn-success mb-4" href="{% url 'core:badge-edit' pk=badge.pk %}"> Éditer </a>
-            <a class="btn btn-danger mb-4" href="{% url 'core:badge-delete' pk=badge.pk %}"> Supprimer </a>
-        </div>
+        {% if is_admin or is_editor %}
+            <div class="col-md-4">
+                <a class="btn btn-success mb-4" href="{% url 'core:badge-edit' pk=badge.pk %}"> Éditer </a>
+                <a class="btn btn-danger mb-4" href="{% url 'core:badge-delete' pk=badge.pk %}"> Supprimer </a>
+            </div>
+        {% endif %}
     </div>
 
     <div class="row mb-5">

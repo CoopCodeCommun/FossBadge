@@ -24,16 +24,19 @@
                 <li class="nav-item">
                     <a class="nav-link" href="{% url 'core:structure-list' %}">Structures</a>
                 </li>
-                <li class="nav-item dropdown">
-                    <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                        Créer
-                    </a>
-                    <ul class="dropdown-menu" aria-labelledby="navbarDropdown">
-                        <li><a class="dropdown-item" href="{% url 'core:create_badge' %}">Forger un Badge</a></li>
-                        <li><a class="dropdown-item" href="{% url 'core:create_association' %}">Créer une Structure</a></li>
-                        <li><a class="dropdown-item" href="{% url 'core:create_user' %}">Créer un utilisateur</a></li>
-                    </ul>
-                </li>
+                {% if request.user.is_authenticated == True %}
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                            Créer
+                        </a>
+                        <ul class="dropdown-menu" aria-labelledby="navbarDropdown">
+                            <li><a class="dropdown-item" href="{% url 'core:create_badge' %}">Forger un Badge</a></li>
+                            <li><a class="dropdown-item" href="{% url 'core:create_association' %}">Créer une Structure</a></li>
+                            <li><a class="dropdown-item" href="{% url 'core:create_user' %}">Créer un utilisateur</a></li>
+                        </ul>
+                    </li>
+                {% endif %}
+
             </ul>
         </div>
 
@@ -48,7 +51,7 @@
                         Se connecter
                     </button>
                 {% else %}
-                    <a class="nav-link" href="{% url 'core:user-detail' user.pk %}">
+                    <a class="nav-link" href="{% url 'core:user-detail' request.user.pk %}">
                         <i class="bi bi-person-circle"></i>
                         Mon compte
                     </a>

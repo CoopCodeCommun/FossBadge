@@ -50,6 +50,11 @@ INSTALLED_APPS = [
     'django_cleanup.apps.CleanupConfig', # Toujours en dernier
 ]
 
+# DRF config
+REST_FRAMEWORK = {
+    "EXCEPTION_HANDLER": "core.exceptions.custom_exception_handler",
+}
+
 # Django Pictures configuration
 PICTURES = {
     "BREAKPOINTS": {
@@ -81,6 +86,7 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'django_htmx.middleware.HtmxMiddleware',
+    'core.middlewares.ShowMessagesMiddleware'
 ]
 
 ROOT_URLCONF = 'fossbadge.urls'

@@ -352,6 +352,9 @@ class StructureViewSet(viewsets.ViewSet):
             form = StructureForm(request.POST, request.FILES)
             if form.is_valid():
                 structure = form.save()
+                structure.admins.add(request.user)
+                structure.save()
+
                 return redirect(reverse('core:structure-detail', kwargs={'pk': structure.pk}))
         else:
             form = StructureForm()

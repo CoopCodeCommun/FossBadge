@@ -344,9 +344,6 @@ class StructureViewSet(viewsets.ViewSet):
         """
         Create a new structure/company.
         """
-        if not request.user.is_authenticated:
-            return raise403(request)
-
 
         if request.method == 'POST':
             form = StructureForm(request.POST, request.FILES)

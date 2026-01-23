@@ -142,10 +142,6 @@ class Badge(models.Model):
                        aspect_ratios=[None, "1/1"], width_field='icon_width', height_field='icon_height')
     level = models.CharField(max_length=20, choices=LEVEL_CHOICES, verbose_name="Niveau")
     description = models.TextField(verbose_name="Description")
-    qr_code_width = models.PositiveIntegerField(blank=True, null=True, editable=False)
-    qr_code_height = models.PositiveIntegerField(blank=True, null=True, editable=False)
-    qr_code = PictureField(upload_to='badges/qrcodes/', blank=True, null=True, verbose_name="QR Code", 
-                          aspect_ratios=[None, "1/1"], width_field='qr_code_width', height_field='qr_code_height')
 
     # Relationships
     issuing_structure = models.ForeignKey(
@@ -225,7 +221,6 @@ class BadgeAssignment(models.Model):
     """
 
     # TODO :
-    # Ajouter un champ qr code et supprimer celui de badge
     # Ajouter un champ structure qui assigne
 
     uuid = models.UUIDField(default=uuid.uuid7, primary_key=True)
@@ -234,8 +229,16 @@ class BadgeAssignment(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='badge_assignments', verbose_name="Utilisateur")
     assigned_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, 
                                    related_name='assigned_badges', verbose_name="Assigné par")
+    assigned_structure = models.ForeignKey(Structure, on_delete=models.SET_NULL, null=True, blank=True,
+                                           related_name='assigned_badges', verbose_name="Assigné par")
     assigned_date = models.DateTimeField(default=timezone.now, verbose_name="Date d'attribution")
     notes = models.TextField(blank=True, null=True, verbose_name="Notes")
+
+    qr_code_width = models.PositiveIntegerField(blank=True, null=True, editable=False)
+    qr_code_height = models.PositiveIntegerField(blank=True, null=True, editable=False)
+    qr_code = PictureField(upload_to='badges/qrcodes/', blank=True, null=True, verbose_name="QR Code",
+                          aspect_ratios=[None, "1/1"], width_field='qr_code_width', height_field='qr_code_height')
+
 
     class Meta:
         verbose_name = "Attribution de badge"

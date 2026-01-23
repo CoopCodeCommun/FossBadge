@@ -407,7 +407,7 @@ class UserViewSet(viewsets.ViewSet):
         # Create a dictionary to easily look up assignments by badge ID
         badge_assignment_dict = {assignment.badge_id: assignment for assignment in badge_assignments}
 
-        structures = user.structures.all()
+        structures = user.structures
 
         return render(request, template_name, {
             'title': f'CV de {user.get_full_name() or user.username}',
@@ -491,7 +491,7 @@ class UserViewSet(viewsets.ViewSet):
         # Create a dictionary to easily look up assignments by badge ID
         badge_assignment_dict = {assignment.badge_id: assignment for assignment in badge_assignments}
 
-        structures = user.structures.all()
+        structures = user.structures
 
         return render(request, 'core/users/detail.html', {
             'title': f'FossBadge - Profil de {user.get_full_name() or user.username}',

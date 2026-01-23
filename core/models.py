@@ -1,4 +1,5 @@
 import uuid
+from itertools import chain
 from django.db import models
 from django.contrib.auth.models import AbstractUser
 from django.utils import timezone
@@ -22,6 +23,11 @@ class User(AbstractUser):
 
     def __str__(self):
         return f"Profil de {self.username}"
+
+    @property
+    def structures(self):
+        return list(chain(self.structures_admins.all(), self.structures_editors.all(), self.structures_users.all()))
+
 
     def get_badges(self):
         """
@@ -84,7 +90,7 @@ class Structure(models.Model):
     # Relationships
     admins = models.ManyToManyField(User, related_name='structures_admins', verbose_name='Administrateurs')
     editors = models.ManyToManyField(User, related_name='structures_editors', verbose_name='Éditeurs')
-    users = models.ManyToManyField(User, related_name='structures', blank=True, verbose_name="Utilisateurs")
+    users = models.ManyToManyField(User, related_name='structures_users', blank=True, verbose_name="Utilisateurs")
 
     class Meta:
         verbose_name = "Structure"
@@ -93,6 +99,9 @@ class Structure(models.Model):
 
     def __str__(self):
         return self.name
+
+    # def users(self):
+    #     return list(chain(self.admins.all(), self.editors.all(), self.users.all()))
 
     def badge_count(self):
         """

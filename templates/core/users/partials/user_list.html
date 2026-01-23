@@ -34,7 +34,7 @@
                     <div class="mb-3">
                         <h6 class="card-subtitle mb-2">Structures</h6>
                         <div class="d-flex flex-wrap">
-                            {% for structure in user.structures.all %}
+                            {% for structure in user.structures %}
                             <span class="badge bg-light text-dark me-1 mb-1 p-2">{{ structure.name }}</span>
                             {% empty %}
                             <span class="text-muted">Aucune structure</span>

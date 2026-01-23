@@ -102,7 +102,7 @@ class BadgeViewSet(viewsets.ViewSet):
 
         # Apply structure filter if provided
         if structure_filter:
-            badges = badges.filter(issuing_structure_pk=structure_filter)
+            badges = badges.filter(issuing_structure__pk=structure_filter)
 
         # Get all structures for the filter dropdown
         structures = Structure.objects.all()
@@ -443,7 +443,11 @@ class UserViewSet(viewsets.ViewSet):
 
         # Apply structure filter if provided
         if structure_filter:
-            users = users.filter(structures__pk=structure_filter).distinct()
+            users = users.filter(
+                Q(structures_admins__pk=structure_filter) |
+                Q(structures_editors__pk=structure_filter) |
+                Q(structures_users__pk=structure_filter)
+            ).distinct()
 
         # Apply level filter if provided
         if level_filter:

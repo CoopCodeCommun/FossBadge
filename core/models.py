@@ -220,9 +220,6 @@ class BadgeAssignment(models.Model):
     Model to track when a user receives a badge
     """
 
-    # TODO :
-    # Ajouter un champ structure qui assigne
-
     uuid = models.UUIDField(default=uuid.uuid7, primary_key=True)
 
     badge = models.ForeignKey(Badge, on_delete=models.CASCADE, related_name='assignments', verbose_name="Badge")

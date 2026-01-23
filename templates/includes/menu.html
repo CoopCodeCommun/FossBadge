@@ -35,10 +35,27 @@
                         </ul>
                     </li>
                 {% endif %}
+                {% if request.user.is_authenticated == False %}
+                    <li>
+                        <button
+                                class="nav-link"
+                                data-bs-toggle="offcanvas"
+                                data-bs-target="#loginPanel"
+                                aria-controls="loginPanel">
+                            Se connecter
+                        </button>
+                    </li>
+                {% else %}
+                    <a class="nav-link" href="{% url 'core:user-detail' request.user.pk %}">
+                        <i class="bi bi-person-circle"></i>
+                        Mon compte
+                    </a>
 
+                {% endif %}
             </ul>
         </div>
 
+        {% comment %}
         <div class="navbar-nav d-flex mb-0">
             <div class="nav-item">
                 {% if request.user.is_authenticated == False %}
@@ -58,6 +75,7 @@
                 {% endif %}
             </div>
         </div>
+        {% endcomment %}
     </div>
 </nav>
 

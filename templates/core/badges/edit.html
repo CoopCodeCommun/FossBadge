@@ -5,8 +5,11 @@
 
 {% block content %}
     <div class="row">
-        <div class="col-md-12">
+        <div class="col-md-8">
             <h1 class="display-4 mb-4">Modifier un Badge</h1>
+        </div>
+        <div class="col-md-4">
+            <a class="btn btn-primary" href="{% url 'core:badge-detail' badge_pk %}">Retour au badge</a>
         </div>
     </div>
 

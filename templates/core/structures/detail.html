@@ -6,12 +6,14 @@
 {% block content %}
     <div class="row">
         <div class="col-md-8">
-            <h1 class="display-4 mb-4">{{ structure.name }}</h1>
+            <h1 class="display-4 mb-4">{{ structure.name }} </h1>
         </div>
-        <div class="col-md-4">
-            <a class="btn btn-success mb-4" href="{% url 'core:structure-edit' pk=structure.pk %}"> Éditer </a>
-            <a class="btn btn-danger mb-4" href="{% url 'core:structure-delete' pk=structure.pk %}"> Supprimer </a>
-        </div>
+        {% if is_admin %}
+            <div class="col-md-4">
+                <a class="btn btn-success mb-4" href="{% url 'core:structure-edit' pk=structure.pk %}"> Éditer </a>
+                <a class="btn btn-danger mb-4" href="{% url 'core:structure-delete' pk=structure.pk %}"> Supprimer </a>
+            </div>
+        {% endif %}
     </div>
 
     <ul class="nav nav-pills mb-3" id="pills-tab" role="tablist">
@@ -50,9 +52,12 @@
                         <img src="{{ placeholder_image }}" alt="Logo de {{ structure.name }}" class="img-fluid mb-3" style="max-width: 200px;">
                     {% endif %}
                     <h2 class="mb-3">{{ structure.name }}</h2>
-                    <a href="{% url 'core:create_badge' %}?structure={{ structure.pk }}" class="btn btn-primary mb-4">
-                        Forger un nouveau badge
-                    </a>
+
+                    {% if is_admin or is_editor %}
+                        <a href="{% url 'core:create_badge' %}?structure={{ structure.pk }}" class="btn btn-primary mb-4">
+                            Forger un nouveau badge
+                        </a>
+                    {% endif %}
                 </div>
 
                 <div class="col-md-8">
@@ -153,6 +158,18 @@
                         <div class="card-body">
                             <h3 class="card-title">Utilisateurs</h3>
                             {% with users=structure.users.all %}
+                                {% include 'core/users/partials/user_list.html' %}
+                            {% endwith %}
+                        </div>
+                        <div class="card-body">
+                            <h3 class="card-title">Editeurs</h3>
+                            {% with users=structure.editors.all %}
+                                {% include 'core/users/partials/user_list.html' %}
+                            {% endwith %}
+                        </div>
+                        <div class="card-body">
+                            <h3 class="card-title">Admins</h3>
+                            {% with users=structure.admins.all %}
                                 {% include 'core/users/partials/user_list.html' %}
                             {% endwith %}
                         </div>

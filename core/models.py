@@ -1,4 +1,5 @@
 import uuid
+from itertools import chain
 from django.db import models
 from django.contrib.auth.models import AbstractUser
 from django.utils import timezone
@@ -22,6 +23,11 @@ class User(AbstractUser):
 
     def __str__(self):
         return f"Profil de {self.username}"
+
+    @property
+    def structures(self):
+        return list(chain(self.structures_admins.all(), self.structures_editors.all(), self.structures_users.all()))
+
 
     def get_badges(self):
         """
@@ -72,6 +78,7 @@ class Structure(models.Model):
     description = models.TextField(verbose_name="Description")
 
     # Referent person information
+    # TODO : use a foreign key to user ? and remove those fields
     referent_last_name = models.CharField(max_length=100, verbose_name="Nom du référent")
     referent_first_name = models.CharField(max_length=100, verbose_name="Prénom du référent")
     referent_position = models.CharField(max_length=100, verbose_name="Poste du référent")
@@ -82,7 +89,8 @@ class Structure(models.Model):
 
     # Relationships
     admins = models.ManyToManyField(User, related_name='structures_admins', verbose_name='Administrateurs')
-    users = models.ManyToManyField(User, related_name='structures', blank=True, verbose_name="Utilisateurs")
+    editors = models.ManyToManyField(User, related_name='structures_editors', verbose_name='Éditeurs')
+    users = models.ManyToManyField(User, related_name='structures_users', blank=True, verbose_name="Utilisateurs")
 
     class Meta:
         verbose_name = "Structure"
@@ -92,11 +100,26 @@ class Structure(models.Model):
     def __str__(self):
         return self.name
 
+    # def users(self):
+    #     return list(chain(self.admins.all(), self.editors.all(), self.users.all()))
+
     def badge_count(self):
         """
         Returns the number of badges associated with this structure
         """
         return self.issued_badges.count()
+
+    def is_admin(self, user):
+        """
+        Return true if the user is admin of the structure or a superuser
+        """
+        return self.admins.filter(pk=user.pk).exists() or user.is_superuser
+
+    def is_editor(self, user):
+        """
+        Return true if the user is admin of the structure or a superuser
+        """
+        return self.editors.filter(pk=user.pk).exists() or user.is_superuser
 
 
 class Badge(models.Model):
@@ -119,10 +142,6 @@ class Badge(models.Model):
                        aspect_ratios=[None, "1/1"], width_field='icon_width', height_field='icon_height')
     level = models.CharField(max_length=20, choices=LEVEL_CHOICES, verbose_name="Niveau")
     description = models.TextField(verbose_name="Description")
-    qr_code_width = models.PositiveIntegerField(blank=True, null=True, editable=False)
-    qr_code_height = models.PositiveIntegerField(blank=True, null=True, editable=False)
-    qr_code = PictureField(upload_to='badges/qrcodes/', blank=True, null=True, verbose_name="QR Code", 
-                          aspect_ratios=[None, "1/1"], width_field='qr_code_width', height_field='qr_code_height')
 
     # Relationships
     issuing_structure = models.ForeignKey(
@@ -207,8 +226,16 @@ class BadgeAssignment(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='badge_assignments', verbose_name="Utilisateur")
     assigned_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, 
                                    related_name='assigned_badges', verbose_name="Assigné par")
+    assigned_structure = models.ForeignKey(Structure, on_delete=models.SET_NULL, null=True, blank=True,
+                                           related_name='assigned_badges', verbose_name="Assigné par")
     assigned_date = models.DateTimeField(default=timezone.now, verbose_name="Date d'attribution")
     notes = models.TextField(blank=True, null=True, verbose_name="Notes")
+
+    qr_code_width = models.PositiveIntegerField(blank=True, null=True, editable=False)
+    qr_code_height = models.PositiveIntegerField(blank=True, null=True, editable=False)
+    qr_code = PictureField(upload_to='badges/qrcodes/', blank=True, null=True, verbose_name="QR Code",
+                          aspect_ratios=[None, "1/1"], width_field='qr_code_width', height_field='qr_code_height')
+
 
     class Meta:
         verbose_name = "Attribution de badge"

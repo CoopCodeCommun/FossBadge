@@ -16,14 +16,16 @@
                         {% endif %}
                         <div>
                             <h5 class="card-title mb-0">{{ user.get_full_name|default:user.username }}</h5>
-                            <p class="text-muted mb-0">{{ user.badges.count }} badge{% if user.badges.count != 1 %}s{% endif %}</p>
+                            <p class="text-muted mb-0">{{ user.assigned_badges.count }} badge{% if user.assigned_badges.count != 1 %}s{% endif %}</p>
                         </div>
                     </div>
                     <div class="mb-3">
                         <h6 class="card-subtitle mb-2">Badges</h6>
                         <div class="d-flex flex-wrap">
-                            {% for badge in user.badges.all %}
-                            <span class="badge {% if badge.level == 'beginner' %}bg-primary{% elif badge.level == 'intermediate' %}bg-warning text-dark{% elif badge.level == 'expert' %}bg-success{% endif %} me-1 mb-1 p-2">{{ badge.name }}</span>
+                            {% for badge_assignment in user.assigned_badges.all|slice:":5" %}
+                                {% with badge=badge_assignment.badge %}
+                                    <span class="badge {% if badge.level == 'beginner' %}bg-primary{% elif badge.level == 'intermediate' %}bg-warning text-dark{% elif badge.level == 'expert' %}bg-success{% endif %} me-1 mb-1 p-2">{{ badge.name }}</span>
+                                {% endwith %}
                             {% empty %}
                             <span class="text-muted">Aucun badge</span>
                             {% endfor %}
@@ -32,7 +34,7 @@
                     <div class="mb-3">
                         <h6 class="card-subtitle mb-2">Structures</h6>
                         <div class="d-flex flex-wrap">
-                            {% for structure in user.structures.all %}
+                            {% for structure in user.structures %}
                             <span class="badge bg-light text-dark me-1 mb-1 p-2">{{ structure.name }}</span>
                             {% empty %}
                             <span class="text-muted">Aucune structure</span>

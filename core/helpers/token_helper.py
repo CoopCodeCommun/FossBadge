@@ -48,12 +48,11 @@ class TokenHelper:
         signer = TimestampSigner()
         try:
             user_pk = signer.unsign(urlsafe_base64_decode(token).decode('utf8'), max_age=TokenHelper.token_max_age)
-
             user = User.objects.get(pk=user_pk)
 
-            return True
+            return user_pk
         except SignatureExpired:
-            return False, "Le token est expiré"
+            return None
 
 
     @staticmethod

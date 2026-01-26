@@ -595,6 +595,9 @@ class UserViewSet(viewsets.ViewSet):
         token = request.GET['token']
         try:
             user_pk = TokenHelper.is_user_token_valid(token)
+            if user_pk is None:
+                raise Exception()
+
             user = get_user_model().objects.get(pk=user_pk)
 
             # Set user to active

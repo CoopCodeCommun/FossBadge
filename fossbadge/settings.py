@@ -27,6 +27,7 @@ SECRET_KEY = os.environ.get('SECRET_KEY', insecure_key)
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
+DEBUG_SEND_EMAIL = True
 
 ALLOWED_HOSTS = ['localhost', '127.0.0.1', 'badge.codecommun.coop', 'badge.localhost']
 CSRF_TRUSTED_ORIGINS = ['https://badge.codecommun.coop']
@@ -70,7 +71,17 @@ PICTURES = {
     "PIXEL_DENSITIES": [1, 2],
     "USE_PLACEHOLDERS": False,
     "QUEUE_NAME": "pictures",
-    "PROCESSOR": "pictures.tasks.process_picture",
+    "PROCESSOR": "pictures.tasks.celery_process_picture",
+}
+
+# Required for django pictures to work, even if it still uses celery. I am unsure why
+TASKS = {
+    "default": {
+        "BACKEND": "django.tasks.backends.immediate.ImmediateBackend",
+        "QUEUES": [
+            "pictures",  # add the new pictures queue here
+        ]
+    },
 }
 
 if DEBUG:

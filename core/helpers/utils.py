@@ -13,7 +13,7 @@ def get_or_create_user(email, password=None, send_mail=False, set_active=False):
     # Ou meme faire un flag pour que le user puisse choisir si son profile est public ou non
     user, created = User.objects.get_or_create(email=email, username=email)
 
-    if settings.DEBUG:
+    if settings.DEBUG and not settings.DEBUG_SEND_EMAIL:
         user.is_active=True
         user.save()
         return user

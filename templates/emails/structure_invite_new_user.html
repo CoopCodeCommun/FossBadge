@@ -1,0 +1,23 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    <title>Invitation dans {{structure.name}}</title>
+    <style type="text/css">
+        html {
+            -webkit-text-size-adjust: none;
+            -ms-text-size-adjust: none;
+        }
+
+    </style>
+</head>
+<body style="margin: 0; padding: 0;">
+    <p>
+        Vous avez été invité sur la plateforme fossbadge, voici un <a href="{{ login_link }}">lien</a> pour vous connecter
+    </p>
+    <p>
+        Vous recevez ce mail, car vous avez été invité comme {{ role }} dans la structure :
+        <a href="{{ structure_link }}" target="_blank">{{structure.name}}</a>
+    </p>
+</body>
+</html>

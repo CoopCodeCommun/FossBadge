@@ -5,8 +5,11 @@ from django.urls import reverse
 from core.helpers import TokenHelper
 from django.conf import settings
 
+from core.models import Structure
+from core.tasks import send_login_mail, send_invite_mail
+
+
 def get_or_create_user(email, password=None, send_mail=False, set_active=False):
-    from core.tasks import send_login_mail
     User = get_user_model()
     # TODO check si on laisse ça comme ça pour set le username
     # Si oui il faudrait ne pas afficher les utilisateurs qui n'ont pas mis de prénom
@@ -34,24 +37,22 @@ def get_or_create_user(email, password=None, send_mail=False, set_active=False):
 
     return user
 
-def generate_login_url(user, base_url=None):
+def invite_user_to_structure(email, role, structure):
     """
-    Generate a login url based on a user and return it
+    Invite a user to a structure.
     """
-    token = TokenHelper.generate_user_token(user)
+    user = get_or_create_user(email)
 
-    if base_url is None:
-        base_url = get_base_url()
+    if role in Structure.ROLES[0] :
+        structure.admins.add(user)
+    elif role in Structure.ROLES[1] :
+        structure.editors.add(user)
+    elif role in Structure.ROLES[2] :
+        structure.users.add(user)
 
-    url_path = reverse("core:user-login-from-email")
-
-    connexion_url = f"https://{base_url}{url_path}?token={token}"
-    return connexion_url
-
-
-def get_base_url():
-    """
-    Return the base url of the application
-    """
-    base_url = os.environ.get("DOMAIN")
-    return base_url
+    # New user
+    if not user.last_login:
+        send_invite_mail.delay(email, role, structure.pk, True)
+    # Existing user
+    else:
+        send_invite_mail.delay(email, role, structure.pk)

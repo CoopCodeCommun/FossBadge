@@ -67,6 +67,12 @@ class Structure(models.Model):
         ('school', 'École'),
     ]
 
+    ROLES = [
+        ('admin',"Administrateur"),
+        ('editor', "Éditeur"),
+        ('user', "Utilisateur"),
+    ]
+
     name = models.CharField(max_length=100, verbose_name="Nom")
     logo_width = models.PositiveIntegerField(blank=True, null=True, editable=False)
     logo_height = models.PositiveIntegerField(blank=True, null=True, editable=False)

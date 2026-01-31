@@ -20,4 +20,5 @@ echo "SQL file loaded : $1"
 
 alias venv="source .venv/bin/activate"
 alias popdb="uv run manage.py populate_db --img"
+alias dshell="uv run manage.py shell"
 

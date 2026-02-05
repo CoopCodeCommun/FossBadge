@@ -4,17 +4,16 @@ from django.contrib.auth import logout, get_user_model, authenticate, login
 from django.core.exceptions import ValidationError, PermissionDenied
 from django.core.signing import SignatureExpired
 from django.core.validators import validate_email
-from django.http import HttpResponseForbidden
+from django.http import HttpResponse
 from django.shortcuts import render, get_object_or_404, redirect
 from django.db.models import Q
 from django.urls import reverse
 from rest_framework import viewsets
 from rest_framework.authentication import SessionAuthentication
 from rest_framework.permissions import IsAuthenticated, AllowAny
-from rest_framework.response import Response
 from rest_framework.decorators import action,authentication_classes, permission_classes
 from .helpers import TokenHelper
-from .helpers.utils import get_or_create_user
+from .helpers.utils import get_or_create_user, invite_user_to_structure
 from .models import Structure, Badge, User
 from .forms import BadgeForm, StructureForm, UserForm, PartialUserForm
 import sweetify
@@ -223,7 +222,7 @@ class StructureViewSet(viewsets.ViewSet):
             permissions_list += [AllowAny]
         elif self.action in ["create_association"]:
             permissions_list += [IsAuthenticated]
-        elif self.action in ["edit", "delete"]:
+        elif self.action in ["edit", "delete","invite"]:
             permissions_list += [IsStructureAdmin]
 
         return [permission() for permission in permissions_list]
@@ -297,6 +296,7 @@ class StructureViewSet(viewsets.ViewSet):
             'issued_badges': issued_badges,
             'is_editor': is_editor,
             'is_admin': is_admin,
+            "roles" : Structure.ROLES
         })
 
     @action(detail=True, methods=["get","post"])
@@ -360,6 +360,33 @@ class StructureViewSet(viewsets.ViewSet):
             'title': 'FossBadge - Créer une Structure / Entreprise',
             'form': form
         })
+
+    @action(detail=True, methods=['post'])
+    def invite(self, request, pk):
+        """
+        Invite a user to a structure.
+        """
+        structure = get_object_or_404(Structure, pk=pk)
+
+        email = request.POST['email']
+        role = request.POST['role']
+
+        res = HttpResponse(headers={"HX-Redirect": reverse('core:structure-detail', kwargs={'pk': structure.pk}),})
+
+        if not any(role in item for item in Structure.ROLES):
+            messages.add_message(request,messages.ERROR,"Le role fourni est invalide")
+            return res
+
+        try:
+            validate_email(email)
+        except ValidationError:
+            messages.add_message(request,messages.ERROR,"Le mail est invalide")
+            return res
+
+        invite_user_to_structure(email, role, structure)
+
+        messages.add_message(request, messages.SUCCESS, 'Invitation envoyé !')
+        return res
 
 class UserViewSet(viewsets.ViewSet):
     """

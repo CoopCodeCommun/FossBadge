@@ -12,6 +12,7 @@
             <div class="col-md-4">
                 <a class="btn btn-success mb-4" href="{% url 'core:structure-edit' pk=structure.pk %}"> Éditer </a>
                 <a class="btn btn-danger mb-4" href="{% url 'core:structure-delete' pk=structure.pk %}"> Supprimer </a>
+                <button class="btn btn-primary mb-4" onclick="openInviteUserPopUp()">Inviter</button>
             </div>
         {% endif %}
     </div>
@@ -149,7 +150,6 @@
                     </div>
                 </div>
             </div>
-
         </div>
         <div class="tab-pane fade" id="structure-users" role="tabpanel" aria-labelledby="structure-users-tab">
             <div class="row">
@@ -180,6 +180,51 @@
     </div>
 
 
+<script>
+
+
+
+    window.openInviteUserPopUp = () =>{
+        Swal.fire({
+            title: "Inviter un utilisateur",
+            icon: "info",
+            html: `
+                <select id="role-input" class="form-select">
+                    <option selected>--- Sélectionnez un rôle ---</option>>
+                    {%for role in roles%}
+                        <option value="{{role.0}}">{{role.1}}</option>>
+                    {%endfor%}
+                </select>
+                <input type="email" id="email-input" class="form-control mt-2">
+
+            `,
+            showCloseButton: true,
+            preConfirm: () => {
+                return {
+                    "email":document.getElementById("email-input").value,
+                    "role":document.getElementById("role-input").value
+                };
+            },
+            showCancelButton: true,
+            focusConfirm: false,
+            confirmButtonText: `
+                Envoyer
+            `,
+            cancelButtonText: `
+                Annuler
+            `,
+        }).then((result) => {
+            if (result.isConfirmed) {
+                    htmx.ajax('POST',  "{% url 'core:structure-invite' structure.pk %}", {
+                        target: 'body',
+                        swap: 'innerHTML',
+                        values: result.value
+                    });
+
+            }
+        });
+    }
+</script>
 
 
 {% endblock %}

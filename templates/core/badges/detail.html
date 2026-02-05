@@ -12,6 +12,7 @@
             <div class="col-md-4">
                 <a class="btn btn-success mb-4" href="{% url 'core:badge-edit' pk=badge.pk %}"> Éditer </a>
                 <a class="btn btn-danger mb-4" href="{% url 'core:badge-delete' pk=badge.pk %}"> Supprimer </a>
+                <button class="btn btn-primary mb-4" onclick="openAssignPopUp()">Assigner</button>
             </div>
         {% endif %}
     </div>
@@ -148,4 +149,56 @@
             </div>
         </div>
     </div>
+    <script>
+        window.openAssignPopUp = () =>{
+            Swal.fire({
+                title: "Assigner un badge",
+                icon: "info",
+                html: `
+                    <select id="user-input" class="form-select">
+                        <option selected>--- Sélectionnez un utilisateur ---</option>>
+                        {%for user in users %}
+                            <option value="{{user.pk}}">{{user.email}}</option>>
+                        {%endfor%}
+                    </select>
+                    <select id="structure-input" class="form-select mt-2">
+                        <option selected>--- Sélectionnez une Structure ---</option>>
+                        {%for structure in request.user.structures %}
+                            <option value="{{structure.pk}}">{{structure.name}}</option>>
+                        {%endfor%}
+                    </select>
+                    <label for="notes-input" class=" mt-2">Notes supplémentaire :</label>
+                    <textarea id="notes-input" class="form-control mt-2"></textarea>
+
+                `,
+                showCloseButton: true,
+                preConfirm: () => {
+                    return {
+                        "assigned_user":document.getElementById("user-input").value,
+                        "assigned_by_structure":document.getElementById("structure-input").value,
+                        "assigned_by_user":document.getElementById("user-input").value,
+                        "notes":document.getElementById("notes-input").value,
+                    };
+                },
+                showCancelButton: true,
+                focusConfirm: false,
+                confirmButtonText: `
+                    Envoyer
+                `,
+                cancelButtonText: `
+                    Annuler
+                `,
+            }).then((result) => {
+                if (result.isConfirmed) {
+                        htmx.ajax('POST',  "{% url 'core:badge-assign' badge.pk %}", {
+                            target: 'body',
+                            swap: 'innerHTML',
+                            values: result.value
+                        });
+
+                }
+            });
+        }
+    </script>
+
 {% endblock %}

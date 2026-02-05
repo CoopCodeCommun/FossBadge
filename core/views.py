@@ -14,7 +14,7 @@ from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.decorators import action,authentication_classes, permission_classes
 from .helpers import TokenHelper
 from .helpers.utils import get_or_create_user, invite_user_to_structure
-from .models import Structure, Badge, User
+from .models import Structure, Badge, User, BadgeAssignment
 from .forms import BadgeForm, StructureForm, UserForm, PartialUserForm
 import sweetify
 
@@ -132,6 +132,7 @@ class BadgeViewSet(viewsets.ViewSet):
         """
         badge = get_object_or_404(Badge, pk=pk)
         holders = badge.get_holders()
+        users = User.objects.all()
 
         is_editor = badge.issuing_structure.is_editor(request.user)
         is_admin = badge.issuing_structure.is_admin(request.user)
@@ -140,6 +141,7 @@ class BadgeViewSet(viewsets.ViewSet):
             'title': f'FossBadge - Badge {badge.name}',
             'badge': badge,
             'holders': holders,
+            'users':users,
             'is_editor': is_editor,
             'is_admin': is_admin,
         })
@@ -209,6 +211,40 @@ class BadgeViewSet(viewsets.ViewSet):
             'structures': structures,
             'form': form
         })
+
+    @action(detail=True, methods=['post'])
+    def assign(self, request, pk=None):
+        """
+        Assign a badge to a user.
+        """
+        badge = get_object_or_404(Badge, pk=pk)
+
+        # Get all post data
+        assigned_user = request.POST['assigned_user']
+        assigned_user = get_object_or_404(User, pk=assigned_user)
+
+        assigned_by_structure = request.POST['assigned_by_structure']
+        assigned_by_structure = get_object_or_404(Structure, pk=assigned_by_structure)
+
+        assigned_by_user = request.POST['assigned_by_user']
+        assigned_by_user = get_object_or_404(User, pk=assigned_by_user)
+
+        notes = request.POST['notes']
+
+        res = HttpResponse(headers={"HX-Redirect": reverse('core:badge-detail', kwargs={'pk': badge.pk}), })
+
+        # Assign the badge to the user
+        assignment = BadgeAssignment.objects.create(
+            badge=badge,
+            user=assigned_user,
+            assigned_structure=assigned_by_structure,
+            assigned_by=assigned_by_user,
+            notes=notes
+        )
+
+        messages.add_message(request, messages.SUCCESS, 'Badge assigné !')
+        return res
+
 
 class StructureViewSet(viewsets.ViewSet):
     """

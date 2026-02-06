@@ -195,6 +195,18 @@ wheels = [
 ]
 
 [[package]]
+name = "django-leaflet"
+version = "0.33.0"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "django" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/71/35/be356129d89c98c8f4884e946abec7f7d21ddcce159bcde4970e754ea3ab/django_leaflet-0.33.0.tar.gz", hash = "sha256:b51c71e7179eed9961484dfd57b87bd1ece3b1ff7bee4dfb7f4d5702206b2eca", size = 562259, upload-time = "2025-12-01T13:00:41.525Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/d5/9b/b323a5ea711961e77e9e362f55ea6d229d75daa6c1eaa37aec3ddaba1017/django_leaflet-0.33.0-py3-none-any.whl", hash = "sha256:bf30526daf7710f9afc35f0221284fe3b0558f3d9f259344ac3b82e23d28ec98", size = 577199, upload-time = "2025-12-01T13:00:39.069Z" },
+]
+
+[[package]]
 name = "django-pictures"
 version = "1.7.1"
 source = { registry = "https://pypi.org/simple" }
@@ -205,6 +217,18 @@ dependencies = [
 sdist = { url = "https://files.pythonhosted.org/packages/fb/07/4daf1c12889a1b6eb6e5147315df558dbba7dfa31622c1abcecc8c3847e2/django_pictures-1.7.1.tar.gz", hash = "sha256:4a6f4759dfecbab7f7a8a67e7d87d5106051539cca433a561bb1399877bcf68c", size = 23082, upload-time = "2026-01-07T10:49:28.089Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/bf/3f/d2bed42424b47e8c896eca6f05344399c4edb4c3553340f7a83774a887b2/django_pictures-1.7.1-py3-none-any.whl", hash = "sha256:10cceb9b2deb5f46b66e560ca2c6468863ee78f5be7a71e85f9302d08a59b1ff", size = 22612, upload-time = "2026-01-07T10:49:25.6Z" },
+]
+
+[[package]]
+name = "django-solo"
+version = "2.5.1"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "django" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/aa/b3/1128d46ca1956dca02b7425bd5bc753c3a31ed21be6c3bb19b8d4c5316c9/django_solo-2.5.1.tar.gz", hash = "sha256:ca3b2e44dbb4726446941ca8d765c247123f709f051d07e62eacf97330ffde01", size = 13662, upload-time = "2026-01-01T15:46:52.221Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/59/aa/45058bdec53ce3df577be9bd40c630067788923284becc6cca6fc592d4db/django_solo-2.5.1-py3-none-any.whl", hash = "sha256:23bfe48950587b409ec4b4ef95e5e62c1c6c590dd958d8d8b99d37d5ccb53ca8", size = 16882, upload-time = "2026-01-01T15:46:51.087Z" },
 ]
 
 [[package]]
@@ -238,7 +262,9 @@ dependencies = [
     { name = "django" },
     { name = "django-cleanup" },
     { name = "django-htmx" },
+    { name = "django-leaflet" },
     { name = "django-pictures" },
+    { name = "django-solo" },
     { name = "djangorestframework" },
     { name = "gunicorn" },
     { name = "pillow" },
@@ -260,7 +286,9 @@ requires-dist = [
     { name = "django", specifier = ">=5.2" },
     { name = "django-cleanup", specifier = ">=9.0.0" },
     { name = "django-htmx", specifier = ">=1" },
+    { name = "django-leaflet", specifier = ">=0.33.0" },
     { name = "django-pictures", specifier = ">=1.4.2" },
+    { name = "django-solo", specifier = ">=2.5.1" },
     { name = "djangorestframework", specifier = ">=3.16" },
     { name = "gunicorn", specifier = ">=23.0.0" },
     { name = "pillow", specifier = ">=10" },

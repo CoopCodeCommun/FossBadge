@@ -18,6 +18,8 @@ dependencies = [
     "psycopg[binary]>=3.3.2",
     "sweetify>=2.3.1",
     "celery[redis]>=5.6.2",
+    "django-leaflet>=0.33.0",
+    "django-solo>=2.5.1",
 ]
 
 [dependency-groups]

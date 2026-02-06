@@ -29,7 +29,7 @@
 
 
         <label for="notes-input" class=" mt-2">Notes supplémentaire :</label>
-        <textarea id="notes-input" class="form-control mt-2" name="notes">{% if defaults.notes %} {{defaults.notes}} {%endif%}</textarea>
+        <textarea id="notes-input" class="form-control mt-2" name="notes">{% if defaults.notes %}{{defaults.notes}}{%endif%}</textarea>
         {% if errors.notes %}
             <p class="error">{{errors.notes.0}}</p>
         {% endif %}

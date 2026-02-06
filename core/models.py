@@ -33,7 +33,6 @@ class User(AbstractUser):
             Q(users=self.pk),
         ).distinct()
 
-
     def get_badges(self):
         """
         Returns all badges held by this user
@@ -51,6 +50,15 @@ class User(AbstractUser):
         Adds a badge to this user
         """
         return badge.add_holder(self, assigned_by, notes)
+
+    def has_badge(self, badge):
+        """
+        Return True if a user has a badge
+        """
+        return Badge.objects.filter(
+            Q(pk=badge.pk) &
+            Q(assignments__user=self)
+        ).count()>0
 
     def remove_badge(self, badge):
         """
@@ -111,9 +119,6 @@ class Structure(models.Model):
     def __str__(self):
         return self.name
 
-    # def users(self):
-    #     return list(chain(self.admins.all(), self.editors.all(), self.users.all()))
-
     def badge_count(self):
         """
         Returns the number of badges associated with this structure
@@ -167,6 +172,7 @@ class Badge(models.Model):
         blank=True,
         verbose_name="Structures où ce badge est valable"
     )
+
     # The holders relationship is now managed through the BadgeAssignment model
     created_at = models.DateTimeField(auto_now_add=True, verbose_name="Date de création")
 
@@ -184,6 +190,12 @@ class Badge(models.Model):
         """
         return User.objects.filter(badge_assignments__badge=self,is_active=True)
 
+    def get_non_holders(self):
+        """
+        Returns all users who do not hold this badge excluding inactive users
+        """
+        return User.objects.exclude(badge_assignments__badge=self).filter(is_active=True)
+
     def get_assignments(self):
         """
         Returns all users who hold this badge excluding inactive users
@@ -191,13 +203,14 @@ class Badge(models.Model):
         return BadgeAssignment.objects.filter(badge=self)
 
 
-    def add_holder(self, user, assigned_by=None, notes=None):
+    def add_holder(self, user, assigned_by=None, structure=None, notes=None):
         """
         Adds a user as a holder of this badge
         """
         assignment, created = BadgeAssignment.objects.get_or_create(
             badge=self,
             user=user,
+            assigned_structure=structure,
             defaults={
                 'assigned_by': assigned_by,
                 'notes': notes

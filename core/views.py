@@ -138,7 +138,6 @@ class BadgeViewSet(viewsets.ViewSet):
         badge = get_object_or_404(Badge, pk=pk)
         holders = badge.get_holders()
         assignments = badge.get_assignments()
-        users = User.objects.all()
 
         is_editor = badge.issuing_structure.is_editor(request.user)
         is_admin = badge.issuing_structure.is_admin(request.user)
@@ -148,7 +147,6 @@ class BadgeViewSet(viewsets.ViewSet):
             'badge': badge,
             'holders': holders,
             'assignments': assignments,
-            'users':users,
             'is_editor': is_editor,
             'is_admin': is_admin,
         })
@@ -243,10 +241,12 @@ class AssignmentViewSet(viewsets.ViewSet):
         """
 
         if request.method == "GET":
-            badge = request.GET.get("badge")
+            badge_pk = request.GET.get("badge")
+            badge = get_object_or_404(Badge, pk=badge_pk)
+            users = badge.get_non_holders()
             return render(request, 'core/badges/partials/badge_assignment.html',context={
-                "users": User.objects.all(),
-                "badge_pk": badge
+                "users": users,
+                "badge_pk": badge_pk
             })
 
         validator = BadgeAssignmentValidator(data=request.POST)
@@ -272,13 +272,7 @@ class AssignmentViewSet(viewsets.ViewSet):
         res = HttpResponse(headers={"HX-Redirect": reverse('core:badge-detail', kwargs={'pk': badge.pk}), })
 
         # Assign the badge to the user
-        assignment = BadgeAssignment.objects.create(
-            badge=badge,
-            user=assigned_user,
-            assigned_structure=assigned_by_structure,
-            assigned_by=assigned_by_user,
-            notes=notes
-        )
+        badge.add_holder(assigned_user,assigned_by_user,assigned_by_structure,notes)
 
         messages.add_message(request, messages.SUCCESS, 'Badge assigné !')
         return reload(request)

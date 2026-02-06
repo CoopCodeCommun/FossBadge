@@ -1,0 +1,48 @@
+{%include 'show_message.html'%}
+
+<div id="badge-assignment-form">
+    <form>
+        <select id="user-input" class="form-select" name="assigned_user">
+            <option >--- Sélectionnez un utilisateur ---</option>>
+            {%for user in users %}
+                <option value="{{user.pk}}"{% if defaults.assigned_user == user.pk|stringformat:"s" %} selected{% endif %}>
+                    {{user.email}}
+                </option>
+            {%endfor%}
+        </select>
+        {% if errors.assigned_user %}
+            <p class="error">{{errors.assigned_user.0}}</p>
+        {% endif %}
+
+        <select id="structure-input" class="form-select mt-2" name="assigned_by_structure">
+            <option>--- Sélectionnez une Structure ---</option>>
+            {%for structure in request.user.structures %}
+                <option {% if defaults.assigned_by_structure == structure.pk|stringformat:"s"  %} selected {%endif%} value="{{structure.pk}}">
+                    {{structure.name}}
+                </option>
+            {%endfor%}
+        </select>
+
+        {% if errors.assigned_by_structure %}
+            <p class="error">{{errors.assigned_by_structure.0}}</p>
+        {% endif %}
+
+
+        <label for="notes-input" class=" mt-2">Notes supplémentaire :</label>
+        <textarea id="notes-input" class="form-control mt-2" name="notes">{% if defaults.notes %} {{defaults.notes}} {%endif%}</textarea>
+        {% if errors.notes %}
+            <p class="error">{{errors.notes.0}}</p>
+        {% endif %}
+
+        <input type="hidden" name="assigned_by_user" value="{{request.user.pk}}">
+        <input type="hidden" name="badge" value="{{ badge_pk }}">
+
+        <button class="btn btn-primary"
+         hx-post="{% url 'core:assignment-assign' %}"
+         hx-target="#badge-assignment-form"
+         hx-swap="innerHTML">
+            Envoyer</button>
+
+        <p class="btn btn-danger" onclick="hidepopup()">Annuler</p>
+    </form>
+</div>

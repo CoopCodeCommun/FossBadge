@@ -1,0 +1,76 @@
+<div id="customPopup">
+    <div id="customPopup-content">
+        <button onclick="hidepopup()">CLose</button>
+        HIIIIII
+    </div>
+    <div id="customPopup-bg"></div>
+</div>
+
+<style>
+    #customPopup{
+        display:none;
+        opacity:0;
+        transition : 0.2s ease-out;
+    }
+
+    #customPopup #customPopup-content{
+        width:40%;
+        min-height:10%;
+
+        /* Position */
+        position : absolute;
+        left:30%;
+        top : 30%;
+        z-index : 20;
+        padding : 40px;
+
+
+        border : solid black 1px;
+        border-radius : 5px;
+        background-color : white;
+    }
+    #customPopup #customPopup-bg{
+        width:100%;
+        height : 100%;
+        position: absolute;
+        left:0;
+        top:0;
+        background-color : black;
+        z-index : 0;
+        opacity:50%;
+    }
+
+    @keyframes fadeInFromNone {
+    0% {
+        display: none;
+        opacity: 0;
+    }
+
+    1% {
+        display: block;
+        opacity: 0;
+    }
+
+    100% {
+        display: block;
+        opacity: 1;
+    }
+}
+</style>
+
+<script>
+    function showpopup(){
+        let popup = document.querySelector("#customPopup")
+        popup.style.display = "block"
+        setTimeout(function(){
+            popup.style.opacity = "1"
+        }, 100);
+    }
+    function hidepopup(){
+        let popup = document.querySelector("#customPopup")
+            popup.style.opacity = "0"
+        setTimeout(function(){
+            popup.style.display = "none"
+        }, 100);
+    }
+</script>

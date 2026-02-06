@@ -179,6 +179,13 @@ class Badge(models.Model):
         """
         return User.objects.filter(badge_assignments__badge=self,is_active=True)
 
+    def get_assignments(self):
+        """
+        Returns all users who hold this badge excluding inactive users
+        """
+        return BadgeAssignment.objects.filter(badge=self)
+
+
     def add_holder(self, user, assigned_by=None, notes=None):
         """
         Adds a user as a holder of this badge

@@ -8,6 +8,7 @@ from django.http import HttpResponse
 from django.shortcuts import render, get_object_or_404, redirect
 from django.db.models import Q
 from django.urls import reverse
+from django_htmx.http import HttpResponseClientRedirect
 from rest_framework import viewsets
 from rest_framework.authentication import SessionAuthentication
 from rest_framework.permissions import IsAuthenticated, AllowAny
@@ -18,7 +19,8 @@ from .models import Structure, Badge, User, BadgeAssignment
 from .forms import BadgeForm, StructureForm, UserForm, PartialUserForm
 import sweetify
 
-from .permissions import IsBadgeEditor, IsStructureAdmin, CanEditUser
+from .permissions import IsBadgeEditor, IsStructureAdmin, CanEditUser, CanAssignBadge
+from .validators import BadgeAssignmentValidator
 
 
 def raise403(request, msg=None):
@@ -40,6 +42,9 @@ def raise404(request, msg=None):
     return render(request, 'errors/404.html', status=404, context={
         "message": msg
     })
+
+def reload(request):
+    return HttpResponseClientRedirect(request.headers['Referer'])
 
 
 class HomeViewSet(viewsets.ViewSet):
@@ -132,6 +137,7 @@ class BadgeViewSet(viewsets.ViewSet):
         """
         badge = get_object_or_404(Badge, pk=pk)
         holders = badge.get_holders()
+        assignments = badge.get_assignments()
         users = User.objects.all()
 
         is_editor = badge.issuing_structure.is_editor(request.user)
@@ -141,6 +147,7 @@ class BadgeViewSet(viewsets.ViewSet):
             'title': f'FossBadge - Badge {badge.name}',
             'badge': badge,
             'holders': holders,
+            'assignments': assignments,
             'users':users,
             'is_editor': is_editor,
             'is_admin': is_admin,
@@ -212,22 +219,53 @@ class BadgeViewSet(viewsets.ViewSet):
             'form': form
         })
 
-    @action(detail=True, methods=['post'])
-    def assign(self, request, pk=None):
+
+class AssignmentViewSet(viewsets.ViewSet):
+    """
+
+    """
+    def retrieve(self, request, pk=None):
+        """
+        Display a specific assignment.
+        """
+        assignment = get_object_or_404(BadgeAssignment, pk=pk)
+
+        return render(request, 'core/assignments/detail.html', {
+            'title': f'FossBadge - {assignment.user.username} - {assignment.badge.name}',
+            'assignment': assignment,
+        })
+
+
+    @action(detail=False, methods=['get','post'])
+    def assign(self, request):
         """
         Assign a badge to a user.
         """
-        badge = get_object_or_404(Badge, pk=pk)
 
-        # Get all post data
-        assigned_user = request.POST['assigned_user']
-        assigned_user = get_object_or_404(User, pk=assigned_user)
+        if request.method == "GET":
+            badge = request.GET.get("badge")
+            return render(request, 'core/badges/partials/badge_assignment.html',context={
+                "users": User.objects.all(),
+                "badge_pk": badge
+            })
 
-        assigned_by_structure = request.POST['assigned_by_structure']
-        assigned_by_structure = get_object_or_404(Structure, pk=assigned_by_structure)
+        validator = BadgeAssignmentValidator(data=request.POST)
 
-        assigned_by_user = request.POST['assigned_by_user']
-        assigned_by_user = get_object_or_404(User, pk=assigned_by_user)
+        if not validator.is_valid():
+            messages.error(request, 'Badge Assignment Error')
+            return render(request, 'core/badges/partials/badge_assignment.html',context={
+                "users": User.objects.all(),
+                "errors": validator.errors,
+                "defaults": validator.data,
+                "badge_pk": validator.data['badge']
+            })
+
+
+        # Get all objects
+        badge = get_object_or_404(Badge, pk=validator.validated_data["badge"])
+        assigned_user = get_object_or_404(User, pk=validator.validated_data["assigned_user"])
+        assigned_by_structure = get_object_or_404(Structure, pk=validator.validated_data["assigned_by_structure"])
+        assigned_by_user = get_object_or_404(User, pk=validator.validated_data["assigned_by_user"])
 
         notes = request.POST['notes']
 
@@ -243,8 +281,7 @@ class BadgeViewSet(viewsets.ViewSet):
         )
 
         messages.add_message(request, messages.SUCCESS, 'Badge assigné !')
-        return res
-
+        return reload(request)
 
 class StructureViewSet(viewsets.ViewSet):
     """
@@ -551,9 +588,7 @@ class UserViewSet(viewsets.ViewSet):
 
         # Get user's badges, badge assignments, and structures
         badges = Badge.objects.filter(assignments__user=user)
-        badge_assignments = user.badge_assignments.all()
-        # Create a dictionary to easily look up assignments by badge ID
-        badge_assignment_dict = {assignment.badge_id: assignment for assignment in badge_assignments}
+        badge_assignments = user.get_badge_assignments
 
         structures = user.structures
 
@@ -561,7 +596,7 @@ class UserViewSet(viewsets.ViewSet):
             'title': f'FossBadge - Profil de {user.get_full_name() or user.username}',
             'user': user,
             'badges': badges,
-            'badge_assignment_dict': badge_assignment_dict,
+            'assignments': badge_assignments,
             'structures': structures
         })
 

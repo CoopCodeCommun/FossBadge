@@ -49,6 +49,26 @@ class CanEditUser(permissions.BasePermission):
             edited_user == user
         ])
 
+class CanAssignBadge(permissions.BasePermission):
+    def has_permission(self, request, view):
+        return True
+        user = request.user
+
+        pass
+        pk = view.kwargs.get("pk")
+        edited_user = User.objects.get(pk=pk)
+        user = request.user
+        if not user:
+            return False
+
+        if not user.is_active or not user.is_authenticated:
+            return False
+
+        return any([
+            user.is_superuser,
+            edited_user == user
+        ])
+
 
 def is_structure_editor(user, structure):
     if not user:
@@ -74,3 +94,4 @@ def is_structure_admin(user, structure):
         user.is_superuser,
         structure.is_admin(user),
     ])
+

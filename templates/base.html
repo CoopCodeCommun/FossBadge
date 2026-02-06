@@ -38,8 +38,11 @@
     <!-- Load sweetalert2 -->
     <script src="{% static 'js/sweetalert2.all.min.js' %}"></script>
 
+    {%include 'show_message.html'%}
+
     <!-- Load sweetify (for sweetalert2) -->
     {% load sweetify %}
     {% sweetify %}
+    {% include "includes/popup.html" %}
 </body>
 </html>

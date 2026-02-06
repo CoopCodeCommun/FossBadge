@@ -13,6 +13,12 @@ class BadgeForm(forms.ModelForm):
         label="Structures où ce badge est valable"
     )
 
+    def __init__(self, *args, **kwargs):
+        self.request = kwargs.pop("request")
+        super().__init__(*args, **kwargs)
+        self.fields["issuing_structure"].queryset = self.request.user.structures
+
+
     class Meta:
         model = Badge
         fields = ['name', 'icon', 'level', 'description', 'issuing_structure', 'valid_structures']

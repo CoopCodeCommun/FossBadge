@@ -26,7 +26,7 @@ class User(AbstractUser):
 
     @property
     def structures(self):
-        return list(chain(self.structures_admins.all(), self.structures_editors.all(), self.structures_users.all()))
+        return self.structures_users.all().union(self.structures_editors.all()).union(self.structures_admins.all())
 
 
     def get_badges(self):

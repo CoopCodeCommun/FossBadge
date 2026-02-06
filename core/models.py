@@ -4,6 +4,7 @@ from django.db import models
 from django.contrib.auth.models import AbstractUser
 from django.utils import timezone
 from pictures.models import PictureField
+from django.db.models import Q
 
 # Create your models here.
 
@@ -26,7 +27,11 @@ class User(AbstractUser):
 
     @property
     def structures(self):
-        return self.structures_users.all().union(self.structures_editors.all()).union(self.structures_admins.all())
+        return Structure.objects.filter(
+            Q(admins=self.pk)|
+            Q(editors=self.pk)|
+            Q(users=self.pk),
+        ).distinct()
 
 
     def get_badges(self):

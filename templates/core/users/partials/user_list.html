@@ -16,7 +16,7 @@
                         {% endif %}
                         <div>
                             <h5 class="card-title mb-0">{{ user.get_full_name|default:user.username }}</h5>
-                            <p class="text-muted mb-0">{{ user.badge_assignments.count }} badge{% if user.badge_assignments.count != 1 %}s{% endif %}</p>
+                            <p class="text-muted mb-0">{{ user.get_badges.count }} badge{% if user.get_badges.count != 1 %}s{% endif %}</p>
                         </div>
                     </div>
                     <div class="mb-3">

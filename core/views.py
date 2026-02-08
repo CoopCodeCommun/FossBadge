@@ -222,6 +222,9 @@ class AssignmentViewSet(viewsets.ViewSet):
     """
 
     """
+
+    # TODO permissions
+
     def retrieve(self, request, pk=None):
         """
         Display a specific assignment.
@@ -233,17 +236,18 @@ class AssignmentViewSet(viewsets.ViewSet):
             'assignment': assignment,
         })
 
-
     @action(detail=False, methods=['get','post'])
     def assign(self, request):
         """
         Assign a badge to a user.
         """
 
+        if not request.htmx:
+            return raise403(request)
+
         if request.method == "GET":
             badge_pk = request.GET.get("badge")
-            badge = get_object_or_404(Badge, pk=badge_pk)
-            users = badge.get_non_holders()
+            users = User.objects.all()
             return render(request, 'core/badges/partials/badge_assignment.html',context={
                 "users": users,
                 "badge_pk": badge_pk
@@ -269,13 +273,27 @@ class AssignmentViewSet(viewsets.ViewSet):
 
         notes = request.POST['notes']
 
-        res = HttpResponse(headers={"HX-Redirect": reverse('core:badge-detail', kwargs={'pk': badge.pk}), })
-
         # Assign the badge to the user
-        badge.add_holder(assigned_user,assigned_by_user,assigned_by_structure,notes)
+        assignment, created = badge.add_holder(assigned_user,assigned_by_user,assigned_by_structure,notes)
 
-        messages.add_message(request, messages.SUCCESS, 'Badge assigné !')
+        if created:
+            messages.add_message(request, messages.SUCCESS, 'Badge assigné !')
+        else:
+            messages.add_message(request, messages.INFO, "L'utilisateur avait déjà ce badge")
         return reload(request)
+
+    @action(detail=False, methods=['get', 'post'], url_path='user-badge-assignments', url_name='user-badge-assignments')
+    def list_user_badge_assignment(self, request):
+
+        badge = request.GET["badge"]
+        badge = get_object_or_404(Badge, pk=badge)
+        user = request.GET["user"]
+        user = get_object_or_404(User, pk=user)
+        assignments = badge.get_user_assignments(user)
+
+        return render(request, 'core/assignments/list_user_assignment.html', context={
+            "assignments": assignments,
+        })
 
 class StructureViewSet(viewsets.ViewSet):
     """
@@ -581,16 +599,14 @@ class UserViewSet(viewsets.ViewSet):
         user = get_object_or_404(User, pk=pk)
 
         # Get user's badges, badge assignments, and structures
-        badges = Badge.objects.filter(assignments__user=user)
-        badge_assignments = user.get_badge_assignments
+        badge_with_badge_assignments = user.get_all_badge_assignments_by_badge()
 
         structures = user.structures
 
         return render(request, 'core/users/detail.html', {
             'title': f'FossBadge - Profil de {user.get_full_name() or user.username}',
             'user': user,
-            'badges': badges,
-            'assignments': badge_assignments,
+            'badge_with_badge_assignments': badge_with_badge_assignments,
             'structures': structures
         })
 

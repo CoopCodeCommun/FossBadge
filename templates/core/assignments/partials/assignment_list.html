@@ -1,12 +1,20 @@
 {% load pictures %}
 
+{% comment %}
+
+    This template is used with a dict named "badge_assignments" containing : {"badge":BadgeObject, "assignments": QuerySetOfBadgeAssignment }
+    To get a dict like that you can use the User class method "get_all_badge_assignments_by_badge"
+
+{% endcomment %}
+
 <div class="badge-grid">
-    {% if badges %}
-        {% for assignment in assignments %}
-            {% with badge=assignment.badge%}
+    {% if badge_with_badge_assignments %}
+        {% for badge_with_badge_assignment in badge_with_badge_assignments %}
+            {% with badge=badge_with_badge_assignment.badge assignments=badge_with_badge_assignment.assignments%}
+
             <div class="card text-center">
                 <div class="card-body">
-                    {% if assignment.badge.icon %}
+                    {% if badge.icon %}
                         <div class="badge-icon-container">
                             {% picture badge.icon img_alt=badge.name img_class="badge-icon" ratio="1/1" %}
                         </div>
@@ -23,11 +31,13 @@
                             <span class="badge bg-success">{{ badge.get_level_display }}</span>
                         {% endif %}
                     </p>
-                    <p class="card-text text-muted">{{ badge.issuing_structure.name }}</p>
-                    <a href="{% url 'core:assignment-detail' pk=assignment.pk %}" class="btn btn-primary">Voir l'attribution</a>
+                    <p>Assigné {{ assignments.count }} fois</p>
+                    <p class="card-text text-muted">Crée par {{ badge.issuing_structure.name }}</p>
+{#                    <a href="{% url 'core:assignment-detail' pk=assignment.pk %}" class="btn btn-primary">Voir l'attribution</a>#}
+                    <a href="{% url 'core:assignment-user-badge-assignments' %}?badge={{ badge.pk }}&user={{ user.pk }}" class="btn btn-primary">Voir les attributions</a>
                 </div>
             </div>
-        {% endwith %}
+            {% endwith %}
         {% endfor %}
     {% else %}
         <div class="alert alert-info">

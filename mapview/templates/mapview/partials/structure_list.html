@@ -1,0 +1,39 @@
+<!--
+    Liste des structures visibles sur la carte.
+    List of structures visible on the map.
+-->
+<div class="d-flex flex-column gap-2">
+    {% for structure in structures %}
+    <div class="structure-card"
+         data-lng="{{ structure.marker.lng|stringformat:"f" }}"
+         data-lat="{{ structure.marker.lat|stringformat:"f" }}"
+         data-structure-id="{{ structure.uuid }}">
+
+        <!-- Ligne du haut : pastille + nom + type + stats -->
+        <!-- Top row: dot + name + type + stats -->
+        <div class="structure-card-top">
+            <span class="structure-pastille"></span>
+            <div style="min-width:0">
+                <div class="structure-nom">{{ structure.name }}</div>
+                <div class="structure-type">{{ structure.get_type_display }}</div>
+            </div>
+            <div class="structure-stats">
+                {% if structure.badge_count > 0 %}
+                <span class="structure-stat"><span class="structure-stat-valeur">{{ structure.badge_count }}</span> 🏅</span>
+                {% endif %}
+                {% if structure.holders_count > 0 %}
+                <span class="structure-stat"><span class="structure-stat-valeur">{{ structure.holders_count }}</span> 👤</span>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Description (tronquée à 2 lignes) -->
+        <!-- Description (truncated to 2 lines) -->
+        {% if structure.description %}
+        <div class="structure-description">{{ structure.description }}</div>
+        {% endif %}
+    </div>
+    {% empty %}
+    <div class="structure-vide fst-italic">Aucune structure visible ici.</div>
+    {% endfor %}
+</div>

@@ -1,0 +1,647 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<kml xmlns="http://www.opengis.net/kml/2.2">
+  <Document>
+    <name>Université Populaire de Villeurbanne</name>
+    <description/>
+    <Style id="icon-1551-F57C00-normal">
+      <IconStyle>
+        <color>ff007cf5</color>
+        <scale>1</scale>
+        <Icon>
+          <href>https://www.gstatic.com/mapspro/images/stock/503-wht-blank_maps.png</href>
+        </Icon>
+      </IconStyle>
+      <LabelStyle>
+        <scale>0</scale>
+      </LabelStyle>
+    </Style>
+    <Style id="icon-1551-F57C00-highlight">
+      <IconStyle>
+        <color>ff007cf5</color>
+        <scale>1</scale>
+        <Icon>
+          <href>https://www.gstatic.com/mapspro/images/stock/503-wht-blank_maps.png</href>
+        </Icon>
+      </IconStyle>
+      <LabelStyle>
+        <scale>1</scale>
+      </LabelStyle>
+    </Style>
+    <StyleMap id="icon-1551-F57C00">
+      <Pair>
+        <key>normal</key>
+        <styleUrl>#icon-1551-F57C00-normal</styleUrl>
+      </Pair>
+      <Pair>
+        <key>highlight</key>
+        <styleUrl>#icon-1551-F57C00-highlight</styleUrl>
+      </Pair>
+    </StyleMap>
+    <Style id="icon-1551-F57C00-nodesc-normal">
+      <IconStyle>
+        <color>ff007cf5</color>
+        <scale>1</scale>
+        <Icon>
+          <href>https://www.gstatic.com/mapspro/images/stock/503-wht-blank_maps.png</href>
+        </Icon>
+      </IconStyle>
+      <LabelStyle>
+        <scale>0</scale>
+      </LabelStyle>
+      <BalloonStyle>
+        <text><![CDATA[<h3>$[name]</h3>]]></text>
+      </BalloonStyle>
+    </Style>
+    <Style id="icon-1551-F57C00-nodesc-highlight">
+      <IconStyle>
+        <color>ff007cf5</color>
+        <scale>1</scale>
+        <Icon>
+          <href>https://www.gstatic.com/mapspro/images/stock/503-wht-blank_maps.png</href>
+        </Icon>
+      </IconStyle>
+      <LabelStyle>
+        <scale>1</scale>
+      </LabelStyle>
+      <BalloonStyle>
+        <text><![CDATA[<h3>$[name]</h3>]]></text>
+      </BalloonStyle>
+    </Style>
+    <StyleMap id="icon-1551-F57C00-nodesc">
+      <Pair>
+        <key>normal</key>
+        <styleUrl>#icon-1551-F57C00-nodesc-normal</styleUrl>
+      </Pair>
+      <Pair>
+        <key>highlight</key>
+        <styleUrl>#icon-1551-F57C00-nodesc-highlight</styleUrl>
+      </Pair>
+    </StyleMap>
+    <Style id="icon-1625-7CB342-normal">
+      <IconStyle>
+        <color>ff42b37c</color>
+        <scale>1</scale>
+        <Icon>
+          <href>https://www.gstatic.com/mapspro/images/stock/503-wht-blank_maps.png</href>
+        </Icon>
+      </IconStyle>
+      <LabelStyle>
+        <scale>0</scale>
+      </LabelStyle>
+    </Style>
+    <Style id="icon-1625-7CB342-highlight">
+      <IconStyle>
+        <color>ff42b37c</color>
+        <scale>1</scale>
+        <Icon>
+          <href>https://www.gstatic.com/mapspro/images/stock/503-wht-blank_maps.png</href>
+        </Icon>
+      </IconStyle>
+      <LabelStyle>
+        <scale>1</scale>
+      </LabelStyle>
+    </Style>
+    <StyleMap id="icon-1625-7CB342">
+      <Pair>
+        <key>normal</key>
+        <styleUrl>#icon-1625-7CB342-normal</styleUrl>
+      </Pair>
+      <Pair>
+        <key>highlight</key>
+        <styleUrl>#icon-1625-7CB342-highlight</styleUrl>
+      </Pair>
+    </StyleMap>
+    <Style id="icon-1625-7CB342-nodesc-normal">
+      <IconStyle>
+        <color>ff42b37c</color>
+        <scale>1</scale>
+        <Icon>
+          <href>https://www.gstatic.com/mapspro/images/stock/503-wht-blank_maps.png</href>
+        </Icon>
+      </IconStyle>
+      <LabelStyle>
+        <scale>0</scale>
+      </LabelStyle>
+      <BalloonStyle>
+        <text><![CDATA[<h3>$[name]</h3>]]></text>
+      </BalloonStyle>
+    </Style>
+    <Style id="icon-1625-7CB342-nodesc-highlight">
+      <IconStyle>
+        <color>ff42b37c</color>
+        <scale>1</scale>
+        <Icon>
+          <href>https://www.gstatic.com/mapspro/images/stock/503-wht-blank_maps.png</href>
+        </Icon>
+      </IconStyle>
+      <LabelStyle>
+        <scale>1</scale>
+      </LabelStyle>
+      <BalloonStyle>
+        <text><![CDATA[<h3>$[name]</h3>]]></text>
+      </BalloonStyle>
+    </Style>
+    <StyleMap id="icon-1625-7CB342-nodesc">
+      <Pair>
+        <key>normal</key>
+        <styleUrl>#icon-1625-7CB342-nodesc-normal</styleUrl>
+      </Pair>
+      <Pair>
+        <key>highlight</key>
+        <styleUrl>#icon-1625-7CB342-nodesc-highlight</styleUrl>
+      </Pair>
+    </StyleMap>
+    <Style id="icon-1726-9C27B0-normal">
+      <IconStyle>
+        <color>ffb0279c</color>
+        <scale>1</scale>
+        <Icon>
+          <href>https://www.gstatic.com/mapspro/images/stock/503-wht-blank_maps.png</href>
+        </Icon>
+      </IconStyle>
+      <LabelStyle>
+        <scale>0</scale>
+      </LabelStyle>
+    </Style>
+    <Style id="icon-1726-9C27B0-highlight">
+      <IconStyle>
+        <color>ffb0279c</color>
+        <scale>1</scale>
+        <Icon>
+          <href>https://www.gstatic.com/mapspro/images/stock/503-wht-blank_maps.png</href>
+        </Icon>
+      </IconStyle>
+      <LabelStyle>
+        <scale>1</scale>
+      </LabelStyle>
+    </Style>
+    <StyleMap id="icon-1726-9C27B0">
+      <Pair>
+        <key>normal</key>
+        <styleUrl>#icon-1726-9C27B0-normal</styleUrl>
+      </Pair>
+      <Pair>
+        <key>highlight</key>
+        <styleUrl>#icon-1726-9C27B0-highlight</styleUrl>
+      </Pair>
+    </StyleMap>
+    <Style id="icon-1726-9C27B0-nodesc-normal">
+      <IconStyle>
+        <color>ffb0279c</color>
+        <scale>1</scale>
+        <Icon>
+          <href>https://www.gstatic.com/mapspro/images/stock/503-wht-blank_maps.png</href>
+        </Icon>
+      </IconStyle>
+      <LabelStyle>
+        <scale>0</scale>
+      </LabelStyle>
+      <BalloonStyle>
+        <text><![CDATA[<h3>$[name]</h3>]]></text>
+      </BalloonStyle>
+    </Style>
+    <Style id="icon-1726-9C27B0-nodesc-highlight">
+      <IconStyle>
+        <color>ffb0279c</color>
+        <scale>1</scale>
+        <Icon>
+          <href>https://www.gstatic.com/mapspro/images/stock/503-wht-blank_maps.png</href>
+        </Icon>
+      </IconStyle>
+      <LabelStyle>
+        <scale>1</scale>
+      </LabelStyle>
+      <BalloonStyle>
+        <text><![CDATA[<h3>$[name]</h3>]]></text>
+      </BalloonStyle>
+    </Style>
+    <StyleMap id="icon-1726-9C27B0-nodesc">
+      <Pair>
+        <key>normal</key>
+        <styleUrl>#icon-1726-9C27B0-nodesc-normal</styleUrl>
+      </Pair>
+      <Pair>
+        <key>highlight</key>
+        <styleUrl>#icon-1726-9C27B0-nodesc-highlight</styleUrl>
+      </Pair>
+    </StyleMap>
+    <Style id="icon-1801-424242-normal">
+      <IconStyle>
+        <color>ff424242</color>
+        <scale>1</scale>
+        <Icon>
+          <href>https://www.gstatic.com/mapspro/images/stock/503-wht-blank_maps.png</href>
+        </Icon>
+      </IconStyle>
+      <LabelStyle>
+        <scale>0</scale>
+      </LabelStyle>
+    </Style>
+    <Style id="icon-1801-424242-highlight">
+      <IconStyle>
+        <color>ff424242</color>
+        <scale>1</scale>
+        <Icon>
+          <href>https://www.gstatic.com/mapspro/images/stock/503-wht-blank_maps.png</href>
+        </Icon>
+      </IconStyle>
+      <LabelStyle>
+        <scale>1</scale>
+      </LabelStyle>
+    </Style>
+    <StyleMap id="icon-1801-424242">
+      <Pair>
+        <key>normal</key>
+        <styleUrl>#icon-1801-424242-normal</styleUrl>
+      </Pair>
+      <Pair>
+        <key>highlight</key>
+        <styleUrl>#icon-1801-424242-highlight</styleUrl>
+      </Pair>
+    </StyleMap>
+    <Style id="icon-1801-424242-nodesc-normal">
+      <IconStyle>
+        <color>ff424242</color>
+        <scale>1</scale>
+        <Icon>
+          <href>https://www.gstatic.com/mapspro/images/stock/503-wht-blank_maps.png</href>
+        </Icon>
+      </IconStyle>
+      <LabelStyle>
+        <scale>0</scale>
+      </LabelStyle>
+      <BalloonStyle>
+        <text><![CDATA[<h3>$[name]</h3>]]></text>
+      </BalloonStyle>
+    </Style>
+    <Style id="icon-1801-424242-nodesc-highlight">
+      <IconStyle>
+        <color>ff424242</color>
+        <scale>1</scale>
+        <Icon>
+          <href>https://www.gstatic.com/mapspro/images/stock/503-wht-blank_maps.png</href>
+        </Icon>
+      </IconStyle>
+      <LabelStyle>
+        <scale>1</scale>
+      </LabelStyle>
+      <BalloonStyle>
+        <text><![CDATA[<h3>$[name]</h3>]]></text>
+      </BalloonStyle>
+    </Style>
+    <StyleMap id="icon-1801-424242-nodesc">
+      <Pair>
+        <key>normal</key>
+        <styleUrl>#icon-1801-424242-nodesc-normal</styleUrl>
+      </Pair>
+      <Pair>
+        <key>highlight</key>
+        <styleUrl>#icon-1801-424242-nodesc-highlight</styleUrl>
+      </Pair>
+    </StyleMap>
+    <Style id="icon-1839-0288D1-normal">
+      <IconStyle>
+        <color>ffd18802</color>
+        <scale>1</scale>
+        <Icon>
+          <href>https://www.gstatic.com/mapspro/images/stock/503-wht-blank_maps.png</href>
+        </Icon>
+      </IconStyle>
+      <LabelStyle>
+        <scale>0</scale>
+      </LabelStyle>
+    </Style>
+    <Style id="icon-1839-0288D1-highlight">
+      <IconStyle>
+        <color>ffd18802</color>
+        <scale>1</scale>
+        <Icon>
+          <href>https://www.gstatic.com/mapspro/images/stock/503-wht-blank_maps.png</href>
+        </Icon>
+      </IconStyle>
+      <LabelStyle>
+        <scale>1</scale>
+      </LabelStyle>
+    </Style>
+    <StyleMap id="icon-1839-0288D1">
+      <Pair>
+        <key>normal</key>
+        <styleUrl>#icon-1839-0288D1-normal</styleUrl>
+      </Pair>
+      <Pair>
+        <key>highlight</key>
+        <styleUrl>#icon-1839-0288D1-highlight</styleUrl>
+      </Pair>
+    </StyleMap>
+    <Style id="icon-1839-0288D1-nodesc-normal">
+      <IconStyle>
+        <color>ffd18802</color>
+        <scale>1</scale>
+        <Icon>
+          <href>https://www.gstatic.com/mapspro/images/stock/503-wht-blank_maps.png</href>
+        </Icon>
+      </IconStyle>
+      <LabelStyle>
+        <scale>0</scale>
+      </LabelStyle>
+      <BalloonStyle>
+        <text><![CDATA[<h3>$[name]</h3>]]></text>
+      </BalloonStyle>
+    </Style>
+    <Style id="icon-1839-0288D1-nodesc-highlight">
+      <IconStyle>
+        <color>ffd18802</color>
+        <scale>1</scale>
+        <Icon>
+          <href>https://www.gstatic.com/mapspro/images/stock/503-wht-blank_maps.png</href>
+        </Icon>
+      </IconStyle>
+      <LabelStyle>
+        <scale>1</scale>
+      </LabelStyle>
+      <BalloonStyle>
+        <text><![CDATA[<h3>$[name]</h3>]]></text>
+      </BalloonStyle>
+    </Style>
+    <StyleMap id="icon-1839-0288D1-nodesc">
+      <Pair>
+        <key>normal</key>
+        <styleUrl>#icon-1839-0288D1-nodesc-normal</styleUrl>
+      </Pair>
+      <Pair>
+        <key>highlight</key>
+        <styleUrl>#icon-1839-0288D1-nodesc-highlight</styleUrl>
+      </Pair>
+    </StyleMap>
+    <Folder>
+      <name>Calque sans titre</name>
+    </Folder>
+    <Folder>
+      <name>Calque sans titre</name>
+      <Placemark>
+        <name>Le Rize
+</name>
+        <description>Animation scientifique, accueil de chercheurs et doctorants, conservation</description>
+        <styleUrl>#icon-1726-9C27B0</styleUrl>
+        <Point>
+          <coordinates>
+            4.8833939,45.7597974,0
+          </coordinates>
+        </Point>
+      </Placemark>
+      <Placemark>
+        <name>CCO</name>
+        <description>Human Librairy, atelier fabrique de la Loi, festival des arts participatifs</description>
+        <styleUrl>#icon-1625-7CB342</styleUrl>
+        <Point>
+          <coordinates>
+            4.9182412,45.7568332,0
+          </coordinates>
+        </Point>
+      </Placemark>
+      <Placemark>
+        <name>La BRICC / Miete
+</name>
+        <description>Atelier de bricolage bois, imprimante 3D,...</description>
+        <styleUrl>#icon-1551-F57C00</styleUrl>
+        <Point>
+          <coordinates>
+            4.8908612,45.7640488,0
+          </coordinates>
+        </Point>
+      </Placemark>
+      <Placemark>
+        <name>FNE/ FabPeda
+</name>
+        <description>Ecole dehors</description>
+        <styleUrl>#icon-1839-0288D1</styleUrl>
+        <Point>
+          <coordinates>
+            4.8806902,45.7891914,0
+          </coordinates>
+        </Point>
+      </Placemark>
+      <Placemark>
+        <name>Atelier Soudé/ Repair Café
+</name>
+        <description>Réparations électriques</description>
+        <styleUrl>#icon-1551-F57C00</styleUrl>
+        <Point>
+          <coordinates>
+            4.8827956,45.7618791,0
+          </coordinates>
+        </Point>
+      </Placemark>
+      <Placemark>
+        <name>Ecole Nationale de Musique
+</name>
+        <description><![CDATA[200h d'enseignement hors les murs]]></description>
+        <styleUrl>#icon-1801-424242</styleUrl>
+        <Point>
+          <coordinates>
+            4.8733113,45.7669012,0
+          </coordinates>
+        </Point>
+      </Placemark>
+      <Placemark>
+        <name>Université Ouverte Lyon 1
+</name>
+        <styleUrl>#icon-1726-9C27B0-nodesc</styleUrl>
+        <Point>
+          <coordinates>
+            4.8912285,45.7668039,0
+          </coordinates>
+        </Point>
+      </Placemark>
+      <Placemark>
+        <name>MLIS</name>
+        <description>Conférences en plus de la bibliothèque</description>
+        <styleUrl>#icon-1726-9C27B0</styleUrl>
+        <Point>
+          <coordinates>
+            4.8931168,45.7675524,0
+          </coordinates>
+        </Point>
+      </Placemark>
+      <Placemark>
+        <name>MJC</name>
+        <styleUrl>#icon-1625-7CB342-nodesc</styleUrl>
+        <Point>
+          <coordinates>
+            4.8858602,45.762344,0
+          </coordinates>
+        </Point>
+      </Placemark>
+      <Placemark>
+        <name>MQB</name>
+        <styleUrl>#icon-1625-7CB342-nodesc</styleUrl>
+        <Point>
+          <coordinates>
+            4.9140172,45.7543755,0
+          </coordinates>
+        </Point>
+      </Placemark>
+      <Placemark>
+        <name>KILT</name>
+        <description>Kentre Intergalactique des Low Tech</description>
+        <styleUrl>#icon-1551-F57C00</styleUrl>
+        <Point>
+          <coordinates>
+            4.9070005,45.7672572,0
+          </coordinates>
+        </Point>
+      </Placemark>
+      <Placemark>
+        <name><![CDATA[Parc auto-géré de l'Autre Soie
+]]></name>
+        <styleUrl>#icon-1839-0288D1-nodesc</styleUrl>
+        <Point>
+          <coordinates>
+            4.9187593,45.7556406,0
+          </coordinates>
+        </Point>
+      </Placemark>
+      <Placemark>
+        <name>la Myne
+</name>
+        <styleUrl>#icon-1551-F57C00-nodesc</styleUrl>
+        <Point>
+          <coordinates>
+            4.8843974,45.7835745,0
+          </coordinates>
+        </Point>
+      </Placemark>
+      <Placemark>
+        <name><![CDATA[Fabrique de l'innovation
+]]></name>
+        <styleUrl>#icon-1551-F57C00-nodesc</styleUrl>
+        <Point>
+          <coordinates>
+            4.8716483,45.7834697,0
+          </coordinates>
+        </Point>
+      </Placemark>
+      <Placemark>
+        <name>Maison du Citoyen
+</name>
+        <styleUrl>#icon-1625-7CB342-nodesc</styleUrl>
+        <Point>
+          <coordinates>
+            4.8893294,45.7787708,0
+          </coordinates>
+        </Point>
+      </Placemark>
+      <Placemark>
+        <name>Sporting Club International
+</name>
+        <styleUrl>#icon-1625-7CB342-nodesc</styleUrl>
+        <Point>
+          <coordinates>
+            4.9173102,45.7497906,0
+          </coordinates>
+        </Point>
+      </Placemark>
+      <Placemark>
+        <name>Le Zola
+</name>
+        <description>En plus de la programmation, un format science et cinéma</description>
+        <styleUrl>#icon-1801-424242</styleUrl>
+        <Point>
+          <coordinates>
+            4.8798022,45.7700454,0
+          </coordinates>
+        </Point>
+      </Placemark>
+      <Placemark>
+        <name>Francas</name>
+        <styleUrl>#icon-1625-7CB342-nodesc</styleUrl>
+        <Point>
+          <coordinates>
+            4.884571,45.7586839,0
+          </coordinates>
+        </Point>
+      </Placemark>
+      <Placemark>
+        <name>URDLA</name>
+        <description><![CDATA[Formats de découertes et d'initiation à destination de publics éloignés + conservation (lithothèque)]]></description>
+        <styleUrl>#icon-1801-424242</styleUrl>
+        <Point>
+          <coordinates>
+            4.8879613,45.7712279,0
+          </coordinates>
+        </Point>
+      </Placemark>
+      <Placemark>
+        <name>Tonkin Tigers
+</name>
+        <styleUrl>#icon-1625-7CB342-nodesc</styleUrl>
+        <Point>
+          <coordinates>
+            4.8643364,45.7748274,0
+          </coordinates>
+        </Point>
+      </Placemark>
+      <Placemark>
+        <name>TNP</name>
+        <description>Troupe éphémère, présence dans les écoles, publics empêchés,...</description>
+        <styleUrl>#icon-1801-424242</styleUrl>
+        <Point>
+          <coordinates>
+            4.8795499,45.7656448,0
+          </coordinates>
+        </Point>
+      </Placemark>
+      <Placemark>
+        <name>Université Lyon 1
+</name>
+        <description>Master médiation scientifique, etc.</description>
+        <styleUrl>#icon-1726-9C27B0</styleUrl>
+        <Point>
+          <coordinates>
+            4.8634567,45.7814196,0
+          </coordinates>
+        </Point>
+      </Placemark>
+      <Placemark>
+        <name>INSA</name>
+        <description>Cethil, Deep, travail avec les étudiants, biodiversité à la Doua...</description>
+        <styleUrl>#icon-1726-9C27B0</styleUrl>
+        <Point>
+          <coordinates>
+            4.8770181,45.783626,0
+          </coordinates>
+        </Point>
+      </Placemark>
+      <Placemark>
+        <name>Maison Sésame
+</name>
+        <styleUrl>#icon-1625-7CB342-nodesc</styleUrl>
+        <Point>
+          <coordinates>
+            4.8901687,45.7606094,0
+          </coordinates>
+        </Point>
+      </Placemark>
+      <Placemark>
+        <name>Cantina</name>
+        <description>Lalca, accueil poètes, etc.</description>
+        <styleUrl>#icon-1625-7CB342</styleUrl>
+        <Point>
+          <coordinates>
+            4.8878513,45.7684532,0
+          </coordinates>
+        </Point>
+      </Placemark>
+      <Placemark>
+        <name>Espace Tonkin/ Léo Lagrange
+</name>
+        <styleUrl>#icon-1801-424242-nodesc</styleUrl>
+        <Point>
+          <coordinates>
+            4.8631749,45.7762164,0
+          </coordinates>
+        </Point>
+      </Placemark>
+    </Folder>
+  </Document>
+</kml>

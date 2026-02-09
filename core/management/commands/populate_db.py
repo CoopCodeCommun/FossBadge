@@ -8,6 +8,7 @@ from django.conf import settings
 from django.utils import timezone
 from datetime import timedelta, datetime
 from core.models import Structure, Badge, User, BadgeEndorsement
+from mapview.models import Marker
 
 class Command(BaseCommand):
     help = 'Populate the database with development data'
@@ -41,6 +42,15 @@ class Command(BaseCommand):
             self.stdout.write(self.style.SUCCESS('Images will be loaded'))
         else:
             self.stdout.write(self.style.SUCCESS('Images will NOT be loaded'))
+
+        # Import markers from KML
+        self.stdout.write('Importing markers from KML...')
+        kml_path = os.path.join(settings.BASE_DIR, 'mapview/fixtures/Université Populaire de Villeurbanne.kml')
+        if os.path.exists(kml_path):
+            nb_markers = Marker.import_from_kml(kml_path)
+            self.stdout.write(self.style.SUCCESS(f'Imported {nb_markers} markers'))
+        else:
+            self.stdout.write(self.style.WARNING(f'KML file not found at {kml_path}'))
 
         # Create users
         self.stdout.write('Creating users...')
@@ -108,6 +118,86 @@ class Command(BaseCommand):
                 'email': 'lucas.bernard@example.com',
                 'password': 'password123',
                 'address': '202 Avenue Montaigne, 75008 Paris'
+            },
+            {
+                'username': 'thomas.petit',
+                'first_name': 'Thomas',
+                'last_name': 'Petit',
+                'email': 'thomas.petit@example.com',
+                'password': 'password123',
+                'address': '12 Rue des Lilas, 69100 Villeurbanne'
+            },
+            {
+                'username': 'julie.moreau',
+                'first_name': 'Julie',
+                'last_name': 'Moreau',
+                'email': 'julie.moreau@example.com',
+                'password': 'password123',
+                'address': '34 Avenue Roger Salengro, 69100 Villeurbanne'
+            },
+            {
+                'username': 'nicolas.girard',
+                'first_name': 'Nicolas',
+                'last_name': 'Girard',
+                'email': 'nicolas.girard@example.com',
+                'password': 'password123',
+                'address': '56 Rue du 1er Mars 1943, 69100 Villeurbanne'
+            },
+            {
+                'username': 'emilie.rousseau',
+                'first_name': 'Émilie',
+                'last_name': 'Rousseau',
+                'email': 'emilie.rousseau@example.com',
+                'password': 'password123',
+                'address': '78 Cours Émile Zola, 69100 Villeurbanne'
+            },
+            {
+                'username': 'antoine.mercier',
+                'first_name': 'Antoine',
+                'last_name': 'Mercier',
+                'email': 'antoine.mercier@example.com',
+                'password': 'password123',
+                'address': '90 Rue de la Doua, 69100 Villeurbanne'
+            },
+            {
+                'username': 'isabelle.blanc',
+                'first_name': 'Isabelle',
+                'last_name': 'Blanc',
+                'email': 'isabelle.blanc@example.com',
+                'password': 'password123',
+                'address': '12 Boulevard du 11 Novembre, 69100 Villeurbanne'
+            },
+            {
+                'username': 'marc.leroy',
+                'first_name': 'Marc',
+                'last_name': 'Leroy',
+                'email': 'marc.leroy@example.com',
+                'password': 'password123',
+                'address': '34 Rue de l\'Egalité, 69100 Villeurbanne'
+            },
+            {
+                'username': 'claire.dubois',
+                'first_name': 'Claire',
+                'last_name': 'Dubois',
+                'email': 'claire.dubois@example.com',
+                'password': 'password123',
+                'address': '56 Avenue de la Fraternité, 69100 Villeurbanne'
+            },
+            {
+                'username': 'alexandre.fournier',
+                'first_name': 'Alexandre',
+                'last_name': 'Fournier',
+                'email': 'alexandre.fournier@example.com',
+                'password': 'password123',
+                'address': '78 Rue de la Liberté, 69100 Villeurbanne'
+            },
+            {
+                'username': 'sophie.martin',
+                'first_name': 'Sophie',
+                'last_name': 'Martin',
+                'email': 'sophie.martin@example.com',
+                'password': 'password123',
+                'address': '90 Cours de la République, 69100 Villeurbanne'
             }
         ]
 
@@ -140,133 +230,143 @@ class Command(BaseCommand):
 
     def create_structures(self):
         """
-        Create about ten different structures for development
+        Create structures based on KML data and ESS/Culture themes
         """
         structures = []
         structure_data = [
             {
-                'name': 'Structure Python',
+                'name': 'Le Rize',
                 'type': 'association',
-                'address': '456 Avenue de l\'Innovation, 75002 Paris',
+                'address': '23-25 Rue Valentin Haüy, 69100 Villeurbanne',
                 'siret': '123 456 789 00012',
-                'description': 'La Structure Python est dédiée à la promotion et au développement du langage de programmation Python. Nous organisons des ateliers, des conférences et des formations pour tous les niveaux, du débutant à l\'expert. Notre mission est de créer une communauté inclusive et collaborative autour de Python et de ses applications.',
+                'description': 'Lieu de mémoire, de culture et de citoyenneté. Animation scientifique, accueil de chercheurs et doctorants, conservation.',
                 'referent_last_name': 'Dubois',
                 'referent_first_name': 'Claire',
-                'referent_position': 'Présidente',
-                'latitude': 48.8566,
-                'longitude': 2.3522
+                'referent_position': 'Responsable',
+                'latitude': 45.7597974,
+                'longitude': 4.8833939
             },
             {
-                'name': 'Club Web',
+                'name': 'CCO Villeurbanne',
                 'type': 'association',
-                'address': '789 Rue du Code, 69001 Lyon',
+                'address': '39 Rue Georges Courteline, 69100 Villeurbanne',
                 'siret': '987 654 321 00034',
-                'description': 'Le Club Web est un groupe de passionnés du développement web. Nous partageons nos connaissances et expériences sur les technologies web modernes.',
+                'description': 'Centre de Culture Ouvrière. Human Library, atelier fabrique de la Loi, festival des arts participatifs. Un laboratoire d\'innovation sociale et culturelle.',
                 'referent_last_name': 'Martin',
                 'referent_first_name': 'Thomas',
-                'referent_position': 'Secrétaire',
-                'latitude': 45.7640,
-                'longitude': 4.8357
+                'referent_position': 'Directeur',
+                'latitude': 45.7568332,
+                'longitude': 4.9182412
             },
             {
-                'name': 'Tech Company',
-                'type': 'company',
-                'address': '101 Boulevard des Startups, 33000 Bordeaux',
+                'name': 'La BRICC / Miete',
+                'type': 'association',
+                'address': '84 Rue du Docteur Rollet, 69100 Villeurbanne',
                 'siret': '456 789 123 00056',
-                'description': 'Tech Company est une entreprise innovante spécialisée dans le développement de solutions technologiques pour les entreprises et les particuliers.',
+                'description': 'Atelier de bricolage bois, imprimante 3D, et espace de mutualisation pour l\'économie circulaire et solidaire.',
                 'referent_last_name': 'Petit',
                 'referent_first_name': 'Sophie',
-                'referent_position': 'CEO',
-                'latitude': 44.8378,
-                'longitude': -0.5792
+                'referent_position': 'Coordinatrice',
+                'latitude': 45.7640488,
+                'longitude': 4.8908612
             },
             {
-                'name': 'Coding School',
-                'type': 'school',
-                'address': '202 Avenue de l\'Éducation, 59000 Lille',
+                'name': 'Atelier Soudé',
+                'type': 'association',
+                'address': 'Villeurbanne',
                 'siret': '789 123 456 00078',
-                'description': 'Coding School est une école de programmation qui propose des formations intensives pour apprendre à coder et devenir développeur web ou mobile.',
+                'description': 'Repair Café spécialisé dans les réparations électriques et électroniques pour lutter contre l\'obsolescence programmée.',
                 'referent_last_name': 'Leroy',
                 'referent_first_name': 'Marc',
-                'referent_position': 'Directeur',
-                'latitude': 50.6292,
-                'longitude': 3.0573
+                'referent_position': 'Animateur',
+                'latitude': 45.7618791,
+                'longitude': 4.8827956
             },
             {
-                'name': 'Dev Studio',
-                'type': 'company',
-                'address': '303 Rue des Développeurs, 44000 Nantes',
+                'name': 'Ecole Nationale de Musique',
+                'type': 'school',
+                'address': '85 Rue Cours de la République, 69100 Villeurbanne',
                 'siret': '321 654 987 00090',
-                'description': 'Dev Studio est un studio de développement spécialisé dans la création d\'applications web et mobiles sur mesure pour les entreprises.',
+                'description': 'Enseignement musical avec une forte présence hors les murs (200h d\'enseignement dans les quartiers).',
                 'referent_last_name': 'Moreau',
                 'referent_first_name': 'Julie',
-                'referent_position': 'CTO',
-                'latitude': 47.2184,
-                'longitude': -1.5536
+                'referent_position': 'Directrice',
+                'latitude': 45.7669012,
+                'longitude': 4.8733113
             },
             {
-                'name': 'Data Science Association',
+                'name': 'KILT (Low Tech)',
                 'type': 'association',
-                'address': '404 Boulevard des Données, 67000 Strasbourg',
+                'address': 'Villeurbanne',
                 'siret': '654 987 321 00012',
-                'description': 'L\'association Data Science promeut l\'utilisation des données et de l\'intelligence artificielle pour résoudre des problèmes complexes.',
+                'description': 'Centre Intergalactique des Low Tech. Promotion des technologies sobres, réparables et accessibles.',
                 'referent_last_name': 'Fournier',
                 'referent_first_name': 'Alexandre',
                 'referent_position': 'Président',
-                'latitude': 48.5734,
-                'longitude': 7.7521
+                'latitude': 45.7672572,
+                'longitude': 4.9070005
             },
             {
-                'name': 'Mobile App Factory',
-                'type': 'company',
-                'address': '505 Avenue des Applications, 13000 Marseille',
+                'name': 'La Myne',
+                'type': 'association',
+                'address': '1 Rue du Platane, 69100 Villeurbanne',
                 'siret': '987 321 654 00034',
-                'description': 'Mobile App Factory est une entreprise spécialisée dans le développement d\'applications mobiles pour iOS et Android.',
+                'description': 'Tiers-lieu de recherche et d\'expérimentation sur les communs, l\'écologie et la technologie.',
                 'referent_last_name': 'Girard',
                 'referent_first_name': 'Émilie',
-                'referent_position': 'Directrice',
-                'latitude': 43.2965,
-                'longitude': 5.3698
+                'referent_position': 'Facilitatrice',
+                'latitude': 45.7835745,
+                'longitude': 4.8843974
             },
             {
-                'name': 'Open Source Community',
+                'name': 'Le Zola',
                 'type': 'association',
-                'address': '606 Rue du Libre, 31000 Toulouse',
+                'address': '28 Avenue Roger Salengro, 69100 Villeurbanne',
                 'siret': '123 789 456 00056',
-                'description': 'Open Source Community est une communauté dédiée à la promotion et au développement de logiciels libres et open source.',
+                'description': 'Cinéma d\'art et d\'essai proposant des formats innovants comme "science et cinéma".',
                 'referent_last_name': 'Rousseau',
                 'referent_first_name': 'Nicolas',
-                'referent_position': 'Coordinateur',
-                'latitude': 43.6047,
-                'longitude': 1.4442
+                'referent_position': 'Programmateur',
+                'latitude': 45.7700454,
+                'longitude': 4.8798022
             },
             {
-                'name': 'Digital Learning Institute',
-                'type': 'school',
-                'address': '707 Boulevard de l\'Apprentissage, 06000 Nice',
+                'name': 'Maison du Citoyen',
+                'type': 'association',
+                'address': 'Villeurbanne',
                 'siret': '456 123 789 00078',
-                'description': 'Digital Learning Institute est un centre de formation spécialisé dans les compétences numériques et la transformation digitale.',
+                'description': 'Espace d\'accueil et de soutien aux initiatives citoyennes et à la vie associative locale.',
                 'referent_last_name': 'Blanc',
                 'referent_first_name': 'Isabelle',
-                'referent_position': 'Directrice pédagogique',
-                'latitude': 43.7102,
-                'longitude': 7.2620
+                'referent_position': 'Coordinatrice',
+                'latitude': 45.7787708,
+                'longitude': 4.8893294
             },
             {
-                'name': 'Blockchain Consortium',
-                'type': 'company',
-                'address': '808 Avenue de la Blockchain, 38000 Grenoble',
+                'name': 'Université Populaire',
+                'type': 'association',
+                'address': 'Villeurbanne',
                 'siret': '789 456 123 00090',
-                'description': 'Blockchain Consortium est un groupe d\'entreprises travaillant ensemble pour développer et promouvoir les technologies blockchain.',
+                'description': 'Favoriser l\'accès de tous au savoir et à la culture tout au long de la vie.',
                 'referent_last_name': 'Mercier',
                 'referent_first_name': 'Antoine',
                 'referent_position': 'Président',
-                'latitude': 45.1885,
-                'longitude': 5.7245
+                'latitude': 45.766543,
+                'longitude': 4.879528
             }
         ]
 
         for data in structure_data:
+            # Try to find a matching marker for this structure
+            # Special case for CCO to match CCO in KML
+            lookup_name = 'CCO' if data['name'] == 'CCO Villeurbanne' else data['name']
+            # Special case for KILT to match KILT in KML
+            if data['name'] == 'KILT (Low Tech)': lookup_name = 'KILT'
+            # Special case for Université Populaire
+            if data['name'] == 'Université Populaire': lookup_name = 'Université Populaire de Villeurbanne'
+            
+            matching_marker = Marker.objects.filter(name__icontains=lookup_name).first()
+            
             structure, created = Structure.objects.get_or_create(
                 name=data['name'],
                 defaults={
@@ -278,9 +378,15 @@ class Command(BaseCommand):
                     'referent_first_name': data['referent_first_name'],
                     'referent_position': data['referent_position'],
                     'latitude': data['latitude'],
-                    'longitude': data['longitude']
+                    'longitude': data['longitude'],
+                    'marker': matching_marker
                 }
             )
+
+            # If the structure already existed but had no marker, update it
+            if not created and matching_marker and not structure.marker:
+                structure.marker = matching_marker
+                structure.save()
 
             # Add a logo image if available and not already set, and --img argument is provided
             if (created or not structure.logo) and self.load_images and not settings.PICTURES["USE_PLACEHOLDERS"]:
@@ -301,82 +407,143 @@ class Command(BaseCommand):
 
     def create_badges(self, structures, users):
         """
-        Create some badges for development
+        Create badges with ESS, Popular Education, Music and Culture themes
         """
         badges = []
         badge_data = [
+            # --- BADGES EXISTANTS / EXISTING BADGES ---
             {
-                'name': 'Python Débutant',
+                'name': 'Animateur de Vie Sociale',
+                'level': 'intermediate',
+                'description': 'Capacité à animer des groupes, à favoriser le lien social et à accompagner des projets citoyens.',
+                'issuing_structure': 'CCO Villeurbanne'
+            },
+            {
+                'name': 'Médiateur Culturel',
+                'level': 'expert',
+                'description': 'Expertise dans la conception et l\'animation de dispositifs de médiation entre les œuvres, les savoirs et les publics.',
+                'issuing_structure': 'Le Rize'
+            },
+            {
+                'name': 'Réparateur Electronique',
+                'level': 'intermediate',
+                'description': 'Aptitude à diagnostiquer et réparer des appareils électroniques simples pour prolonger leur durée de vie.',
+                'issuing_structure': 'Atelier Soudé'
+            },
+            {
+                'name': 'Bricoleur Bois Partagé',
                 'level': 'beginner',
-                'description': 'Ce badge certifie une connaissance de base en programmation Python. Il atteste de la capacité à écrire des scripts simples, à comprendre les concepts fondamentaux comme les variables, les boucles et les conditions.',
-                'issuing_structure': 'Structure Python'
+                'description': 'Maîtrise des outils de base du travail du bois en autonomie dans un atelier partagé.',
+                'issuing_structure': 'La BRICC / Miete'
             },
             {
-                'name': 'Python Intermédiaire',
-                'level': 'intermediate',
-                'description': 'Ce badge certifie une connaissance intermédiaire en programmation Python. Il atteste de la capacité à créer des applications plus complexes, à utiliser des bibliothèques externes et à comprendre les concepts de programmation orientée objet.',
-                'issuing_structure': 'Structure Python'
-            },
-            {
-                'name': 'Python Expert',
-                'level': 'expert',
-                'description': 'Ce badge certifie une expertise en programmation Python. Il atteste de la capacité à concevoir, développer et maintenir des applications complexes en utilisant Python et ses frameworks associés. Les compétences validées incluent la maîtrise des concepts avancés comme la programmation orientée objet, la gestion des exceptions, les générateurs, et l\'utilisation de bibliothèques comme Django, Flask, Pandas et NumPy.',
-                'issuing_structure': 'Structure Python'
-            },
-            {
-                'name': 'HTML',
-                'level': 'expert',
-                'description': 'Ce badge certifie une expertise en HTML. Il atteste de la capacité à créer des pages web sémantiques, accessibles et conformes aux standards du W3C.',
-                'issuing_structure': 'Club Web'
-            },
-            {
-                'name': 'CSS',
-                'level': 'intermediate',
-                'description': 'Ce badge certifie une connaissance intermédiaire en CSS. Il atteste de la capacité à créer des mises en page responsives, à utiliser Flexbox et Grid, et à appliquer des animations et transitions.',
-                'issuing_structure': 'Club Web'
-            },
-            {
-                'name': 'JavaScript',
+                'name': 'Eclaireur Low-Tech',
                 'level': 'beginner',
-                'description': 'Ce badge certifie une connaissance de base en JavaScript. Il atteste de la capacité à manipuler le DOM, à gérer les événements et à créer des interactions simples.',
-                'issuing_structure': 'Tech Company'
+                'description': 'Sensibilisation et mise en pratique des principes de la low-tech : sobriété, accessibilité, durabilité.',
+                'issuing_structure': 'KILT (Low Tech)'
             },
             {
-                'name': 'React',
+                'name': 'Pratique Instrumentale Collective',
                 'level': 'intermediate',
-                'description': 'Ce badge certifie une connaissance intermédiaire en React. Il atteste de la capacité à créer des applications web avec React, à utiliser les hooks et à gérer l\'état avec Redux.',
-                'issuing_structure': 'Dev Studio'
+                'description': 'Participation active à un ensemble musical et capacité à jouer en groupe.',
+                'issuing_structure': 'Ecole Nationale de Musique'
             },
             {
-                'name': 'Data Analysis',
+                'name': 'Facilitateur de Communs',
                 'level': 'expert',
-                'description': 'Ce badge certifie une expertise en analyse de données. Il atteste de la capacité à collecter, nettoyer, analyser et visualiser des données à l\'aide de bibliothèques comme Pandas, NumPy et Matplotlib.',
-                'issuing_structure': 'Data Science Association'
+                'description': 'Capacité à documenter, partager et gérer des ressources partagées au sein d\'un écosystème.',
+                'issuing_structure': 'La Myne'
             },
             {
-                'name': 'Mobile Development',
-                'level': 'intermediate',
-                'description': 'Ce badge certifie une connaissance intermédiaire en développement mobile. Il atteste de la capacité à créer des applications mobiles pour iOS et Android à l\'aide de frameworks comme React Native ou Flutter.',
-                'issuing_structure': 'Mobile App Factory'
-            },
-            {
-                'name': 'Open Source Contribution',
+                'name': 'Ciné-Sciences',
                 'level': 'beginner',
-                'description': 'Ce badge certifie une connaissance de base en contribution à des projets open source. Il atteste de la capacité à comprendre le fonctionnement de Git, à créer des pull requests et à participer à la communauté open source.',
-                'issuing_structure': 'Open Source Community'
+                'description': 'Participation aux cycles de réflexion croisant septième art et vulgarisation scientifique.',
+                'issuing_structure': 'Le Zola'
             },
             {
-                'name': 'Digital Marketing',
+                'name': 'Engagement Citoyen',
                 'level': 'intermediate',
-                'description': 'Ce badge certifie une connaissance intermédiaire en marketing digital. Il atteste de la capacité à créer et gérer des campagnes publicitaires en ligne, à analyser les performances et à optimiser les conversions.',
-                'issuing_structure': 'Digital Learning Institute'
+                'description': 'Implication active dans la vie associative locale et soutien aux projets de quartier.',
+                'issuing_structure': 'Maison du Citoyen'
             },
             {
-                'name': 'Blockchain',
-                'level': 'expert',
-                'description': 'Ce badge certifie une expertise en technologies blockchain. Il atteste de la capacité à concevoir, développer et déployer des applications décentralisées (DApps) et des contrats intelligents.',
-                'issuing_structure': 'Blockchain Consortium'
-            }
+                'name': 'Savoir Partagé',
+                'level': 'beginner',
+                'description': 'Reconnaissance de la transmission de savoirs dans le cadre de l\'éducation populaire.',
+                'issuing_structure': 'Université Populaire'
+            },
+
+            # --- NOUVEAUX BADGES PAR STRUCTURE (5 par structure) / NEW BADGES PER STRUCTURE (5 per structure) ---
+            
+            # Le Rize (Mémoire et culture)
+            {'name': 'Archiviste Citoyen', 'level': 'intermediate', 'description': 'Aide à la conservation de la mémoire locale.', 'issuing_structure': 'Le Rize'},
+            {'name': 'Guide de Mémoire', 'level': 'expert', 'description': 'Animation de parcours patrimoniaux dans Villeurbanne.', 'issuing_structure': 'Le Rize'},
+            {'name': 'Chercheur Populaire', 'level': 'intermediate', 'description': 'Participation à des programmes de recherche-action.', 'issuing_structure': 'Le Rize'},
+            {'name': 'Médiateur Interculturel', 'level': 'expert', 'description': 'Facilitation du dialogue entre cultures urbaines.', 'issuing_structure': 'Le Rize'},
+            {'name': 'Collecteur de Récits', 'level': 'beginner', 'description': 'Recueil de témoignages d\'habitants.', 'issuing_structure': 'Le Rize'},
+            
+            # CCO Villeurbanne (Innovation sociale)
+            {'name': 'Organisateur de Festival', 'level': 'expert', 'description': 'Planification et coordination d\'événements culturels.', 'issuing_structure': 'CCO Villeurbanne'},
+            {'name': 'Facilitateur de Débat', 'level': 'intermediate', 'description': 'Animation de discussions citoyennes et de cercles de parole.', 'issuing_structure': 'CCO Villeurbanne'},
+            {'name': 'Co-constructeur de Loi', 'level': 'expert', 'description': 'Participation active à la fabrique citoyenne de la loi.', 'issuing_structure': 'CCO Villeurbanne'},
+            {'name': 'Ambassadeur de l\'Hospitalité', 'level': 'beginner', 'description': 'Accueil et orientation des nouveaux arrivants.', 'issuing_structure': 'CCO Villeurbanne'},
+            {'name': 'Animateur de Laboratoire Social', 'level': 'intermediate', 'description': 'Expérimentation de nouvelles formes de solidarité.', 'issuing_structure': 'CCO Villeurbanne'},
+
+            # La BRICC / Miete (Réemploi et bricolage)
+            {'name': 'Menuisier Circulaire', 'level': 'intermediate', 'description': 'Fabrication de meubles à partir de matériaux de récupération.', 'issuing_structure': 'La BRICC / Miete'},
+            {'name': 'Opérateur Impression 3D', 'level': 'beginner', 'description': 'Utilisation des outils de fabrication numérique.', 'issuing_structure': 'La BRICC / Miete'},
+            {'name': 'Réparateur de Meubles', 'level': 'beginner', 'description': 'Remise en état de mobilier en bois.', 'issuing_structure': 'La BRICC / Miete'},
+            {'name': 'Formateur Machines-outils', 'level': 'expert', 'description': 'Transmission des règles de sécurité et d\'usage des machines.', 'issuing_structure': 'La BRICC / Miete'},
+            {'name': 'Gestionnaire de Matériauthèque', 'level': 'intermediate', 'description': 'Tri et valorisation des chutes de bois et matériaux.', 'issuing_structure': 'La BRICC / Miete'},
+
+            # Atelier Soudé (Réparation électronique)
+            {'name': 'Expert en Soudure', 'level': 'expert', 'description': 'Maîtrise des techniques de soudure électronique complexe.', 'issuing_structure': 'Atelier Soudé'},
+            {'name': 'Diagnostiqueur Electronique', 'level': 'intermediate', 'description': 'Identification de pannes sur des circuits imprimés.', 'issuing_structure': 'Atelier Soudé'},
+            {'name': 'Sauveur d\'Appareils', 'level': 'beginner', 'description': 'Premiers gestes de réparation pour éviter le gaspillage.', 'issuing_structure': 'Atelier Soudé'},
+            {'name': 'Formateur Anti-Obsolescence', 'level': 'expert', 'description': 'Éducation aux enjeux de la durabilité technologique.', 'issuing_structure': 'Atelier Soudé'},
+            {'name': 'Démonteur Méthodique', 'level': 'beginner', 'description': 'Ouverture propre et tri des composants d\'un appareil.', 'issuing_structure': 'Atelier Soudé'},
+
+            # Ecole Nationale de Musique (ENM)
+            {'name': 'Musicien Hors-les-murs', 'level': 'intermediate', 'description': 'Performance musicale dans l\'espace public.', 'issuing_structure': 'Ecole Nationale de Musique'},
+            {'name': 'Eveilleur Musical', 'level': 'beginner', 'description': 'Initiation des enfants aux sons et rythmes.', 'issuing_structure': 'Ecole Nationale de Musique'},
+            {'name': 'Pratique Orchestrale', 'level': 'intermediate', 'description': 'Capacité à s\'insérer dans un ensemble symphonique ou jazz.', 'issuing_structure': 'Ecole Nationale de Musique'},
+            {'name': 'Compositeur Collectif', 'level': 'expert', 'description': 'Création de morceaux de musique en groupe.', 'issuing_structure': 'Ecole Nationale de Musique'},
+            {'name': 'Percussionniste de Rue', 'level': 'beginner', 'description': 'Maîtrise des rythmes de base pour défilés.', 'issuing_structure': 'Ecole Nationale de Musique'},
+
+            # KILT (Low Tech)
+            {'name': 'Constructeur de Four Solaire', 'level': 'intermediate', 'description': 'Fabrication d\'un système de cuisson solaire autonome.', 'issuing_structure': 'KILT (Low Tech)'},
+            {'name': 'Concepteur de Low-Tech', 'level': 'expert', 'description': 'Design de solutions techniques simples et durables.', 'issuing_structure': 'KILT (Low Tech)'},
+            {'name': 'Bidouilleur Économe', 'level': 'beginner', 'description': 'Utilisation de ressources locales pour réparer le quotidien.', 'issuing_structure': 'KILT (Low Tech)'},
+            {'name': 'Documentaliste du Faire', 'level': 'intermediate', 'description': 'Rédaction de tutoriels pour partager des solutions techniques.', 'issuing_structure': 'KILT (Low Tech)'},
+            {'name': 'Ambassadeur de la Sobriété', 'level': 'beginner', 'description': 'Sensibilisation aux modes de vie résilients.', 'issuing_structure': 'KILT (Low Tech)'},
+
+            # La Myne (Communs et écologie)
+            {'name': 'Expérimentateur d\'Écologie', 'level': 'intermediate', 'description': 'Mise en place de protocoles de test environnementaux.', 'issuing_structure': 'La Myne'},
+            {'name': 'Documentariste de Communs', 'level': 'intermediate', 'description': 'Enregistrement et partage de l\'histoire d\'un commun.', 'issuing_structure': 'La Myne'},
+            {'name': 'Bidouilleur Éthique', 'level': 'beginner', 'description': 'Usage critique et détournement positif des technologies.', 'issuing_structure': 'La Myne'},
+            {'name': 'Facilitateur de Recherche Ouverte', 'level': 'expert', 'description': 'Coordination de projets de recherche citoyenne.', 'issuing_structure': 'La Myne'},
+            {'name': 'Curateur de Connaissances', 'level': 'expert', 'description': 'Organisation et maintenance des savoirs partagés.', 'issuing_structure': 'La Myne'},
+
+            # Le Zola (Cinéma)
+            {'name': 'Critique de Cinéma Scientifique', 'level': 'intermediate', 'description': 'Analyse des thématiques sciences au cinéma.', 'issuing_structure': 'Le Zola'},
+            {'name': 'Organisateur de Ciné-Débat', 'level': 'expert', 'description': 'Conception de soirées thématiques autour d\'un film.', 'issuing_structure': 'Le Zola'},
+            {'name': 'Projectionniste Bénévole', 'level': 'intermediate', 'description': 'Aide technique à la diffusion de films.', 'issuing_structure': 'Le Zola'},
+            {'name': 'Accueillant Public', 'level': 'beginner', 'description': 'Gestion de la billetterie et accueil chaleureux.', 'issuing_structure': 'Le Zola'},
+            {'name': 'Programmateur Jeune Public', 'level': 'expert', 'description': 'Sélection de films adaptés aux enfants et écoles.', 'issuing_structure': 'Le Zola'},
+
+            # Maison du Citoyen (Vie associative)
+            {'name': 'Accompagnateur de Projet', 'level': 'expert', 'description': 'Soutien méthodologique aux porteurs de projets locaux.', 'issuing_structure': 'Maison du Citoyen'},
+            {'name': 'Veilleur de Solidarité', 'level': 'beginner', 'description': 'Identification des besoins et fragilités dans le quartier.', 'issuing_structure': 'Maison du Citoyen'},
+            {'name': 'Animateur de Quartier', 'level': 'intermediate', 'description': 'Organisation d\'événements de proximité.', 'issuing_structure': 'Maison du Citoyen'},
+            {'name': 'Facilitateur d\'Entraide', 'level': 'beginner', 'description': 'Mise en relation de citoyens pour du troc de services.', 'issuing_structure': 'Maison du Citoyen'},
+            {'name': 'Coordonnateur de Bénévoles', 'level': 'intermediate', 'description': 'Gestion et animation de l\'équipe de bénévoles.', 'issuing_structure': 'Maison du Citoyen'},
+
+            # Université Populaire (Savoir pour tous)
+            {'name': 'Conférencier Populaire', 'level': 'expert', 'description': 'Capacité à transmettre un savoir complexe simplement.', 'issuing_structure': 'Université Populaire'},
+            {'name': 'Apprenant Assidu', 'level': 'beginner', 'description': 'Participation régulière aux cycles de formation.', 'issuing_structure': 'Université Populaire'},
+            {'name': 'Facilitateur de Savoirs', 'level': 'intermediate', 'description': 'Aide à la compréhension et à l\'échange entre apprenants.', 'issuing_structure': 'Université Populaire'},
+            {'name': 'Organisateur de Rencontres', 'level': 'intermediate', 'description': 'Mise en place logistique de conférences débats.', 'issuing_structure': 'Université Populaire'},
+            {'name': 'Passeur de Culture', 'level': 'beginner', 'description': 'Diffusion des opportunités culturelles du territoire.', 'issuing_structure': 'Université Populaire'},
         ]
 
         # Create a dictionary to easily look up structures by name

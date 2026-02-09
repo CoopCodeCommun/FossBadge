@@ -1,0 +1,158 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Carte des Badges 3D - FossBadge</title>
+
+    <!-- MapLibre GL CSS (remplacement libre de Mapbox) -->
+    <link href="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.css" rel="stylesheet">
+
+    <!-- HTMX -->
+    <script src="https://unpkg.com/htmx.org@1.9.10"></script>
+
+    <!-- Bootstrap 5 CSS (utilitaires) -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <!-- Style personnalisé de la carte -->
+    <!-- Custom map stylesheet -->
+    <link rel="stylesheet" href="{% static 'mapview/css/map_3d.css' %}">
+
+    <style>
+        #tooltip {
+            position: absolute;
+            display: none;
+            background: rgba(0, 0, 0, 0.85);
+            color: white;
+            padding: 10px 14px;
+            border-radius: 6px;
+            pointer-events: none;
+            z-index: 2000;
+            font-size: 12px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+        }
+    </style>
+</head>
+<body hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}'>
+
+    <!-- Tooltip pour Deck.gl (survol des éléments sur la carte) -->
+    <!-- Tooltip for Deck.gl (hover over map elements) -->
+    <div id="tooltip"></div>
+
+    <!-- Container pour la carte Deck.gl -->
+    <!-- Map container for Deck.gl -->
+    <div id="map-container"></div>
+
+    <!-- Panneau flottant principal -->
+    <!-- Main floating panel -->
+    <div class="panneau-flottant">
+
+        <!-- En-tête du panneau : titre + lien retour -->
+        <!-- Panel header: title + back link -->
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <h2>🗺️ FossBadge Map</h2>
+            <a href="{% url 'core:home-list' %}" class="btn btn-sm btn-outline-light">Accueil</a>
+        </div>
+
+        <!-- ==========================================
+             VUE GLOBALE : compteurs + structures + style
+             GLOBAL VIEW: counters + structures + style
+             ========================================== -->
+        <div id="vue-globale">
+
+            <!-- Compteurs : nombre de structures et de badges -->
+            <!-- Counters: number of structures and badges -->
+            <div class="compteurs">
+                <div class="compteur-box">
+                    <div class="compteur-valeur" id="compteur-structures">-</div>
+                    <div class="compteur-label">structures</div>
+                </div>
+                <div class="compteur-box">
+                    <div class="compteur-valeur" id="compteur-badges">-</div>
+                    <div class="compteur-label">badges</div>
+                </div>
+            </div>
+
+            <!-- Liste des structures visibles sur la carte -->
+            <!-- List of structures visible on the map -->
+            <div class="section-sep">Structures visibles</div>
+            <div id="structure-list-container">
+                {% include "mapview/partials/structure_list.html" %}
+            </div>
+
+            <!-- Sélecteur de style de carte -->
+            <!-- Map style selector -->
+            <div class="section-sep">⚙️ Affichage</div>
+            <select onchange="app.setStyle(this.value)">
+                <option value="streets">Rues (Streets)</option>
+                <option value="dark">Sombre (Dark)</option>
+                <option value="light">Clair (Light)</option>
+            </select>
+        </div>
+
+        <!-- ==========================================
+             VUE DÉTAIL : structure + badges + sliders
+             DETAIL VIEW: structure + badges + sliders
+             ========================================== -->
+        <div id="vue-detail" class="d-none">
+
+            <!-- Bouton retour vue globale -->
+            <!-- Back to global view button -->
+            <button class="btn btn-sm btn-outline-secondary mb-3" onclick="app.deselectionner()">
+                ← Retour
+            </button>
+
+            <!-- En-tête de la structure sélectionnée (rempli par le JS) -->
+            <!-- Selected structure header (filled by JS) -->
+            <div id="detail-header"></div>
+
+            <!-- Liste des badges de la structure (remplie par le JS) -->
+            <!-- Structure's badge list (filled by JS) -->
+            <div id="detail-badges"></div>
+
+            <!-- Contrôles des hexagones (pertinents en vue 3D) -->
+            <!-- Hexagon controls (relevant in 3D view) -->
+            <div class="section-sep">⚙️ Hexagones</div>
+            <div>
+                <label>Rayon : <span id="radius-label">5</span>m</label>
+                <input type="range" min="1" max="50" step="1" value="5"
+                       oninput="document.getElementById('radius-label').textContent = this.value; app.setRadius(this.value)">
+
+                <label>Hauteur : <span id="elevation-label">1</span>x</label>
+                <input type="range" min="1" max="100" step="1" value="1"
+                       oninput="document.getElementById('elevation-label').textContent = this.value; app.setElevation(this.value)">
+
+                <label>Opacité : <span id="opacity-label">80</span>%</label>
+                <input type="range" min="0" max="100" step="5" value="80"
+                       oninput="document.getElementById('opacity-label').textContent = this.value; app.setOpacity(this.value)">
+            </div>
+        </div>
+
+    </div>
+
+    <!-- MapLibre GL JS -->
+    <script src="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.js"></script>
+
+    <!-- Deck.gl -->
+    <script src="https://unpkg.com/deck.gl@8.9.0/dist.min.js"></script>
+
+    <!-- Script de l'application -->
+    <!-- Application script -->
+    <script src="{% static 'mapview/js/map_3d.js' %}"></script>
+
+    <script>
+        // Initialisation de l'application au chargement
+        // Application initialization on load
+        window.addEventListener('load', function() {
+            window.app = new ApplicationMap3D({
+                containerId: 'map-container',
+                apiUrl: "{% url 'index-data-json' %}",
+                structuresUrl: "{% url 'index-structures' %}",
+                centerLat: {{ m_config.center_lat|stringformat:"f" }},
+                centerLng: {{ m_config.center_lng|stringformat:"f" }}
+            });
+        });
+    </script>
+</body>
+</html>

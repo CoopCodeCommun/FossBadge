@@ -4,7 +4,7 @@ from . import views
 
 router = DefaultRouter()
 
-router.register(r'index', views.IndexViewSet, basename='index')
+router.register(r'', views.IndexViewSet, basename='index')
 
 # The API URLs are now determined automatically by the router
 urlpatterns = [

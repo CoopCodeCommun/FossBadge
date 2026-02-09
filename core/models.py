@@ -98,6 +98,8 @@ class Structure(models.Model):
     editors = models.ManyToManyField(User, related_name='structures_editors', verbose_name='Éditeurs')
     users = models.ManyToManyField(User, related_name='structures_users', blank=True, verbose_name="Utilisateurs")
 
+    marker = models.ForeignKey('mapview.Marker', on_delete=models.SET_NULL, null=True, blank=True, related_name='structures')
+
     class Meta:
         verbose_name = "Structure"
         verbose_name_plural = "Structures"

@@ -4,6 +4,7 @@ from django.db import models
 from django.contrib.auth.models import AbstractUser
 from django.utils import timezone
 from pictures.models import PictureField
+from django.db.models import Q
 
 # Create your models here.
 
@@ -26,18 +27,44 @@ class User(AbstractUser):
 
     @property
     def structures(self):
-        return self.structures_users.all().union(self.structures_editors.all()).union(self.structures_admins.all())
-
+        return Structure.objects.filter(
+            Q(admins=self.pk)|
+            Q(editors=self.pk)|
+            Q(users=self.pk),
+        ).distinct()
 
     def get_badges(self):
         """
         Returns all badges held by this user
         """
-        return Badge.objects.filter(assignments__user=self)
+        return Badge.objects.filter(assignments__user=self).distinct()
 
-    def get_badge_assignments(self):
+    def get_all_badge_assignments(self):
         """
         Returns all badge assignments for this user
+        """
+        return self.badge_assignments.all().order_by('-assigned_date')
+
+    def get_all_badge_assignments_by_badge(self):
+        """
+        Returns all badge assignments for this user, sort by badge
+
+        :returns: Return a list of dict with two keys : "badge" (containing the badge), and "assignments" (containing the badge assignments linked to this user)
+        """
+        badges = self.get_badges()
+        assignments = [{"badge":badge, "assignments":badge.get_user_assignments(self)} for badge in badges]
+
+        # Version plus lisible :
+        # assignments = []
+        # for badge in badges:
+        #     assignments += [{"badge":badge, "assignments":badge.get_user_assignments(self)}]
+
+        return assignments
+
+
+    def get_badge_assignments(self, badge):
+        """
+        Returns all badge assignments for this user for a specific badge
         """
         return self.badge_assignments.all().order_by('-assigned_date')
 
@@ -46,6 +73,15 @@ class User(AbstractUser):
         Adds a badge to this user
         """
         return badge.add_holder(self, assigned_by, notes)
+
+    def has_badge(self, badge):
+        """
+        Return True if a user has a badge
+        """
+        return Badge.objects.filter(
+            Q(pk=badge.pk) &
+            Q(assignments__user=self)
+        ).count()>0
 
     def remove_badge(self, badge):
         """
@@ -106,9 +142,6 @@ class Structure(models.Model):
     def __str__(self):
         return self.name
 
-    # def users(self):
-    #     return list(chain(self.admins.all(), self.editors.all(), self.users.all()))
-
     def badge_count(self):
         """
         Returns the number of badges associated with this structure
@@ -162,6 +195,7 @@ class Badge(models.Model):
         blank=True,
         verbose_name="Structures où ce badge est valable"
     )
+
     # The holders relationship is now managed through the BadgeAssignment model
     created_at = models.DateTimeField(auto_now_add=True, verbose_name="Date de création")
 
@@ -177,21 +211,54 @@ class Badge(models.Model):
         """
         Returns all users who hold this badge excluding inactive users
         """
-        return User.objects.filter(badge_assignments__badge=self,is_active=True)
+        return User.objects.filter(badge_assignments__badge=self,is_active=True).distinct()
 
-    def add_holder(self, user, assigned_by=None, notes=None):
+    def get_non_holders(self):
+        """
+        Returns all users who do not hold this badge excluding inactive users
+        """
+        return User.objects.exclude(badge_assignments__badge=self).filter(is_active=True)
+
+    def get_assignments(self):
+        """
+        Returns all users who hold this badge excluding inactive users
+        """
+        return BadgeAssignment.objects.filter(badge=self)
+
+    def get_user_assignments(self, user):
+        """
+        Returns all assignments of a specific user
+        """
+        return BadgeAssignment.objects.filter(badge=self,user=user)
+
+
+    def add_holder(self, user, assigned_by=None, structure=None, notes=None):
         """
         Adds a user as a holder of this badge
         """
         assignment, created = BadgeAssignment.objects.get_or_create(
             badge=self,
             user=user,
+            assigned_structure=structure,
             defaults={
                 'assigned_by': assigned_by,
                 'notes': notes
             }
         )
-        return assignment
+        return assignment, created
+
+    def endorse(self, endorsed_by, structure=None, notes=None):
+        """
+        Add an endorsement for this badge (made by a user or a user and a structure)
+        """
+        endorsement = BadgeEndorsement.objects.get_or_create(
+            badge=self,
+            endorsed_by=endorsed_by,
+            structure=structure,
+            notes=notes
+        )
+
+        return endorsement
 
     def remove_holder(self, user):
         """
@@ -248,7 +315,9 @@ class BadgeAssignment(models.Model):
         verbose_name_plural = "Attributions de badges"
         ordering = ['-assigned_date']
         # Ensure a user can't receive the same badge twice
-        unique_together = ['badge', 'user']
+        unique_together = [
+            ['badge', 'assigned_structure', 'user']
+        ]
 
     def __str__(self):
         return f"{self.badge.name} attribué à {self.user.username} le {self.assigned_date.strftime('%d/%m/%Y')}"
@@ -269,12 +338,22 @@ class BadgeEndorsement(models.Model):
                                    related_name='badge_endorsements', verbose_name="Approuvé par")
     notes = models.TextField(blank=True, null=True, verbose_name="Notes")
 
+    def save(self, *args, **kwargs):
+        # On object creation :
+        if not self.pk:
+            # Check if it is a structure who endorse, is so add if to the valid structure of the badge
+            if self.structure is not None:
+                self.badge.valid_structures.add(self.structure)
+
+        super().save(*args, **kwargs)
     class Meta:
         verbose_name = "Approbation de badge"
         verbose_name_plural = "Approbations de badges"
         ordering = ['-endorsed_date']
         # Ensure a structure can't endorse the same badge twice
-        unique_together = ['badge', 'structure']
+        unique_together = [
+            ['badge', 'structure']
+        ]
 
     def __str__(self):
         return f"{self.badge.name} approuvé par {self.structure.name} le {self.endorsed_date.strftime('%d/%m/%Y')}"

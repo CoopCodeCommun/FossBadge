@@ -40,7 +40,7 @@ class UserProfileTest(TestCase):
 
         # Assign the badge to the user with a specific date
         self.assignment_date = timezone.now() - timedelta(days=30)
-        assignment = self.badge.add_holder(self.user)
+        assignment, created = self.badge.add_holder(self.user)
         assignment.assigned_date = self.assignment_date
         assignment.save()
 

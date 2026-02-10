@@ -1,0 +1,47 @@
+{% load pictures %}
+
+
+<div class="badge-grid">
+    {% if assignments %}
+        {% for assignment in assignments %}
+            <div class="card text-center">
+                <div class="card-body">
+                    <div>
+                        <p>Assigné le {{ assignment.assigned_date.date }}</p>
+                    </div>
+
+                     {% if assignment.assigned_by %}
+                         <div>
+                             Par <a href="{% url 'core:user-detail' assignment.assigned_by.pk %} ">{{ assignment.assigned_by.username }} </a>
+                             {% if assignment.assigned_by.avatar %}
+                                 {% picture assignment.assigned_by.avatar img_alt=assignment.assigned_by.username img_class="small-img" ratio="1/1" %}
+                             {% else %}
+                                <img src="{{ placeholder_image }}" alt="Avatar utilisateur" class="img-fluid rounded-circle mb-3" style="width: 32px; height: 32px;">
+                             {% endif %}
+                         </div>
+                    {% endif %}
+
+                    {% if assignment.assigned_structure %}
+                        <p>
+                            Pour la structure
+                            <a href="{% url 'core:structure-detail' assignment.assigned_structure.pk %}"> {{ assignment.assigned_structure }}</a>
+                            {% if assignment.assigned_structure.logo %}
+                                {% picture assignment.assigned_structure.logo img_alt=assignment.assigned_structure.name img_class="small-img" ratio="1/1" %}
+                            {% else %}
+                                <img src="{{ placeholder_image }}" alt="Logo de la structure" class="img-fluid rounded-circle mb-3" style="width: 32px; height: 32px;">
+                            {% endif %}
+                        </p>
+                    {% endif %}
+                    <h4>Notes :</h4>
+                    <p>
+                        {{ assignment.notes }}
+                    </p>
+                </div>
+            </div>
+        {% endfor %}
+    {% else %}
+        <div class="alert alert-info">
+            Aucune attribution pour cet utilisateur et ce badge.
+        </div>
+    {% endif %}
+</div>

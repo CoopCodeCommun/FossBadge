@@ -1,0 +1,17 @@
+{% block extra_js%}
+    <!-- Show django messages -->
+    <script>
+        {% for message in messages %}
+            Swal.fire({
+                toast : true,
+                title: "{{message}}",
+                icon: "{{message.level_tag}}",
+                showCloseButton: true,
+                timerProgressBar : true,
+                timer : 10000,
+                showConfirmButton: false,
+                position : 'top-end'
+            })
+        {% endfor %}
+    </script>
+{%endblock%}

@@ -1,0 +1,83 @@
+{% extends 'base.html' %}
+{% load pictures %}
+
+{% block title %} Badge {{ assignment.badge.name }}{% endblock %}
+
+{% block content %}
+{% with badge=assignment.badge structure=assignment.structure %}
+
+    <div class="row">
+        <div class="col-md-12">
+            <h1 class="display-4 mb-4">Badge {{ assignment.badge.name }} assigné à {{ assignment.user.username }}</h1>
+            <h3> Le {{ assignment.assigned_date.date }}</h3>
+        </div>
+    </div>
+
+    <div class="row mb-5">
+        <!-- Assignment Information Section -->
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-body text-center">
+                    <!-- Badge Icon -->
+                    {% if badge.icon %}
+                        {% picture badge.icon img_alt=badge.name img_class="badge-icon mb-3" ratio="1/1" picture_class="text-center" %}
+                    {% else %}
+                        <img src="{{ placeholder_image }}" alt="{{ badge.name }}" class="badge-icon mb-3"
+                             style="width: 150px; height: 150px;">
+                    {% endif %}
+                    <h2 class="card-title">{{ badge.name }}</h2>
+                    <p> <a class="btn btn-primary" href="{% url 'core:badge-detail' badge.pk %}">Détail du badge</a></p>
+
+                    <!-- Download QR Code -->
+                    <div class="mb-3">
+                        <p class="mb-1 fw-bold">QR Code:</p>
+                        {% if assignment.qr_code %}
+                            <div class="mb-2" style="max-width: 200px; margin: 0 auto;">
+                                {% picture assignment.qr_code img_alt="QR Code du badge" img_class="img-fluid" ratio="1/1" %}
+                            </div>
+                            <div>
+                                <a href="{{ assignment.qr_code.url }}" class="btn btn-primary" download>Télécharger le QR Code</a>
+                            </div>
+                        {% else %}
+                            <div>
+                                <p class="text-muted">QR Code non disponible</p>
+                            </div>
+                        {% endif %}
+                    </div>
+
+                </div>
+            </div>
+        </div>
+
+        <!-- Assignment detail -->
+        <div class="col-md-6">
+            <!-- Assignment detail -->
+            <div class="card mb-4">
+                <div class="card-body">
+                    <h2 class="card-title">Détail</h2>
+                    <div class="row">
+                        <p> Assigné par
+                            <a href="{% url 'core:user-detail' assignment.assigned_by.pk %}">{{ assignment.assigned_by.username }}</a>
+                            à
+                            <a href="{% url 'core:user-detail' assignment.user.pk %}">{{ assignment.user.username }}</a>
+                        </p>
+
+                        {% if assignment.assigned_structure%}
+                            <p>
+                                Assigné par la structure :
+                                <a href="{% url 'core:structure-detail' assignment.assigned_structure.pk %}">{{ assignment.assigned_structure.name }}</a>
+                            </p>
+                        {% endif %}
+
+                        <h5> Notes : </h5>
+                        <p>{{ assignment.notes }}</p>
+                    </div>
+                </div>
+            </div>
+
+
+        </div>
+    </div>
+
+{% endwith %}
+{% endblock %}

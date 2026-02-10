@@ -441,7 +441,7 @@ class Command(BaseCommand):
                     assigner = random.choice(users) if random.random() > 0.3 else None
 
                     # Create the assignment with the specific date
-                    assignment = badge.add_holder(user, assigned_by=assigner, notes=f"Assigned during database population")
+                    assignment, created = badge.add_holder(user, assigned_by=assigner, notes=f"Assigned during database population")
 
                     # Update the assigned_date field
                     assignment.assigned_date = assignment_date

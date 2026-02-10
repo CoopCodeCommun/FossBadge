@@ -12,6 +12,12 @@
             <div class="col-md-4">
                 <a class="btn btn-success mb-4" href="{% url 'core:badge-edit' pk=badge.pk %}"> Éditer </a>
                 <a class="btn btn-danger mb-4" href="{% url 'core:badge-delete' pk=badge.pk %}"> Supprimer </a>
+                    <button class="btn btn-primary mb-4"
+                         hx-get="{% url 'core:assignment-assign' %}?badge={{badge.pk}}"
+                         hx-on:htmx:after-request="showpopup()"
+                         hx-target="#customPopup-content"
+                         hx-swap="innerHTML" > Assigner</button>
+
             </div>
         {% endif %}
     </div>
@@ -119,11 +125,14 @@
                     <h3 class="card-title">Ce badge est rattaché à d'autres personnes</h3>
                     {% if holders %}
                         <ul class="list-group list-group-flush">
-                            {% for user in holders %}
+                            {% for holder in holders %}
                                 <li class="list-group-item">
-                                    <a href="{% url 'core:user-detail' user.pk %}">
-                                        {{ user.get_full_name|default:user.username }}
+                                    <a href="{% url 'core:user-detail' holder.pk %}">
+                                        {{ holder.get_full_name|default:holder.username }}
                                     </a>
+                                    -
+                                    <a href="{% url 'core:assignment-user-badge-assignments' %}?badge={{ badge.pk }}&user={{ holder.pk }}">Voir les attributions</a>
+
                                 </li>
                             {% endfor %}
                         </ul>
@@ -148,4 +157,38 @@
             </div>
         </div>
     </div>
+    {%comment%}
+    <script>
+        window.openAssignPopUp = () =>{
+            Swal.fire({
+                title: "Assigner un badge",
+                icon: "info",
+                html: `{% include "core/badges/partials/badge_assignment.html" %}`,
+                showCloseButton: true,
+                preConfirm: () => {
+                    return {
+                        "assigned_user":document.getElementById("user-input").value,
+                        "assigned_by_structure":document.getElementById("structure-input").value,
+                        "assigned_by_user": "{{ request.user.pk }}",
+                        "notes":document.getElementById("notes-input").value,
+                        "badge":"{{ badge.pk }}",
+                    };
+                },
+                showCancelButton: false,
+                showConfirmButton: false,
+                focusConfirm: false,
+            }).then((result) => {
+                if (result.isConfirmed) {
+                        htmx.ajax('POST',  "{% url 'core:assignment-assign' %}", {
+                            target: 'body',
+                            swap: 'innerHTML',
+                            values: result.value
+                        });
+
+                }
+            });
+        }
+    </script>
+    {%endcomment%}
+
 {% endblock %}

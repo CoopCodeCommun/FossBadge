@@ -18,6 +18,7 @@ dependencies = [
     "psycopg[binary]>=3.3.2",
     "sweetify>=2.3.1",
     "celery[redis]>=5.6.2",
+    "pyopenbadges",
 ]
 
 [dependency-groups]
@@ -29,6 +30,9 @@ dev = [
 
 [tool.uv]
 package = false
+
+[tool.uv.sources]
+pyopenbadges = { path = "temp-dependancies/pyopenbadges-0.1.0-py3-none-any.whl" }
 
 [build-system]
 requires = ["hatchling"]

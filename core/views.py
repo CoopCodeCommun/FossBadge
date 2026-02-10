@@ -220,10 +220,18 @@ class BadgeViewSet(viewsets.ViewSet):
 
 class AssignmentViewSet(viewsets.ViewSet):
     """
-
+    ViewSet for BadgeAssignments related pages
     """
 
-    # TODO permissions
+    def get_permissions(self):
+        permissions_list = []
+
+        if self.action in ['list_user_badge_assignment','retrieve']:
+            permissions_list += [AllowAny]
+        elif self.action in ["assign"]:
+            permissions_list += [CanAssignBadge]
+
+        return [permission() for permission in permissions_list]
 
     def retrieve(self, request, pk=None):
         """

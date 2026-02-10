@@ -1,8 +1,9 @@
 from rest_framework import permissions
+from django.shortcuts import get_object_or_404
 
 from core.models import Badge, Structure, User
 
-
+#### Permissions class ####
 class IsBadgeEditor(permissions.BasePermission):
     """
     Check if a user has the right to edit a specific badge
@@ -51,13 +52,14 @@ class CanEditUser(permissions.BasePermission):
 
 class CanAssignBadge(permissions.BasePermission):
     def has_permission(self, request, view):
-        return True
-        user = request.user
+        # TODO : add check if the structure endorse the badge
 
-        pass
-        pk = view.kwargs.get("pk")
-        edited_user = User.objects.get(pk=pk)
+        if request.method == "GET":
+            return True
+
         user = request.user
+        structure = get_object_or_404(Structure, pk=request.POST["assigned_by_structure"])
+
         if not user:
             return False
 
@@ -66,10 +68,13 @@ class CanAssignBadge(permissions.BasePermission):
 
         return any([
             user.is_superuser,
-            edited_user == user
+            is_structure_editor(user, structure),
+            is_structure_admin(user, structure)
         ])
 
 
+
+#### Methods ####
 def is_structure_editor(user, structure):
     if not user:
         return False

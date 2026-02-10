@@ -27,7 +27,7 @@ SECRET_KEY = os.environ.get('SECRET_KEY', insecure_key)
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
-DEBUG_SEND_EMAIL = True
+DEBUG_SEND_EMAIL = False
 
 ALLOWED_HOSTS = ['localhost', '127.0.0.1', 'badge.codecommun.coop', 'badge.localhost']
 CSRF_TRUSTED_ORIGINS = ['https://badge.codecommun.coop']

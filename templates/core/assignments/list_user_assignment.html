@@ -1,12 +1,85 @@
+{% extends 'base.html' %}
+{% load pictures %}
 
+{% block title %}Badge {{ badge.name }} assigné à {{ user.username }}{% endblock %}
 
-{% for assignment in assignments %}
+{% block content %}
+    <div class="row">
+        <div class="col-md-8">
+            <h1 class="display-4 mb-4">Badge "{{ badge.name }}" assigné {{ assignments.count }} fois à {{ user.username }}</h1>
+        </div>
+    </div>
 
-    <p>{{ assignment.badge.name }}</p>
-    <p>{{ assignment.assigned_by }}</p>
-    <p>{{ assignment.assigned_structure }}</p>
-    <br>
-    <br>
-    <br>
+    <div class="row mb-5">
+        <!-- Badge Information Section -->
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-body text-center">
+                    <h3>Détail du badge :</h3>
+                    <!-- Badge Icon -->
+                    {% if badge.icon %}
+                        {% picture badge.icon img_alt=badge.name img_class="badge-icon mb-3" ratio="1/1" picture_class="text-center" %}
+                    {% else %}
+                        <img src="{{ placeholder_image }}" alt="{{ badge.name }}" class="badge-icon mb-3"
+                             style="width: 150px; height: 150px;">
+                    {% endif %}
+                    <h2 class="card-title">{{ badge.name }}</h2>
 
-{% endfor %}
+                    <!-- Badge Level -->
+                    <div class="mb-3">
+                        {% if badge.level == 'beginner' %}
+                            <span class="badge bg-primary p-2 fs-5">{{ badge.get_level_display }}</span>
+                        {% elif badge.level == 'intermediate' %}
+                            <span class="badge bg-warning text-dark p-2 fs-5">{{ badge.get_level_display }}</span>
+                        {% elif badge.level == 'expert' %}
+                            <span class="badge bg-success p-2 fs-5">{{ badge.get_level_display }}</span>
+                        {% endif %}
+                    </div>
+
+                    <!-- Issuing Structure -->
+                    <div class="mb-3">
+                        <p class="mb-1 fw-bold">Structure émettrice :</p>
+                        <div class="d-flex align-items-center justify-content-center">
+                            {% if badge.issuing_structure.logo %}
+                                <div class="me-2" style="width: 50px;">
+                                    {% picture badge.issuing_structure.logo img_alt="Logo "|add:badge.issuing_structure.name img_class="img-fluid" ratio="1/1" %}
+                                </div>
+                            {% else %}
+                                <img src="{{ placeholder_image }}" alt="Logo {{ badge.issuing_structure.name }}"
+                                     class="img-fluid me-2" style="width: 50px;">
+                            {% endif %}
+                            <a href="{% url 'core:structure-detail' badge.issuing_structure.pk %}"><span>{{ badge.issuing_structure.name }}</span></a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Badge Description -->
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-body">
+                    <h3 class="card-title">Description du badge</h3>
+                    <p class="card-text">
+                        {{ badge.description|linebreaks }}
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Badge assignments -->
+    <div class="row">
+        <div class="col-md-12">
+            <div class="card mb-4">
+                <div class="card-body">
+                    <h3 class="card-title">Attributions :</h3>
+                    <div class="row">
+                        {% include "core/assignments/partials/assignment_list.html" %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+{% endblock %}

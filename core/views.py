@@ -293,6 +293,8 @@ class AssignmentViewSet(viewsets.ViewSet):
 
         return render(request, 'core/assignments/list_user_assignment.html', context={
             "assignments": assignments,
+            "badge":badge,
+            "user":user,
         })
 
 class StructureViewSet(viewsets.ViewSet):

@@ -123,13 +123,16 @@
             <div class="card">
                 <div class="card-body">
                     <h3 class="card-title">Ce badge est rattaché à d'autres personnes</h3>
-                    {% if assignments %}
+                    {% if holders %}
                         <ul class="list-group list-group-flush">
-                            {% for assignment in assignments %}
+                            {% for holder in holders %}
                                 <li class="list-group-item">
-                                    <a href="{% url 'core:user-detail' assignment.user.pk %}">
-                                        {{ assignment.user.get_full_name|default:assignment.user.username }}
-                                    </a> - <a href="{% url 'core:assignment-detail' assignment.pk %}">voir l'attribution</a>
+                                    <a href="{% url 'core:user-detail' holder.pk %}">
+                                        {{ holder.get_full_name|default:holder.username }}
+                                    </a>
+                                    -
+                                    <a href="{% url 'core:assignment-user-badge-assignments' %}?badge={{ badge.pk }}&user={{ holder.pk }}">Voir les attributions</a>
+
                                 </li>
                             {% endfor %}
                         </ul>

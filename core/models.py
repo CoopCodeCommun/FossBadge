@@ -211,7 +211,7 @@ class Badge(models.Model):
         """
         Returns all users who hold this badge excluding inactive users
         """
-        return User.objects.filter(badge_assignments__badge=self,is_active=True)
+        return User.objects.filter(badge_assignments__badge=self,is_active=True).distinct()
 
     def get_non_holders(self):
         """

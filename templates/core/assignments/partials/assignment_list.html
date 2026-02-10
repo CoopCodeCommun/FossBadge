@@ -1,87 +1,47 @@
 {% load pictures %}
 
-{% comment %}
-
-    This template is used with a dict named "badge_assignments" containing : {"badge":BadgeObject, "assignments": QuerySetOfBadgeAssignment }
-    To get a dict like that you can use the User class method "get_all_badge_assignments_by_badge"
-
-{% endcomment %}
 
 <div class="badge-grid">
-    {% if badge_with_badge_assignments %}
-        {% for badge_with_badge_assignment in badge_with_badge_assignments %}
-            {% with badge=badge_with_badge_assignment.badge assignments=badge_with_badge_assignment.assignments%}
-
+    {% if assignments %}
+        {% for assignment in assignments %}
             <div class="card text-center">
                 <div class="card-body">
-                    {% if badge.icon %}
-                        <div class="badge-icon-container">
-                            {% picture badge.icon img_alt=badge.name img_class="badge-icon" ratio="1/1" %}
-                        </div>
-                    {% else %}
-                        <img src="{{ placeholder_image }}" alt="{{ badge.name }}" class="badge-icon">
+                    <div>
+                        <p>Assigné le {{ assignment.assigned_date.date }}</p>
+                    </div>
+
+                     {% if assignment.assigned_by %}
+                         <div>
+                             Par <a href="{% url 'core:user-detail' assignment.assigned_by.pk %} ">{{ assignment.assigned_by.username }} </a>
+                             {% if assignment.assigned_by.avatar %}
+                                 {% picture assignment.assigned_by.avatar img_alt=assignment.assigned_by.username img_class="small-img" ratio="1/1" %}
+                             {% else %}
+                                <img src="{{ placeholder_image }}" alt="Avatar utilisateur" class="img-fluid rounded-circle mb-3" style="width: 32px; height: 32px;">
+                             {% endif %}
+                         </div>
                     {% endif %}
-                    <h5 class="card-title">{{ badge.name }}</h5>
-                    <p class="card-text">
-                        {% if badge.level == 'beginner' %}
-                            <span class="badge bg-primary">{{ badge.get_level_display }}</span>
-                        {% elif badge.level == 'intermediate' %}
-                            <span class="badge bg-warning text-dark">{{ badge.get_level_display }}</span>
-                        {% elif badge.level == 'expert' %}
-                            <span class="badge bg-success">{{ badge.get_level_display }}</span>
-                        {% endif %}
+
+                    {% if assignment.assigned_structure %}
+                        <p>
+                            Pour la structure
+                            <a href="{% url 'core:structure-detail' assignment.assigned_structure.pk %}"> {{ assignment.assigned_structure }}</a>
+                            {% if assignment.assigned_structure.logo %}
+                                {% picture assignment.assigned_structure.logo img_alt=assignment.assigned_structure.name img_class="small-img" ratio="1/1" %}
+                            {% else %}
+                                <img src="{{ placeholder_image }}" alt="Logo de la structure" class="img-fluid rounded-circle mb-3" style="width: 32px; height: 32px;">
+                            {% endif %}
+                        </p>
+                    {% endif %}
+                    <h4>Notes :</h4>
+                    <p>
+                        {{ assignment.notes }}
                     </p>
-                    <p>Assigné {{ assignments.count }} fois</p>
-                    <p class="card-text text-muted">Crée par {{ badge.issuing_structure.name }}</p>
-{#                    <a href="{% url 'core:assignment-detail' pk=assignment.pk %}" class="btn btn-primary">Voir l'attribution</a>#}
-                    <a href="{% url 'core:assignment-user-badge-assignments' %}?badge={{ badge.pk }}&user={{ user.pk }}" class="btn btn-primary">Voir les attributions</a>
                 </div>
             </div>
-            {% endwith %}
         {% endfor %}
     {% else %}
         <div class="alert alert-info">
-            Aucun badge ne correspond à vos critères de recherche.
+            Aucune attribution pour cet utilisateur et ce badge.
         </div>
     {% endif %}
 </div>
-
-<!-- Pagination -->
-{% if is_paginated %}
-    <nav aria-label="Page navigation" class="mt-4">
-        <ul class="pagination justify-content-center">
-            {% if page_obj.has_previous %}
-                <li class="page-item">
-                    <a class="page-link" href="?page=
-                            {{ page_obj.previous_page_number }}{% if search_query %}&search={{ search_query }}{% endif %}{% if level_filter %}&level={{ level_filter }}{% endif %}{% if structure_filter %}&structure={{ structure_filter }}{% endif %}"
-                       tabindex="-1">Précédent</a>
-                </li>
-            {% else %}
-                <li class="page-item disabled">
-                    <a class="page-link" href="#" tabindex="-1" aria-disabled="true">Précédent</a>
-                </li>
-            {% endif %}
-
-            {% for i in paginator.page_range %}
-                {% if page_obj.number == i %}
-                    <li class="page-item active"><a class="page-link" href="#">{{ i }}</a></li>
-                {% else %}
-                    <li class="page-item"><a class="page-link" href="?page=
-                            {{ i }}{% if search_query %}&search={{ search_query }}{% endif %}{% if level_filter %}&level={{ level_filter }}{% endif %}{% if structure_filter %}&structure={{ structure_filter }}{% endif %}">{{ i }}</a>
-                    </li>
-                {% endif %}
-            {% endfor %}
-
-            {% if page_obj.has_next %}
-                <li class="page-item">
-                    <a class="page-link" href="?page=
-                            {{ page_obj.next_page_number }}{% if search_query %}&search={{ search_query }}{% endif %}{% if level_filter %}&level={{ level_filter }}{% endif %}{% if structure_filter %}&structure={{ structure_filter }}{% endif %}">Suivant</a>
-                </li>
-            {% else %}
-                <li class="page-item disabled">
-                    <a class="page-link" href="#" tabindex="-1" aria-disabled="true">Suivant</a>
-                </li>
-            {% endif %}
-        </ul>
-    </nav>
-{% endif %}

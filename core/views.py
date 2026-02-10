@@ -158,12 +158,12 @@ class BadgeViewSet(viewsets.ViewSet):
         """
         badge = get_object_or_404(Badge, pk=pk)
         if request.method == 'POST':
-            form = BadgeForm(request.POST, request.FILES, instance=badge)
+            form = BadgeForm(request.POST, request.FILES, instance=badge, request=request)
             if form.is_valid():
                 form.save()
                 return redirect(reverse('core:badge-detail', kwargs={'pk': badge.pk}))
         else:
-            form = BadgeForm(instance=badge)
+            form = BadgeForm(instance=badge, request=request)
 
         icon = None
         if badge.icon:

@@ -251,14 +251,14 @@ class Badge(models.Model):
         """
         Add an endorsement for this badge (made by a user or a user and a structure)
         """
-        endorsement = BadgeEndorsement.objects.get_or_create(
+        endorsement, created = BadgeEndorsement.objects.get_or_create(
             badge=self,
             endorsed_by=endorsed_by,
             structure=structure,
             notes=notes
         )
 
-        return endorsement
+        return endorsement, created
 
     def remove_holder(self, user):
         """

@@ -72,6 +72,25 @@ class CanAssignBadge(permissions.BasePermission):
             is_structure_admin(user, structure)
         ])
 
+class CanEndorseBadge(permissions.BasePermission):
+    def has_permission(self, request, view):
+        if request.method == "GET":
+            return True
+
+        user = request.user
+        structure = get_object_or_404(Structure, pk=request.POST["structure"])
+
+        if not user:
+            return False
+
+        if not user.is_active or not user.is_authenticated:
+            return False
+
+        return any([
+            user.is_superuser,
+            is_structure_editor(user, structure),
+            is_structure_admin(user, structure)
+        ])
 
 
 #### Methods ####

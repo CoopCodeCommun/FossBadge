@@ -19,8 +19,8 @@ from .models import Structure, Badge, User, BadgeAssignment
 from .forms import BadgeForm, StructureForm, UserForm, PartialUserForm
 import sweetify
 
-from .permissions import IsBadgeEditor, IsStructureAdmin, CanEditUser, CanAssignBadge
-from .validators import BadgeAssignmentValidator
+from .permissions import IsBadgeEditor, IsStructureAdmin, CanEditUser, CanAssignBadge, CanEndorseBadge
+from .validators import BadgeAssignmentValidator, BadgeEndorsementValidator
 
 
 def raise403(request, msg=None):
@@ -77,6 +77,10 @@ class BadgeViewSet(viewsets.ViewSet):
             permissions_list += [IsAuthenticated]
         elif self.action in ["edit", "delete"]:
             permissions_list += [IsBadgeEditor]
+        elif self.action in ["assign"]:
+            permissions_list += [CanAssignBadge]
+        elif self.action in ["endorse"]:
+            permissions_list += [CanEndorseBadge]
 
         return [permission() for permission in permissions_list]
 
@@ -217,35 +221,54 @@ class BadgeViewSet(viewsets.ViewSet):
             'form': form
         })
 
+    @action(detail=True, methods=["get", "post"])
+    def endorse(self, request, pk=None):
 
-class AssignmentViewSet(viewsets.ViewSet):
-    """
-    ViewSet for BadgeAssignments related pages
-    """
+        #BadgeEndorsement
 
-    def get_permissions(self):
-        permissions_list = []
 
-        if self.action in ['list_user_badge_assignment','retrieve']:
-            permissions_list += [AllowAny]
-        elif self.action in ["assign"]:
-            permissions_list += [CanAssignBadge]
+        if not request.htmx:
+            return raise403(request)
 
-        return [permission() for permission in permissions_list]
+        if request.method == "GET":
 
-    def retrieve(self, request, pk=None):
-        """
-        Display a specific assignment.
-        """
-        assignment = get_object_or_404(BadgeAssignment, pk=pk)
+            return render(request, 'core/badges/partials/badge_endorsement.html',context={
+                "badge_pk": pk
+            })
 
-        return render(request, 'core/assignments/detail.html', {
-            'title': f'FossBadge - {assignment.user.username} - {assignment.badge.name}',
-            'assignment': assignment,
-        })
+        badge = get_object_or_404(Badge, pk=pk)
 
-    @action(detail=False, methods=['get','post'])
-    def assign(self, request):
+
+        validator = BadgeEndorsementValidator(data=request.POST)
+
+        if not validator.is_valid():
+            messages.error(request, 'Badge Assignment Error')
+            print(validator.errors)
+            return render(request, 'core/badges/partials/badge_endorsement.html',context={
+                "errors": validator.errors,
+                "defaults": validator.data,
+                "badge_pk": validator.data['badge']
+            })
+
+
+        # Get all objects
+        badge = get_object_or_404(Badge, pk=validator.validated_data["badge"])
+        structure = get_object_or_404(Structure, pk=validator.validated_data["structure"])
+        endorsed_by = get_object_or_404(User, pk=validator.validated_data["endorsed_by"])
+
+        notes = request.POST['notes']
+
+        # Assign the badge to the user
+        endorsement, created = badge.endorse(endorsed_by, structure, notes)
+
+        if created:
+            messages.add_message(request, messages.SUCCESS, 'Badge endorsé !')
+        else:
+            messages.add_message(request, messages.INFO, "Le badge était déjà endorsé")
+        return reload(request)
+
+    @action(detail=True, methods=['get','post'])
+    def assign(self, request, pk=None):
         """
         Assign a badge to a user.
         """
@@ -254,11 +277,10 @@ class AssignmentViewSet(viewsets.ViewSet):
             return raise403(request)
 
         if request.method == "GET":
-            badge_pk = request.GET.get("badge")
             users = User.objects.all()
             return render(request, 'core/badges/partials/badge_assignment.html',context={
                 "users": users,
-                "badge_pk": badge_pk
+                "badge_pk": pk
             })
 
         validator = BadgeAssignmentValidator(data=request.POST)
@@ -289,6 +311,33 @@ class AssignmentViewSet(viewsets.ViewSet):
         else:
             messages.add_message(request, messages.INFO, "L'utilisateur avait déjà ce badge")
         return reload(request)
+
+
+
+class AssignmentViewSet(viewsets.ViewSet):
+    """
+    ViewSet for BadgeAssignments related pages
+    """
+
+    def get_permissions(self):
+        permissions_list = []
+
+        if self.action in ['list_user_badge_assignment','retrieve']:
+            permissions_list += [AllowAny]
+
+        return [permission() for permission in permissions_list]
+
+    def retrieve(self, request, pk=None):
+        """
+        Display a specific assignment.
+        """
+        assignment = get_object_or_404(BadgeAssignment, pk=pk)
+
+        return render(request, 'core/assignments/detail.html', {
+            'title': f'FossBadge - {assignment.user.username} - {assignment.badge.name}',
+            'assignment': assignment,
+        })
+
 
     @action(detail=False, methods=['get', 'post'], url_path='user-badge-assignments', url_name='user-badge-assignments')
     def list_user_badge_assignment(self, request):

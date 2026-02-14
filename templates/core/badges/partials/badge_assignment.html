@@ -1,6 +1,7 @@
 {%include 'show_message.html'%}
 
 <div id="badge-assignment-form">
+    <h2>Assigner un badge</h2>
     <form>
         <select id="user-input" class="form-select" name="assigned_user">
             <option >--- Sélectionnez un utilisateur ---</option>>
@@ -38,7 +39,7 @@
         <input type="hidden" name="badge" value="{{ badge_pk }}">
 
         <button class="btn btn-primary"
-         hx-post="{% url 'core:assignment-assign' %}"
+         hx-post="{% url 'core:badge-assign' badge_pk %}"
          hx-target="#badge-assignment-form"
          hx-swap="innerHTML">
             Envoyer</button>

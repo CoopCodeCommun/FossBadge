@@ -8,18 +8,23 @@
         <div class="col-md-8">
             <h1 class="display-4 mb-4">Badge: {{ badge.name }}</h1>
         </div>
-        {% if is_admin or is_editor %}
             <div class="col-md-4">
+                {% if is_admin or is_editor %}
+
                 <a class="btn btn-success mb-4" href="{% url 'core:badge-edit' pk=badge.pk %}"> Éditer </a>
                 <a class="btn btn-danger mb-4" href="{% url 'core:badge-delete' pk=badge.pk %}"> Supprimer </a>
                     <button class="btn btn-primary mb-4"
-                         hx-get="{% url 'core:assignment-assign' %}?badge={{badge.pk}}"
+                         hx-get="{% url 'core:badge-assign' badge.pk %}"
                          hx-on:htmx:after-request="showpopup()"
                          hx-target="#customPopup-content"
-                         hx-swap="innerHTML" > Assigner</button>
-
+                         hx-swap="innerHTML"> Assigner</button>
+                {% endif %}
+                <button class="btn btn-primary mb-4"
+                         hx-get="{% url 'core:badge-endorse' badge.pk %}"
+                         hx-on:htmx:after-request="showpopup()"
+                         hx-target="#customPopup-content"
+                         hx-swap="innerHTML"> Endosser </button>
             </div>
-        {% endif %}
     </div>
 
     <div class="row mb-5">
@@ -179,7 +184,7 @@
                 focusConfirm: false,
             }).then((result) => {
                 if (result.isConfirmed) {
-                        htmx.ajax('POST',  "{% url 'core:assignment-assign' %}", {
+                        htmx.ajax('POST',  "{% url 'core:badge-assign' %}", {
                             target: 'body',
                             swap: 'innerHTML',
                             values: result.value

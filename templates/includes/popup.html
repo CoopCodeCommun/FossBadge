@@ -7,16 +7,15 @@
 </div>
 
 <style>
+    {# Animation partially from https://codepen.io/fxm90/pen/KMMBNw #}
     #customPopup{
-        animation: fadeOutFromBlock 0.2s ease;
-        display:none;
-        opacity:0;
+        visibility: hidden;
+        transition: visibility 0ms linear 0.3s;
     }
 
     #customPopup.showed{
-        animation: fadeInFromNone 0.2s ease;
-        display: block;
-        opacity: 1;
+        visibility: visible;
+        transition: visibility 0ms;
     }
 
     #customPopup #customPopup-content{
@@ -25,9 +24,9 @@
         min-width:400px;
 
         /* Position */
-        position : absolute;
-        left:30%;
-        top : 30%;
+        position : fixed;
+        left : 50%;
+        top : 50%;
         z-index : 20;
         padding : 40px;
 
@@ -35,6 +34,11 @@
         border : solid black 1px;
         border-radius : 5px;
         background-color : white;
+        animation: hide-popup 0.3s forwards;
+    }
+
+    #customPopup.showed #customPopup-content{
+        animation: show-popup 0.3s forwards;
     }
 
     #customPopup #customPopup-bg{
@@ -43,62 +47,40 @@
         position: absolute;
         left:0;
         top:0;
-        background-color : black;
+        background-color : rgba(0,0,0,0.5);
         z-index : 0;
-        opacity:50%;
+        opacity:0;
+        transition: opacity 0.3s ease-in-out;
     }
 
-    @keyframes fadeInFromNone {
-    0% {
-        display: none;
-        opacity: 0;
-    }
-
-    1% {
-        display: block;
-        opacity: 0;
-    }
-
-    100% {
-        display: block;
+    #customPopup.showed #customPopup-bg{
         opacity: 1;
     }
 
-    @keyframes fadeOutFromBlock {
-    0% {
-        display: block;
-        opacity: 1;
+    @keyframes show-popup {
+        0% {
+            transform: translate(-50%, -50%) scale(0.7);
+            opacity: 0;
+        }
+        100% {
+            transform: translate(-50%, -50%) scale(1);
+        }
     }
 
-    99% {
-        display: block;
-        opacity: 0;
+    @keyframes hide-popup {
+        0% {
+            transform: translate(-50%, -50%) scale(1);
+            opacity: 1;
+        }
+        100% {
+            transform: translate(-50%, -50%) scale(0.5);
+            opacity: 0;
+        }
     }
 
-    100% {
-        display: none;
-        opacity: 0;
-    }
-}
 </style>
 
 <script>
-    /*
-    function showpopup(){
-        let popup = document.querySelector("#customPopup")
-        popup.style.display = "block"
-        setTimeout(function(){
-            popup.style.opacity = "1"
-        }, 100);
-    }
-    function hidepopup(){
-        let popup = document.querySelector("#customPopup")
-            popup.style.opacity = "0"
-        setTimeout(function(){
-            popup.style.display = "none"
-        }, 100);
-    }*/
-
     function showpopup(){
         let popup = document.querySelector("#customPopup")
         popup.classList.add("showed")

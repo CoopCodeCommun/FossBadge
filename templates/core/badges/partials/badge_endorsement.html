@@ -6,7 +6,7 @@
         {# Structure who endorsed #}
         <select id="structure-input" class="form-select mt-2" name="structure">
             <option>--- Sélectionnez une Structure ---</option>>
-            {%for structure in request.user.structures %}
+            {%for structure in structures %}
                 <option {% if defaults.structure == structure.pk|stringformat:"s"  %} selected {%endif%} value="{{structure.pk}}">
                     {{structure.name}}
                 </option>

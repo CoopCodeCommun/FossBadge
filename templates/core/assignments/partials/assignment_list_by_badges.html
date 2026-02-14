@@ -14,6 +14,9 @@
 
             <div class="card text-center">
                 <div class="card-body">
+                    {% if badge_with_badge_assignment.self_assigned is True %}
+                        <span class="badge bg-warning text-dark">Auto-assigné</span>
+                    {% endif %}
                     {% if badge.icon %}
                         <div class="badge-icon-container">
                             {% picture badge.icon img_alt=badge.name img_class="badge-icon" ratio="1/1" %}

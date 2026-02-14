@@ -58,13 +58,18 @@ class CanAssignBadge(permissions.BasePermission):
             return True
 
         user = request.user
-        structure = get_object_or_404(Structure, pk=request.POST["assigned_by_structure"])
 
         if not user:
             return False
 
         if not user.is_active or not user.is_authenticated:
             return False
+
+        try:
+            structure = get_object_or_404(Structure, pk=request.POST["assigned_by_structure"])
+        except Exception:
+            return True
+
 
         return any([
             user.is_superuser,

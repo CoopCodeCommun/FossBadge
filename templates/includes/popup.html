@@ -8,14 +8,21 @@
 
 <style>
     #customPopup{
+        animation: fadeOutFromBlock 0.2s ease;
         display:none;
         opacity:0;
-        transition : 0.2s ease-out;
+    }
+
+    #customPopup.showed{
+        animation: fadeInFromNone 0.2s ease;
+        display: block;
+        opacity: 1;
     }
 
     #customPopup #customPopup-content{
         width:40%;
         min-height:10%;
+        min-width:400px;
 
         /* Position */
         position : absolute;
@@ -29,6 +36,7 @@
         border-radius : 5px;
         background-color : white;
     }
+
     #customPopup #customPopup-bg{
         width:100%;
         height : 100%;
@@ -55,10 +63,27 @@
         display: block;
         opacity: 1;
     }
+
+    @keyframes fadeOutFromBlock {
+    0% {
+        display: block;
+        opacity: 1;
+    }
+
+    99% {
+        display: block;
+        opacity: 0;
+    }
+
+    100% {
+        display: none;
+        opacity: 0;
+    }
 }
 </style>
 
 <script>
+    /*
     function showpopup(){
         let popup = document.querySelector("#customPopup")
         popup.style.display = "block"
@@ -72,5 +97,15 @@
         setTimeout(function(){
             popup.style.display = "none"
         }, 100);
+    }*/
+
+    function showpopup(){
+        let popup = document.querySelector("#customPopup")
+        popup.classList.add("showed")
+    }
+
+    function hidepopup(){
+        let popup = document.querySelector("#customPopup")
+        popup.classList.remove("showed")
     }
 </script>

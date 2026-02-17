@@ -441,12 +441,12 @@ class Course(models.Model):
     name = models.TextField(blank=False, null=False, verbose_name="Nom")
 
     def get_items_for_cytoscape(self):
-        return [{"data":{"name":item.badge.name,"id":str(item.pk)}} for item in self.items.all()]
+        return [{"data":{"name":item.badge.name,"id":str(item.pk),"html":f"<div>{item.badge.name}</div>"}} for item in self.items.all()]
 
     def get_items_connections_for_cytoscape(self):
         edges = []
         for item in self.items.all():
-            if item.parents.all() == 0:
+            if item.parents.all().count() == 0:
                 continue
 
             for parent in item.parents.all():

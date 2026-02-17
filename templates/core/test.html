@@ -13,6 +13,7 @@
 {% block extra_js %}
 
     <script src="{% static 'js/cytoscape.min.js' %}" defer></script> {# cytoscape js for the graph #}
+    <script src="{% static 'js/cytoscape-html.js' %}" defer></script> {# cytoscape-html to render the node as HTML - TODO check if there is a better way to use the script #}
     <script src="{% static 'js/dagre.min.js' %}" defer></script> {# Needed for cytoscape-dagre #}
     <script src="{% static 'js/cytoscape-dagre.min.js' %}" defer onload="showGraph()"></script> {# For "tree" like display, it is "juste" a layout #}
     <script>
@@ -61,6 +62,7 @@
 
 
             });
+            cy.nodes().renderHTMLNodes({ hideOriginal: true });
         }
     </script>
 

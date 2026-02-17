@@ -10,16 +10,19 @@
         </div>
             <div class="col-md-4">
                 {% if is_admin or is_editor %}
+                    <a class="btn btn-success mb-4" href="{% url 'core:badge-edit' pk=badge.pk %}"> Éditer </a>
+                    <a class="btn btn-danger mb-4" href="{% url 'core:badge-delete' pk=badge.pk %}"> Supprimer </a>
+                {% endif %}
 
-                <a class="btn btn-success mb-4" href="{% url 'core:badge-edit' pk=badge.pk %}"> Éditer </a>
-                <a class="btn btn-danger mb-4" href="{% url 'core:badge-delete' pk=badge.pk %}"> Supprimer </a>
+                {% if can_assign %}
                     <button class="btn btn-primary mb-4"
                             hx-get="{% url 'core:badge-assign' badge.pk %}"
                             hx-on:htmx:after-request="showpopup()"
                             hx-target="#customPopup-content"
                             hx-swap="innerHTML"> Assigner</button>
                 {% endif %}
-                {% if request.user.is_authenticated %}
+
+                {% if can_endorse %}
                     <button class="btn btn-primary mb-4"
                             hx-get="{% url 'core:badge-endorse' badge.pk %}"
                             hx-on:htmx:after-request="showpopup()"

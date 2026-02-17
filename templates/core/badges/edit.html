@@ -109,21 +109,6 @@
                             {% endif %}
                         </div>
 
-                        <!-- Valid Structures -->
-                        <div class="mb-4">
-                            <label class="form-label fw-bold">{{ form.valid_structures.label }}</label>
-                            <div class="row">
-                                {{ form.valid_structures }}
-                            </div>
-                            {% if form.valid_structures.errors %}
-                                <div class="invalid-feedback d-block">
-                                    {% for error in form.valid_structures.errors %}
-                                        {{ error }}
-                                    {% endfor %}
-                                </div>
-                            {% endif %}
-                        </div>
-
                         <!-- Submit Button -->
                         <div class="text-center">
                             <button type="submit" class="btn btn-primary btn-lg">Modifier le badge</button>

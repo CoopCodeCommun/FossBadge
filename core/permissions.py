@@ -46,14 +46,14 @@ class CanEditUser(permissions.BasePermission):
             return False
 
         return any([
-            user.is_superuser,
+            #user.is_superuser,
             edited_user == user
         ])
 
 class CanAssignBadge(permissions.BasePermission):
     def has_permission(self, request, view):
-        # TODO : add check if the structure endorse the badge
 
+        # Return true because the GET method only show the template
         if request.method == "GET":
             return True
 
@@ -72,13 +72,14 @@ class CanAssignBadge(permissions.BasePermission):
 
 
         return any([
-            user.is_superuser,
+            #user.is_superuser,
             is_structure_editor(user, structure),
             is_structure_admin(user, structure)
         ])
 
 class CanEndorseBadge(permissions.BasePermission):
     def has_permission(self, request, view):
+        # Return true because the GET method only show the template
         if request.method == "GET":
             return True
 
@@ -92,7 +93,7 @@ class CanEndorseBadge(permissions.BasePermission):
             return False
 
         return any([
-            user.is_superuser,
+            ##user.is_superuser,
             is_structure_editor(user, structure),
             is_structure_admin(user, structure)
         ])
@@ -107,7 +108,7 @@ def is_structure_editor(user, structure):
         return False
 
     return any([
-        user.is_superuser,
+        #user.is_superuser,
         structure.is_editor(user),
         structure.is_admin(user),
     ])
@@ -120,7 +121,7 @@ def is_structure_admin(user, structure):
         return False
 
     return any([
-        user.is_superuser,
+        #user.is_superuser,
         structure.is_admin(user),
     ])
 

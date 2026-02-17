@@ -36,7 +36,7 @@
 
         <select id="structure-input" class="form-select mt-2" name="assigned_by_structure">
             <option>--- Sélectionnez une Structure ---</option>>
-            {%for structure in request.user.structures %}
+            {%for structure in structures %}
                 <option {% if defaults.assigned_by_structure == structure.pk|stringformat:"s"  %} selected {%endif%} value="{{structure.pk}}">
                     {{structure.name}}
                 </option>

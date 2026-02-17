@@ -144,6 +144,12 @@ class BadgeViewSet(viewsets.ViewSet):
 
         is_editor = badge.issuing_structure.is_editor(request.user)
         is_admin = badge.issuing_structure.is_admin(request.user)
+        if request.user.is_authenticated:
+            can_endorse = request.user.can_endorse(badge)
+            can_assign = request.user.can_assign(badge)
+        else:
+            can_endorse = False
+            can_assign = False
 
         return render(request, 'core/badges/detail.html', {
             'title': f'FossBadge - Badge {badge.name}',
@@ -151,6 +157,8 @@ class BadgeViewSet(viewsets.ViewSet):
             'holders': holders,
             'is_editor': is_editor,
             'is_admin': is_admin,
+            "can_endorse":can_endorse,
+            "can_assign":can_assign
         })
 
     @action(detail=True, methods=["get","post"])
@@ -251,8 +259,6 @@ class BadgeViewSet(viewsets.ViewSet):
         validator = BadgeEndorsementValidator(data=request.POST)
 
         if not validator.is_valid():
-            messages.error(request, 'Badge Assignment Error')
-            print(validator.errors)
             return render(request, 'core/badges/partials/badge_endorsement.html',context={
                 "errors": validator.errors,
                 "defaults": validator.data,
@@ -284,40 +290,53 @@ class BadgeViewSet(viewsets.ViewSet):
         if not request.htmx:
             return raise403(request)
 
+        badge = get_object_or_404(Badge, pk=pk)
+        users = User.objects.all()
+        structures = request.user.get_structures_endorsing_badge(badge)
+
         if request.method == "GET":
-            users = User.objects.all()
             return render(request, 'core/badges/partials/badge_assignment.html',context={
                 "users": users,
-                "badge_pk": pk
+                "badge_pk": pk,
+                "structures": structures,
             })
 
         validator = BadgeAssignmentValidator(data=request.POST)
 
-        if not validator.is_valid():
-            messages.error(request, 'Badge Assignment Error')
-            return render(request, 'core/badges/partials/badge_assignment.html',context={
-                "users": User.objects.all(),
-                "errors": validator.errors,
-                "defaults": validator.data,
-                "badge_pk": pk
-            })
+        is_valid = validator.is_valid()
+        context = {
+            "users": users,
+            "errors": validator.errors,
+            "defaults": validator.data,
+            "badge_pk": pk,
+            "structures": structures
+        }
 
+        if not is_valid :
+            return render(request, 'core/badges/partials/badge_assignment.html',context=context)
 
         # Get all objects
-        badge = get_object_or_404(Badge, pk=pk)
         assigned_user = get_object_or_404(User, pk=validator.validated_data["assigned_user"])
         assigned_by_structure = get_object_or_404(Structure, pk=validator.validated_data["assigned_by_structure"])
         assigned_by_user = get_object_or_404(User, pk=validator.validated_data["assigned_by_user"])
 
         notes = request.POST['notes']
 
+        # Check if the assigned structure is in the badge's valid structures (structure that have endorsed the badge)
+        # Because only structures that have endorsed a badge can assign it
+        if not badge.valid_structures.contains(assigned_by_structure):
+            messages.add_message(request, messages.ERROR, "Veuillez sélectionner une structure valide")
+            return render(request, 'core/badges/partials/badge_assignment.html',context=context)
+
         # Assign the badge to the user
         assignment, created = badge.add_holder(assigned_user,assigned_by_user,assigned_by_structure,notes)
 
-        if created:
-            messages.add_message(request, messages.SUCCESS, 'Badge assigné !')
-        else:
-            messages.add_message(request, messages.INFO, "L'utilisateur avait déjà ce badge")
+        #
+        if not created :
+            messages.add_message(request, messages.INFO, "L'utilisateur possède déjà ce badge assigné par cette structure")
+            return render(request, 'core/badges/partials/badge_assignment.html',context=context)
+
+        messages.add_message(request, messages.SUCCESS, 'Badge assigné !')
         return reload(request)
 
 

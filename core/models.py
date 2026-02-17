@@ -33,6 +33,13 @@ class User(AbstractUser):
             Q(users=self.pk),
         ).distinct()
 
+    @property
+    def structures_other_role_than_user(self):
+        return Structure.objects.filter(
+            Q(admins=self.pk)|
+            Q(editors=self.pk)
+            ).distinct()
+
     def get_badges(self):
         """
         Returns all badges held by this user
@@ -52,12 +59,16 @@ class User(AbstractUser):
         :returns: Return a list of dict with two keys : "badge" (containing the badge), and "assignments" (containing the badge assignments linked to this user)
         """
         badges = self.get_badges()
-        assignments = [{"badge":badge, "assignments":badge.get_user_assignments(self)} for badge in badges]
+        assignments = [{"badge":badge, "assignments":self.get_badge_assignments(badge),"self_assigned":badge.is_self_assign(self)} for badge in badges]
 
         # Version plus lisible :
         # assignments = []
         # for badge in badges:
-        #     assignments += [{"badge":badge, "assignments":badge.get_user_assignments(self)}]
+        #     assignments += [{
+        #         "badge":badge,
+        #         "assignments":self.get_badge_assignments(badge),
+        #         "self_assigned":badge.is_self_assign(self)
+        #     }]
 
         return assignments
 
@@ -66,13 +77,13 @@ class User(AbstractUser):
         """
         Returns all badge assignments for this user for a specific badge
         """
-        return self.badge_assignments.all().order_by('-assigned_date')
+        return self.badge_assignments.filter(badge=badge).order_by('-assigned_date')
 
     def add_badge(self, badge, assigned_by=None, notes=None):
         """
         Adds a badge to this user
         """
-        return badge.add_holder(self, assigned_by, notes)
+        return badge.add_holder(user=self, assigned_by=assigned_by, structure=None, notes=notes)
 
     def has_badge(self, badge):
         """
@@ -81,13 +92,62 @@ class User(AbstractUser):
         return Badge.objects.filter(
             Q(pk=badge.pk) &
             Q(assignments__user=self)
-        ).count()>0
+        ).exists()
 
     def remove_badge(self, badge):
         """
         Removes a badge from this user
         """
         badge.remove_holder(self)
+
+    def can_endorse(self, badge):
+        """
+        Return a boolean indicating if a user can endorse a badge
+        """
+        # If the user have at least one structure that DO NOT endorse the badge, he can endorse it
+        return self.get_structures_not_endorsing_badge(badge).exists()
+
+    def can_assign(self, badge):
+        """
+        Return a boolean indicating if a user can assign a badge
+        """
+        # If the user have at least one structure that endorse the badge, he can assign it
+        return self.get_structures_endorsing_badge(badge).exists()
+
+    def get_structures_endorsing_badge(self, badge):
+        """
+        Return all structures endorsing a badge where the user is editor or admin
+        """
+        # Get all structures where :
+        # the user is editor or admin (# 1)
+        # AND
+        # all structures that endorse the badge OR have created it (# 2)
+
+        structures = Structure.objects.filter(
+            Q(admins=self.pk) | # 1
+            Q(editors=self.pk), # 1
+            Q(endorsements__badge=badge) | # 2
+            Q(pk=badge.issuing_structure.pk), # 2
+        ).distinct()
+        return structures
+
+    def get_structures_not_endorsing_badge(self, badge):
+        """
+        Return all structures not endorsing a badge where the user is editor or admin
+        """
+        # Get all structures where :
+        # the user is editor or admin (# 1)
+        # AND
+        # all structures that DO NOT endorse the badge AND have NOT created it (# 2)
+
+        structures = Structure.objects.filter(
+            Q(admins=self.pk) | # 1
+            Q(editors=self.pk), # 1
+            ~Q(endorsements__badge=badge), # 2
+            ~Q(pk=badge.issuing_structure.pk), # 2
+            ).distinct()
+        return structures
+
 
 
 class Structure(models.Model):
@@ -152,13 +212,21 @@ class Structure(models.Model):
         """
         Return true if the user is admin of the structure or a superuser
         """
-        return self.admins.filter(pk=user.pk).exists() or user.is_superuser
+        return self.admins.filter(pk=user.pk).exists() #or user.is_superuser
 
     def is_editor(self, user):
         """
         Return true if the user is admin of the structure or a superuser
         """
-        return self.editors.filter(pk=user.pk).exists() or user.is_superuser
+        return self.editors.filter(pk=user.pk).exists() #or user.is_superuser
+
+    @property
+    def endorsed_badges(self):
+        """
+        Return all the badges that a structure endorsed
+        """
+
+        return [endorsement.badge for endorsement in self.endorsements.all()]
 
 
 class Badge(models.Model):
@@ -189,12 +257,6 @@ class Badge(models.Model):
         related_name='issued_badges',
         verbose_name="Structure émettrice"
     )
-    valid_structures = models.ManyToManyField(
-        Structure, 
-        related_name='valid_badges',
-        blank=True,
-        verbose_name="Structures où ce badge est valable"
-    )
 
     # The holders relationship is now managed through the BadgeAssignment model
     created_at = models.DateTimeField(auto_now_add=True, verbose_name="Date de création")
@@ -207,29 +269,40 @@ class Badge(models.Model):
     def __str__(self):
         return f"{self.name} ({self.get_level_display()})"
 
+    @property
+    def valid_structures(self):
+        """
+        Return a list of structures that either endorse the badge (1) or have issued the badge (2)
+        """
+        return Structure.objects.filter(
+            Q(endorsements__badge=self.pk) | # 1
+            Q(pk=self.issuing_structure.pk) # 2
+        ).distinct()
+
     def get_holders(self):
         """
         Returns all users who hold this badge excluding inactive users
         """
-        return User.objects.filter(badge_assignments__badge=self,is_active=True).distinct()
+        return User.objects.filter(badge_assignments__badge=self, is_active=True).distinct()
+
+    def is_self_assign(self, user):
+        """
+        Return true if the user has a self assignment of the badge
+        """
+        return BadgeAssignment.objects.filter(badge=self, assigned_by=user).exists()
 
     def get_non_holders(self):
         """
         Returns all users who do not hold this badge excluding inactive users
         """
-        return User.objects.exclude(badge_assignments__badge=self).filter(is_active=True)
+        return User.objects.exclude(badge_assignments__badge=self, is_active=True)
 
-    def get_assignments(self):
-        """
-        Returns all users who hold this badge excluding inactive users
-        """
-        return BadgeAssignment.objects.filter(badge=self)
-
-    def get_user_assignments(self, user):
-        """
-        Returns all assignments of a specific user
-        """
-        return BadgeAssignment.objects.filter(badge=self,user=user)
+    # Duplicate of User.get_badge_assignments | Remove ?
+    # def get_user_assignments(self, user):
+    #     """
+    #     Returns all assignments of a specific user
+    #     """
+    #     return BadgeAssignment.objects.filter(badge=self, user=user)
 
 
     def add_holder(self, user, assigned_by=None, structure=None, notes=None):
@@ -251,14 +324,14 @@ class Badge(models.Model):
         """
         Add an endorsement for this badge (made by a user or a user and a structure)
         """
-        endorsement = BadgeEndorsement.objects.get_or_create(
+        endorsement, created = BadgeEndorsement.objects.get_or_create(
             badge=self,
             endorsed_by=endorsed_by,
             structure=structure,
             notes=notes
         )
 
-        return endorsement
+        return endorsement, created
 
     def remove_holder(self, user):
         """
@@ -331,10 +404,10 @@ class BadgeEndorsement(models.Model):
     uuid = models.UUIDField(default=uuid.uuid7, primary_key=True, db_index=True)
 
     badge = models.ForeignKey(Badge, on_delete=models.CASCADE, related_name='endorsements', verbose_name="Badge")
-    structure = models.ForeignKey(Structure, on_delete=models.CASCADE, related_name='endorsed_badges', 
+    structure = models.ForeignKey(Structure, on_delete=models.CASCADE, related_name='endorsements',
                                  verbose_name="Structure")
     endorsed_date = models.DateTimeField(default=timezone.now, verbose_name="Date d'approbation")
-    endorsed_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, 
+    endorsed_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True,
                                    related_name='badge_endorsements', verbose_name="Approuvé par")
     notes = models.TextField(blank=True, null=True, verbose_name="Notes")
 
@@ -346,6 +419,7 @@ class BadgeEndorsement(models.Model):
                 self.badge.valid_structures.add(self.structure)
 
         super().save(*args, **kwargs)
+
     class Meta:
         verbose_name = "Approbation de badge"
         verbose_name_plural = "Approbations de badges"

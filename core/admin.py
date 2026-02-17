@@ -13,7 +13,7 @@ class BadgeAdmin(admin.ModelAdmin):
     list_display = ('name', 'level', 'issuing_structure', 'created_at')
     list_filter = ('level', 'issuing_structure')
     search_fields = ('name', 'description')
-    filter_horizontal = ('valid_structures',)
+    #filter_horizontal = ('valid_structures',)
 
 @admin.register(User)
 class UserProfileAdmin(admin.ModelAdmin):

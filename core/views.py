@@ -19,8 +19,8 @@ from .models import Structure, Badge, User, BadgeAssignment
 from .forms import BadgeForm, StructureForm, UserForm, PartialUserForm
 import sweetify
 
-from .permissions import IsBadgeEditor, IsStructureAdmin, CanEditUser, CanAssignBadge
-from .validators import BadgeAssignmentValidator
+from .permissions import IsBadgeEditor, IsStructureAdmin, CanEditUser, CanAssignBadge, CanEndorseBadge
+from .validators import BadgeAssignmentValidator, BadgeEndorsementValidator
 
 
 def raise403(request, msg=None):
@@ -76,7 +76,11 @@ class BadgeViewSet(viewsets.ViewSet):
         elif self.action in ["create_badge"]:
             permissions_list += [IsAuthenticated]
         elif self.action in ["edit", "delete"]:
-            permissions_list += [IsBadgeEditor]
+            permissions_list += [IsAuthenticated, IsBadgeEditor]
+        elif self.action in ["assign"]:
+            permissions_list += [IsAuthenticated, CanAssignBadge]
+        elif self.action in ["endorse"]:
+            permissions_list += [IsAuthenticated, CanEndorseBadge]
 
         return [permission() for permission in permissions_list]
 
@@ -137,18 +141,24 @@ class BadgeViewSet(viewsets.ViewSet):
         """
         badge = get_object_or_404(Badge, pk=pk)
         holders = badge.get_holders()
-        assignments = badge.get_assignments()
 
         is_editor = badge.issuing_structure.is_editor(request.user)
         is_admin = badge.issuing_structure.is_admin(request.user)
+        if request.user.is_authenticated:
+            can_endorse = request.user.can_endorse(badge)
+            can_assign = request.user.can_assign(badge)
+        else:
+            can_endorse = False
+            can_assign = False
 
         return render(request, 'core/badges/detail.html', {
             'title': f'FossBadge - Badge {badge.name}',
             'badge': badge,
             'holders': holders,
-            'assignments': assignments,
             'is_editor': is_editor,
             'is_admin': is_admin,
+            "can_endorse":can_endorse,
+            "can_assign":can_assign
         })
 
     @action(detail=True, methods=["get","post"])
@@ -217,6 +227,119 @@ class BadgeViewSet(viewsets.ViewSet):
             'form': form
         })
 
+    @action(detail=True, methods=["get", "post"])
+    def endorse(self, request, pk=None):
+        """
+        Endorse a badge.
+        """
+
+        if not request.htmx:
+            return raise403(request)
+
+        badge = get_object_or_404(Badge, pk=pk)
+
+        # Get only user structure that DO NOT endorse the badge
+        valid_structures = badge.valid_structures
+        user_structures = request.user.structures
+        user_structure_not_endorsing = user_structures.difference(valid_structures)
+
+        # If the user structures already endorse the badge, return an error template
+        if user_structure_not_endorsing.count() == 0:
+            return render(request, "errors/popup_errors.html",context={
+                "error":'Toutes les structures dont vous faites parti ont déjà endosser ce badge'
+            })
+
+        if request.method == "GET":
+
+            return render(request, 'core/badges/partials/badge_endorsement.html',context={
+                "badge_pk": pk,
+                "structures": user_structure_not_endorsing,
+            })
+
+        validator = BadgeEndorsementValidator(data=request.POST)
+
+        if not validator.is_valid():
+            return render(request, 'core/badges/partials/badge_endorsement.html',context={
+                "errors": validator.errors,
+                "defaults": validator.data,
+                "badge_pk": validator.data['badge'],
+                "structures": user_structure_not_endorsing,
+            })
+
+        # Get all objects
+        structure = get_object_or_404(Structure, pk=validator.validated_data["structure"])
+        endorsed_by = get_object_or_404(User, pk=validator.validated_data["endorsed_by"])
+
+        notes = request.POST['notes']
+
+        # Assign the badge to the user
+        endorsement, created = badge.endorse(endorsed_by, structure, notes)
+
+        if created:
+            messages.add_message(request, messages.SUCCESS, 'Badge endorsé !')
+        else:
+            messages.add_message(request, messages.INFO, "Le badge était déjà endorsé")
+        return reload(request)
+
+    @action(detail=True, methods=['get','post'])
+    def assign(self, request, pk=None):
+        """
+        Assign a badge to a user.
+        """
+
+        if not request.htmx:
+            return raise403(request)
+
+        badge = get_object_or_404(Badge, pk=pk)
+        users = User.objects.all()
+        structures = request.user.get_structures_endorsing_badge(badge)
+
+        if request.method == "GET":
+            return render(request, 'core/badges/partials/badge_assignment.html',context={
+                "users": users,
+                "badge_pk": pk,
+                "structures": structures,
+            })
+
+        validator = BadgeAssignmentValidator(data=request.POST)
+
+        is_valid = validator.is_valid()
+        context = {
+            "users": users,
+            "errors": validator.errors,
+            "defaults": validator.data,
+            "badge_pk": pk,
+            "structures": structures
+        }
+
+        if not is_valid :
+            return render(request, 'core/badges/partials/badge_assignment.html',context=context)
+
+        # Get all objects
+        assigned_user = get_object_or_404(User, pk=validator.validated_data["assigned_user"])
+        assigned_by_structure = get_object_or_404(Structure, pk=validator.validated_data["assigned_by_structure"])
+        assigned_by_user = get_object_or_404(User, pk=validator.validated_data["assigned_by_user"])
+
+        notes = request.POST['notes']
+
+        # Check if the assigned structure is in the badge's valid structures (structure that have endorsed the badge)
+        # Because only structures that have endorsed a badge can assign it
+        if not badge.valid_structures.contains(assigned_by_structure):
+            messages.add_message(request, messages.ERROR, "Veuillez sélectionner une structure valide")
+            return render(request, 'core/badges/partials/badge_assignment.html',context=context)
+
+        # Assign the badge to the user
+        assignment, created = badge.add_holder(assigned_user,assigned_by_user,assigned_by_structure,notes)
+
+        #
+        if not created :
+            messages.add_message(request, messages.INFO, "L'utilisateur possède déjà ce badge assigné par cette structure")
+            return render(request, 'core/badges/partials/badge_assignment.html',context=context)
+
+        messages.add_message(request, messages.SUCCESS, 'Badge assigné !')
+        return reload(request)
+
+
 
 class AssignmentViewSet(viewsets.ViewSet):
     """
@@ -228,8 +351,6 @@ class AssignmentViewSet(viewsets.ViewSet):
 
         if self.action in ['list_user_badge_assignment','retrieve']:
             permissions_list += [AllowAny]
-        elif self.action in ["assign"]:
-            permissions_list += [CanAssignBadge]
 
         return [permission() for permission in permissions_list]
 
@@ -244,51 +365,6 @@ class AssignmentViewSet(viewsets.ViewSet):
             'assignment': assignment,
         })
 
-    @action(detail=False, methods=['get','post'])
-    def assign(self, request):
-        """
-        Assign a badge to a user.
-        """
-
-        if not request.htmx:
-            return raise403(request)
-
-        if request.method == "GET":
-            badge_pk = request.GET.get("badge")
-            users = User.objects.all()
-            return render(request, 'core/badges/partials/badge_assignment.html',context={
-                "users": users,
-                "badge_pk": badge_pk
-            })
-
-        validator = BadgeAssignmentValidator(data=request.POST)
-
-        if not validator.is_valid():
-            messages.error(request, 'Badge Assignment Error')
-            return render(request, 'core/badges/partials/badge_assignment.html',context={
-                "users": User.objects.all(),
-                "errors": validator.errors,
-                "defaults": validator.data,
-                "badge_pk": validator.data['badge']
-            })
-
-
-        # Get all objects
-        badge = get_object_or_404(Badge, pk=validator.validated_data["badge"])
-        assigned_user = get_object_or_404(User, pk=validator.validated_data["assigned_user"])
-        assigned_by_structure = get_object_or_404(Structure, pk=validator.validated_data["assigned_by_structure"])
-        assigned_by_user = get_object_or_404(User, pk=validator.validated_data["assigned_by_user"])
-
-        notes = request.POST['notes']
-
-        # Assign the badge to the user
-        assignment, created = badge.add_holder(assigned_user,assigned_by_user,assigned_by_structure,notes)
-
-        if created:
-            messages.add_message(request, messages.SUCCESS, 'Badge assigné !')
-        else:
-            messages.add_message(request, messages.INFO, "L'utilisateur avait déjà ce badge")
-        return reload(request)
 
     @action(detail=False, methods=['get', 'post'], url_path='user-badge-assignments', url_name='user-badge-assignments')
     def list_user_badge_assignment(self, request):
@@ -297,7 +373,7 @@ class AssignmentViewSet(viewsets.ViewSet):
         badge = get_object_or_404(Badge, pk=badge)
         user = request.GET["user"]
         user = get_object_or_404(User, pk=user)
-        assignments = badge.get_user_assignments(user)
+        assignments = user.get_badge_assignments(badge)
 
         return render(request, 'core/assignments/list_user_assignment.html', context={
             "assignments": assignments,

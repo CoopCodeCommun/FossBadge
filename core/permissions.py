@@ -46,19 +46,45 @@ class CanEditUser(permissions.BasePermission):
             return False
 
         return any([
-            user.is_superuser,
+            #user.is_superuser,
             edited_user == user
         ])
 
 class CanAssignBadge(permissions.BasePermission):
     def has_permission(self, request, view):
-        # TODO : add check if the structure endorse the badge
 
+        # Return true because the GET method only show the template
         if request.method == "GET":
             return True
 
         user = request.user
-        structure = get_object_or_404(Structure, pk=request.POST["assigned_by_structure"])
+
+        if not user:
+            return False
+
+        if not user.is_active or not user.is_authenticated:
+            return False
+
+        try:
+            structure = get_object_or_404(Structure, pk=request.POST["assigned_by_structure"])
+        except Exception:
+            return True
+
+
+        return any([
+            #user.is_superuser,
+            is_structure_editor(user, structure),
+            is_structure_admin(user, structure)
+        ])
+
+class CanEndorseBadge(permissions.BasePermission):
+    def has_permission(self, request, view):
+        # Return true because the GET method only show the template
+        if request.method == "GET":
+            return True
+
+        user = request.user
+        structure = get_object_or_404(Structure, pk=request.POST["structure"])
 
         if not user:
             return False
@@ -67,11 +93,10 @@ class CanAssignBadge(permissions.BasePermission):
             return False
 
         return any([
-            user.is_superuser,
+            ##user.is_superuser,
             is_structure_editor(user, structure),
             is_structure_admin(user, structure)
         ])
-
 
 
 #### Methods ####
@@ -83,7 +108,7 @@ def is_structure_editor(user, structure):
         return False
 
     return any([
-        user.is_superuser,
+        #user.is_superuser,
         structure.is_editor(user),
         structure.is_admin(user),
     ])
@@ -96,7 +121,7 @@ def is_structure_admin(user, structure):
         return False
 
     return any([
-        user.is_superuser,
+        #user.is_superuser,
         structure.is_admin(user),
     ])
 

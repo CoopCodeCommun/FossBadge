@@ -1,6 +1,26 @@
 {%include 'show_message.html'%}
 
+{% comment %}
+	This template must be used with the popup system. To do so you need at least 2 things
+	1. In another template create an htmx element
+    2. Create a view that return your popup template (like this template) and handle its submission
+
+	1. In the template :
+    ```
+    <button class="btn btn-primary mb-4"
+         hx-get="{% url 'core:badge-assign' badge.pk %}"
+         hx-on:htmx:after-request="showpopup()"
+         hx-target="#customPopup-content"
+         hx-swap="innerHTML"> Endosser </button>
+     ```
+     2. In the view :
+     See BadgeViewSet.assign
+
+
+{% endcomment %}
+
 <div id="badge-assignment-form">
+    <h2>Assigner un badge</h2>
     <form>
         <select id="user-input" class="form-select" name="assigned_user">
             <option >--- Sélectionnez un utilisateur ---</option>>
@@ -16,7 +36,7 @@
 
         <select id="structure-input" class="form-select mt-2" name="assigned_by_structure">
             <option>--- Sélectionnez une Structure ---</option>>
-            {%for structure in request.user.structures %}
+            {%for structure in structures %}
                 <option {% if defaults.assigned_by_structure == structure.pk|stringformat:"s"  %} selected {%endif%} value="{{structure.pk}}">
                     {{structure.name}}
                 </option>
@@ -38,9 +58,9 @@
         <input type="hidden" name="badge" value="{{ badge_pk }}">
 
         <button class="btn btn-primary"
-         hx-post="{% url 'core:assignment-assign' %}"
-         hx-target="#badge-assignment-form"
-         hx-swap="innerHTML">
+                hx-post="{% url 'core:badge-assign' badge_pk %}"
+                hx-target="#badge-assignment-form"
+                hx-swap="innerHTML">
             Envoyer</button>
 
         <p class="btn btn-danger" onclick="hidepopup()">Annuler</p>

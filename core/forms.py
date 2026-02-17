@@ -5,13 +5,6 @@ class BadgeForm(forms.ModelForm):
     """
     Form for creating and updating badges
     """
-    # Make valid_structures a multiple select field
-    valid_structures = forms.ModelMultipleChoiceField(
-        queryset=Structure.objects.all(),
-        required=False,
-        widget=forms.CheckboxSelectMultiple,
-        label="Structures où ce badge est valable"
-    )
 
     def __init__(self, *args, **kwargs):
         self.request = kwargs.pop("request")
@@ -21,7 +14,7 @@ class BadgeForm(forms.ModelForm):
 
     class Meta:
         model = Badge
-        fields = ['name', 'icon', 'level', 'description', 'issuing_structure', 'valid_structures']
+        fields = ['name', 'icon', 'level', 'description', 'issuing_structure']
         widgets = {
             'name': forms.TextInput(attrs={
                 'class': 'form-control form-control-lg',

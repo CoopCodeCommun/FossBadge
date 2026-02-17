@@ -1,0 +1,80 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %} Parcours {% endblock %}
+
+{% block content %}
+
+    <h1> {{ course.name }}</h1>
+    <div id="cy"></div>
+
+{% endblock %}
+
+{% block extra_js %}
+
+    <script src="{% static 'js/cytoscape.min.js' %}" defer></script> {# cytoscape js for the graph #}
+    <script src="{% static 'js/dagre.min.js' %}" defer></script> {# Needed for cytoscape-dagre #}
+    <script src="{% static 'js/cytoscape-dagre.min.js' %}" defer onload="showGraph()"></script> {# For "tree" like display, it is "juste" a layout #}
+    <script>
+        var cy;
+        var nodes = {% autoescape off %}{{ nodes }}{% endautoescape %}
+        var edges = {% autoescape off %}{{ edges }}{% endautoescape %}
+
+        function showGraph(){
+            cy = cytoscape({
+                container: document.getElementById('cy'), // container to render in
+                elements: {
+                    "nodes" : nodes,
+                    "edges" : edges
+                },
+
+                // Stylesheet for the graph
+                style: [
+                    {
+                        selector: 'node',
+                        style: {
+                            'background-color': '#666',
+                            'label': 'data(name)'
+                        }
+                    },
+
+                    {
+                        selector: 'edge',
+                        style: {
+                            'width': 3,
+                            'line-color': '#ccc',
+                            'target-arrow-color': '#ccc',
+                            'target-arrow-shape': 'triangle',
+                            'curve-style': 'bezier'
+                        }
+                    }
+                ],
+
+                // Node layout
+                layout: {
+                    name: 'dagre',
+                },
+
+                // Interactions :
+                boxSelectionEnabled: false,
+                autoungrabify:true
+
+
+            });
+        }
+    </script>
+
+{% endblock %}
+
+{% block extra_css %}
+
+    <style>
+        #cy {
+            width: 100%;
+            height: 700px;
+            display: block;
+            border: solid black 1px;
+        }
+    </style>
+
+{% endblock %}

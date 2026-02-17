@@ -1,5 +1,4 @@
 import uuid
-from itertools import chain
 from django.db import models
 from django.contrib.auth.models import AbstractUser
 from django.utils import timezone
@@ -431,3 +430,46 @@ class BadgeEndorsement(models.Model):
 
     def __str__(self):
         return f"{self.badge.name} approuvé par {self.structure.name} le {self.endorsed_date.strftime('%d/%m/%Y')}"
+
+
+class Course(models.Model):
+    """
+
+    """
+    uuid = models.UUIDField(default=uuid.uuid7, primary_key=True, db_index=True)
+    structure = models.ForeignKey(Structure, on_delete=models.CASCADE, related_name='courses', verbose_name="Structure")
+    name = models.TextField(blank=False, null=False, verbose_name="Nom")
+
+    def get_items_for_cytoscape(self):
+        return [{"data":{"name":item.badge.name,"id":str(item.pk)}} for item in self.items.all()]
+
+    def get_items_connections_for_cytoscape(self):
+        edges = []
+        for item in self.items.all():
+            if item.parents.all() == 0:
+                continue
+
+            for parent in item.parents.all():
+                edges.append({
+                    "data":{
+                        "id":f"{str(parent.pk)}-{str(item.pk)}",
+                        "source":str(parent.pk),
+                        "target":str(item.pk),
+                    }
+                })
+        return edges
+
+    def __str__(self):
+        return f"{self.name}"
+
+class CourseItem(models.Model):
+    uuid = models.UUIDField(default=uuid.uuid7, primary_key=True, db_index=True)
+    badge = models.ForeignKey(Badge, on_delete=models.CASCADE, related_name='course_items', verbose_name="Badge")
+
+    # symmetrical=False is MANDATORY here because else our "parent" CourseItem will have their children in the parents queryset (it doesn't make any sense ik)
+    parents = models.ManyToManyField('self', null=True, blank=True, related_name='children', verbose_name="Parent", symmetrical=False)
+    course = models.ForeignKey(Course, on_delete=models.CASCADE, related_name='items', verbose_name="Course")
+
+    def __str__(self):
+        return f"{self.badge} pour {self.course}"
+

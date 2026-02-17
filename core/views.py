@@ -15,7 +15,7 @@ from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.decorators import action,authentication_classes, permission_classes
 from .helpers import TokenHelper
 from .helpers.utils import get_or_create_user, invite_user_to_structure
-from .models import Structure, Badge, User, BadgeAssignment
+from .models import Structure, Badge, User, BadgeAssignment, Course
 from .forms import BadgeForm, StructureForm, UserForm, PartialUserForm
 import sweetify
 
@@ -815,3 +815,22 @@ class UserViewSet(viewsets.ViewSet):
         logout(request)
         sweetify.toast(request, f"Déconnexion réussi", icon="success", showCloseButton=True, timer=10000)
         return redirect('core:home-list')
+
+class CourseViewSet(viewsets.ViewSet):
+    """
+    ViewSet for course related routes
+    """
+
+    @action(detail=True, methods=['get'])
+    def test(self, request, pk=None):
+
+        course = Course.objects.get(pk=pk)
+        items = course.get_items_for_cytoscape()
+        edges = course.get_items_connections_for_cytoscape()
+        print(edges)
+        return render(request, "core/test.html",context={
+            "course":course,
+            "nodes":items,
+            "edges":edges,
+        })
+

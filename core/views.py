@@ -821,14 +821,14 @@ class CourseViewSet(viewsets.ViewSet):
     ViewSet for course related routes
     """
 
-    @action(detail=True, methods=['get'])
-    def test(self, request, pk=None):
+    # @action(detail=True, methods=['get'])
+    def retrieve(self, request, pk=None):
 
         course = Course.objects.get(pk=pk)
         items = course.get_items_for_cytoscape()
         edges = course.get_items_connections_for_cytoscape()
-        print(edges)
-        return render(request, "core/test.html",context={
+
+        return render(request, "core/courses/detail.html",context={
             "course":course,
             "nodes":items,
             "edges":edges,

@@ -441,9 +441,28 @@ class Course(models.Model):
     name = models.TextField(blank=False, null=False, verbose_name="Nom")
 
     def get_items_for_cytoscape(self):
-        return [{"data":{"name":item.badge.name,"id":str(item.pk),"html":f"<div>{item.badge.name}</div>"}} for item in self.items.all()]
+        """
+        Return a dictionary containing all CourseItem associated with a course, formated for cytoscapeJS
+        """
+        items = []
+        for item in self.items.all():
+            src = "/media/placeholder.svg"
+            if item.badge.icon:
+                src = item.badge.icon.url
+
+            items.append({
+                "data": {
+                    "name":item.badge.name,"id":str(item.pk),
+                    "html":f"<div style='text-align: center; margin:10px;'><img src='{src}' style='width:32px;height:32px;'/><p>{item.badge.name}</p></div>"
+                }
+            })
+
+        return items
 
     def get_items_connections_for_cytoscape(self):
+        """
+        Return a dictionary containing all CourseItem links associated with a course, formated for cytoscapeJS
+        """
         edges = []
         for item in self.items.all():
             if item.parents.all().count() == 0:
@@ -467,7 +486,7 @@ class CourseItem(models.Model):
     badge = models.ForeignKey(Badge, on_delete=models.CASCADE, related_name='course_items', verbose_name="Badge")
 
     # symmetrical=False is MANDATORY here because else our "parent" CourseItem will have their children in the parents queryset (it doesn't make any sense ik)
-    parents = models.ManyToManyField('self', null=True, blank=True, related_name='children', verbose_name="Parent", symmetrical=False)
+    parents = models.ManyToManyField('self', blank=True, related_name='children', verbose_name="Parent", symmetrical=False)
     course = models.ForeignKey(Course, on_delete=models.CASCADE, related_name='items', verbose_name="Course")
 
     def __str__(self):

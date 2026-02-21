@@ -35,7 +35,7 @@
                         selector: 'node',
                         style: {
                             'background-color': '#666',
-                            'label': 'data(name)'
+                            'label': 'data(name)',
                         }
                     },
 
@@ -46,7 +46,9 @@
                             'line-color': '#ccc',
                             'target-arrow-color': '#ccc',
                             'target-arrow-shape': 'triangle',
-                            'curve-style': 'bezier'
+                            'curve-style': 'bezier',
+                            'source-endpoint':'outside-to-node-or-label',
+                            'target-endpoint':'outside-to-node-or-label'
                         }
                     }
                 ],
@@ -54,6 +56,8 @@
                 // Node layout
                 layout: {
                     name: 'dagre',
+                    spacingFactor: 3,
+                    padding: 20,
                 },
 
                 // Interactions :

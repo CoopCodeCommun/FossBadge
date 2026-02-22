@@ -478,6 +478,9 @@ class Course(models.Model):
                 })
         return edges
 
+    def get_item_count(self):
+        return self.items.count()
+
     def __str__(self):
         return f"{self.name}"
 

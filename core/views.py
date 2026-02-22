@@ -821,7 +821,6 @@ class CourseViewSet(viewsets.ViewSet):
     ViewSet for course related routes
     """
 
-    # @action(detail=True, methods=['get'])
     def retrieve(self, request, pk=None):
 
         course = Course.objects.get(pk=pk)
@@ -832,5 +831,50 @@ class CourseViewSet(viewsets.ViewSet):
             "course":course,
             "nodes":items,
             "edges":edges,
+        })
+
+    def list(self,request):
+
+        template = "core/courses/list.html"
+
+        if request.htmx:
+            template = "core/courses/partial/list.html"
+
+        # Get search query
+        search_query = request.GET.get('search', '')
+        structure_filter = request.GET.get('structure', '')
+        badge_filter = request.GET.get('badge', '')
+
+        # Start with all courses
+        courses = Course.objects.all()
+
+        # Apply search filter if provided
+        if search_query:
+            courses = courses.filter(
+                Q(name__icontains=search_query) |
+                Q(structure__name__icontains=search_query)
+            )
+
+
+        # Apply structure filter if provided
+        if structure_filter:
+            courses = courses.filter(structure__pk=structure_filter)
+
+        # Apply badge filter if provided
+        if badge_filter:
+            courses = courses.filter(
+                Q(items__badge__pk=badge_filter)
+            )
+
+
+
+
+        structures = Structure.objects.all()
+        badges = Badge.objects.all()
+
+        return render(request, template, context={
+            "courses":courses,
+            "structures":structures,
+            "badges":badges,
         })
 

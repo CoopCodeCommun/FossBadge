@@ -5,8 +5,16 @@
 
 {% block content %}
 
-    <h1> {{ course.name }}</h1>
-    <div id="cy"></div>
+    <h1>
+        {{ course.name }}
+    </h1>
+    <div id="cy-container">
+        <div id="cy"></div>
+        <div class="top-right">
+            <span onclick="zoomIn()">+</span>
+            <span onclick="zoomOut()">-</span>
+        </div>
+    </div>
 
 {% endblock %}
 
@@ -17,6 +25,7 @@
     <script src="{% static 'js/dagre.min.js' %}" defer></script> {# Needed for cytoscape-dagre #}
     <script src="{% static 'js/cytoscape-dagre.min.js' %}" defer onload="showGraph()"></script> {# For "tree" like display, it is "juste" a layout #}
     <script>
+        const ZOOM_FACTOR = 0.5;
         var cy;
         var nodes = {% autoescape off %}{{ nodes }}{% endautoescape %}
         var edges = {% autoescape off %}{{ edges }}{% endautoescape %}
@@ -58,6 +67,7 @@
                     name: 'dagre',
                     spacingFactor: 3,
                     padding: 20,
+                    rankDir:"TB",
                 },
 
                 // Interactions :
@@ -67,6 +77,34 @@
 
             });
             cy.nodes().renderHTMLNodes({ hideOriginal: true });
+            cy.on('dblclick', (event) => {
+                zoomIn(event);
+            });
+        }
+
+        function zoomIn(event){
+            let currentZoom = cy.zoom()
+            let data = {
+                level : currentZoom+ZOOM_FACTOR,
+                position : { x : 0 , y : 0 }
+            }
+
+            if (event != null){
+                let clickX = event.position.x
+                let clickY = event.position.y
+                data.position = { x : clickX , y : clickY }
+            }
+
+            cy.zoom(data);
+            cy.nodes().renderHTMLNodes({ hideOriginal: true });
+        }
+        function zoomOut(){
+            let currentZoom = cy.zoom()
+            let data = {
+                level : currentZoom-ZOOM_FACTOR,
+                position : { x : 0 , y : 0 }
+            }
+            cy.zoom(data);
         }
     </script>
 
@@ -80,6 +118,16 @@
             height: 700px;
             display: block;
             border: solid black 1px;
+        }
+
+        #cy-container {
+        position:relative;
+        }
+
+        .top-right{
+            position : absolute;
+            top : 5px;
+            right : 5px;
         }
     </style>
 

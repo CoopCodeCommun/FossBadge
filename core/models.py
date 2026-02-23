@@ -26,6 +26,9 @@ class User(AbstractUser):
 
     @property
     def structures(self):
+        """
+        Returns all structures that the user is part of
+        """
         return Structure.objects.filter(
             Q(admins=self.pk)|
             Q(editors=self.pk)|
@@ -34,10 +37,20 @@ class User(AbstractUser):
 
     @property
     def structures_other_role_than_user(self):
+        """
+        Returns all structures where the user is admin or editor
+        """
         return Structure.objects.filter(
             Q(admins=self.pk)|
             Q(editors=self.pk)
             ).distinct()
+
+    @property
+    def has_dream_badge(self):
+        """
+        Return a boolean indicating if the user has a dream badge
+        """
+        return Badge.objects.filter(user=self,is_dream_badge=True).exists()
 
     def get_badges(self):
         """
@@ -249,6 +262,8 @@ class Badge(models.Model):
     level = models.CharField(max_length=20, choices=LEVEL_CHOICES, verbose_name="Niveau")
     description = models.TextField(verbose_name="Description")
 
+    is_dream_badge = models.BooleanField(default=False, verbose_name="Badge de rêve")
+
     # Relationships
     issuing_structure = models.ForeignKey(
         Structure, 
@@ -256,6 +271,7 @@ class Badge(models.Model):
         related_name='issued_badges',
         verbose_name="Structure émettrice"
     )
+    user = models.ForeignKey(User, related_name='issued_badges', verbose_name="User", null=True, on_delete=models.SET_NULL)
 
     # The holders relationship is now managed through the BadgeAssignment model
     created_at = models.DateTimeField(auto_now_add=True, verbose_name="Date de création")
@@ -434,7 +450,7 @@ class BadgeEndorsement(models.Model):
 
 class Course(models.Model):
     """
-
+    Model to show a course made of badges
     """
     uuid = models.UUIDField(default=uuid.uuid7, primary_key=True, db_index=True)
     structure = models.ForeignKey(Structure, on_delete=models.CASCADE, related_name='courses', verbose_name="Structure")
@@ -486,6 +502,9 @@ class Course(models.Model):
         return f"{self.name}"
 
 class CourseItem(models.Model):
+    """
+    Model to show course items
+    """
     uuid = models.UUIDField(default=uuid.uuid7, primary_key=True, db_index=True)
     badge = models.ForeignKey(Badge, on_delete=models.CASCADE, related_name='course_items', verbose_name="Badge")
 

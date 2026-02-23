@@ -1,0 +1,81 @@
+{%include 'show_message.html'%}
+
+<div id="dream-badge-form">
+    <h2>Créer mon badge de rêve</h2>
+    <form enctype="multipart/form-data">
+<!--        <select id="structure-input" class="form-select mt-2" name="assigned_by_structure">-->
+<!--            <option>-&#45;&#45; Sélectionnez une Structure -&#45;&#45;</option>>-->
+<!--            {%for structure in structures %}-->
+<!--            <option {% if defaults.assigned_by_structure == structure.pk|stringformat:"s"  %} selected {%endif%} value="{{structure.pk}}">-->
+<!--            {{structure.name}}-->
+<!--            </option>-->
+<!--            {%endfor%}-->
+<!--        </select>-->
+<!--        {% if errors.assigned_by_structure %}-->
+<!--        <p class="error">{{errors.assigned_by_structure.0}}</p>-->
+<!--        {% endif %}-->
+
+        <p>
+            Lorem ipsum dolor sit amet, consectetur adipiscing elit. In in quam sodales, pulvinar odio et, efficitur est. Fusce egestas sapien sapien, a fringilla est tincidunt in.
+        </p>
+
+        <label for="name" class=" mt-2"> Nom du badge :</label>
+        <input id="name" class="form-control mt-2" name="name" placeholder="Ex : devenir médecin">{% if defaults.notes %}{{defaults.notes}}{%endif%}</input>
+        {% if errors.name %}
+        <p class="error">{{errors.name.0}}</p>
+        {% endif %}
+
+        <div class="row mt-3">
+            <div class="col-md-6">
+                <label for="image" class=" mt-2"> Image du badge :</label>
+                <input id="image" class="form-control mt-2" name="image" type="file"/>
+
+            </div>
+            <div class="col-md-6">
+                <div class="text-center">
+                    <img src="{{ placeholder_image }}" alt="Aperçu de l'icône" class="img-fluid badge-icon" id="icon_preview">
+                    <p class="form-text">Aperçu</p>
+                </div>
+            </div>
+
+        </div>
+        {% if errors.image %}
+        <p class="error">{{errors.image.0}}</p>
+        {% endif %}
+
+
+        <label for="description" class=" mt-2">Description :</label>
+        <textarea id="description" class="form-control mt-2" name="description">{% if defaults.notes %}{{defaults.notes}}{%endif%}</textarea>
+        {% if errors.description %}
+        <p class="error">{{errors.description.0}}</p>
+        {% endif %}
+
+        <hr>
+
+        <button class="btn btn-primary"
+                hx-post="{% url 'core:badge-create-dream' %}"
+                hx-target="#dream-badge-form"
+                hx-swap="innerHTML">
+            Envoyer</button>
+
+        <button class="btn btn-danger" onclick="hidepopup()" type="button">Annuler</button>
+    </form>
+</div>
+
+
+
+{% block extra_js %}
+<script>
+    // Simple preview for uploaded image
+    document.getElementById("image").addEventListener('change', function (event) {
+        const file = event.target.files[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = function (e) {
+                document.getElementById('icon_preview').src = e.target.result;
+            }
+            reader.readAsDataURL(file);
+        }
+    });
+</script>
+{% endblock %}

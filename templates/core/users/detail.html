@@ -14,7 +14,7 @@
                     <span class="badge bg-secondary fs-4" style="vertical-align: middle">Inactif</span>
                 {% endif %}
 
-                {% if request.user.pk == user.pk %}
+                {% if request.user == user %}
                     <a class="btn btn-danger float-end" href="{% url 'core:user-logout' %}">
                         Se déconnecter
                     </a>
@@ -22,6 +22,17 @@
             </h1>
         </div>
     </div>
+
+    {% if request.user == user and not request.user.has_dream_badge %}
+        <div class="alert alert-info">
+            Vous n'avez pas créé votre badge de rêve, n'hésitez pas le faire maintenant !
+            <button class="btn btn-primary"
+                    hx-get="{% url 'core:badge-create-dream' %}"
+                    hx-on:htmx:after-request="showpopup()"
+                    hx-target="#customPopup-content"
+                    hx-swap="innerHTML"> Créer votre badge de rêve ! </button>
+        </div>
+    {% endif %}
 
     <!-- User Information Section -->
     <div class="row mb-5">

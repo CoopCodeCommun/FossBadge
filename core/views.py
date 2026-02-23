@@ -339,6 +339,12 @@ class BadgeViewSet(viewsets.ViewSet):
         messages.add_message(request, messages.SUCCESS, 'Badge assigné !')
         return reload(request)
 
+    @action(detail=False, methods=['get','post'], url_path="create-dream")
+    def create_dream(self,request):
+
+
+        return render(request, 'core/badges/dream/create_dream_badge.html')
+
 
 
 class AssignmentViewSet(viewsets.ViewSet):

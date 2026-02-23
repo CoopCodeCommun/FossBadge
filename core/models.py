@@ -288,7 +288,7 @@ class Badge(models.Model):
         """
         Return true if the user has a self assignment of the badge
         """
-        return BadgeAssignment.objects.filter(badge=self, assigned_by=user).exists()
+        return BadgeAssignment.objects.filter(badge=self, assigned_by=user, user=user).exists()
 
     def get_non_holders(self):
         """
@@ -452,7 +452,8 @@ class Course(models.Model):
 
             items.append({
                 "data": {
-                    "name":item.badge.name,"id":str(item.pk),
+                    "name":item.badge.name,
+                    "id":str(item.pk),
                     "html":f"<div style='text-align: center; margin:10px;'><img src='{src}' style='width:32px;height:32px;'/><p>{item.badge.name}</p></div>"
                 }
             })

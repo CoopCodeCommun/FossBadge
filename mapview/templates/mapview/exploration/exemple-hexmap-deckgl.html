@@ -1,0 +1,934 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hex Map 3D - Échelle Quartier</title>
+    
+    <!-- Mapbox GL CSS -->
+    <link href="https://api.mapbox.com/mapbox-gl-js/v2.15.0/mapbox-gl.css" rel="stylesheet">
+    
+    <!-- Tailwind pour l'interface -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <style>
+        body, html {
+            margin: 0;
+            padding: 0;
+            height: 100%;
+            width: 100%;
+            overflow: hidden;
+            font-family: system-ui, -apple-system, sans-serif;
+        }
+        
+        /* Container pour la carte - PREND TOUTE LA PAGE */
+        #map-container {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+        }
+        
+        /* Panneau de contrôle qui flotte au-dessus */
+        .panneau-controle {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            z-index: 1000;
+            background: rgba(17, 25, 40, 0.95);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 16px;
+            padding: 24px;
+            width: 340px;
+            max-height: 85vh;
+            overflow-y: auto;
+            backdrop-filter: blur(10px);
+        }
+        
+        .panneau-controle h2 {
+            color: white;
+            font-size: 20px;
+            font-weight: bold;
+            margin: 0 0 20px 0;
+        }
+        
+        .panneau-controle label {
+            color: #94A3B8;
+            font-size: 12px;
+            display: block;
+            margin-bottom: 6px;
+        }
+        
+        .panneau-controle input[type="range"] {
+            width: 100%;
+            margin-bottom: 15px;
+        }
+        
+        .panneau-controle button {
+            width: 100%;
+            padding: 12px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-weight: bold;
+            cursor: pointer;
+            margin-bottom: 15px;
+            transition: transform 0.2s;
+        }
+        
+        .panneau-controle button:hover {
+            transform: translateY(-2px);
+        }
+        
+        .panneau-controle select {
+            width: 100%;
+            padding: 8px;
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 6px;
+            margin-bottom: 15px;
+        }
+        
+        .section-title {
+            color: white;
+            font-size: 14px;
+            font-weight: bold;
+            margin: 20px 0 10px 0;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            padding-top: 15px;
+        }
+        
+        .section-title:first-of-type {
+            border-top: none;
+            padding-top: 0;
+            margin-top: 0;
+        }
+        
+        .stat-box {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 10px;
+        }
+        
+        .stat-label {
+            color: #94A3B8;
+            font-size: 11px;
+            margin-bottom: 4px;
+        }
+        
+        .stat-value {
+            color: white;
+            font-size: 18px;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <!-- Container pour la carte Deck.gl -->
+    <div id="map-container"></div>
+    
+    <!-- Panneau de contrôle -->
+    <div class="panneau-controle">
+        <h2>🗺️ Hex Map 3D</h2>
+        
+        <!-- Bouton générer -->
+        <button id="btn-generer" onclick="app.genererDonnees()">
+            ✨ Générer des points
+        </button>
+        
+        <!-- Configuration zone -->
+        <div class="section-title">📍 Zone géographique</div>
+        <label>Quartier:</label>
+        <select id="select-zone" onchange="app.changerZone(this.value)">
+            <option value="villeurbanne_grattes_ciel">Villeurbanne - Gratte-ciels</option>
+            <option value="lyon_part_dieu">Lyon - Part-Dieu</option>
+            <option value="paris_defense">Paris - La Défense</option>
+            <option value="lyon_confluence">Lyon - Confluence</option>
+        </select>
+        
+        <label>Nombre de points: <span id="nb-points-label">300</span></label>
+        <input type="range" id="nb-points" min="50" max="1000" step="50" value="300" 
+               oninput="document.getElementById('nb-points-label').textContent = this.value">
+        
+        <!-- Configuration hexagones -->
+        <div class="section-title">⬡ Configuration Hexagones</div>
+        
+        <label>Rayon hexagone: <span id="rayon-label">5</span>m</label>
+        <input type="range" id="rayon-hex" min="1" max="10" step="0.5" value="5"
+               oninput="app.mettreAJourRayon(this.value)">
+        
+        <label>Hauteur max: <span id="elevation-label">3</span>m</label>
+        <input type="range" id="elevation-hex" min="1" max="5" step="0.5" value="3"
+               oninput="app.mettreAJourElevation(this.value)">
+        
+        <label>Opacité: <span id="opacite-label">80</span>%</label>
+        <input type="range" id="opacite-hex" min="0" max="100" step="5" value="80"
+               oninput="app.mettreAJourOpacite(this.value)">
+        
+        <label>Palette de couleurs:</label>
+        <select id="select-palette" onchange="app.changerPaletteCouleurs(this.value)">
+            <option value="bleu_rouge">Bleu → Rouge</option>
+            <option value="jaune_rouge">Jaune → Rouge</option>
+            <option value="vert_rouge">Vert → Rouge</option>
+            <option value="violet_orange">Violet → Orange</option>
+            <option value="bleu_vert">Bleu → Vert</option>
+        </select>
+        
+        <!-- Style de carte -->
+        <div class="section-title">🎨 Style de carte</div>
+        <label>Style de fond:</label>
+        <select id="select-style" onchange="app.changerStyleCarte(this.value)">
+            <option value="dark">Sombre (Dark)</option>
+            <option value="light">Clair (Light)</option>
+            <option value="streets">Rues (Streets)</option>
+            <option value="satellite">Satellite</option>
+        </select>
+        
+        <!-- Statistiques -->
+        <div class="section-title">📊 Statistiques</div>
+        <div class="stat-box">
+            <div class="stat-label">Points générés</div>
+            <div class="stat-value" id="stat-points">0</div>
+        </div>
+        <div class="stat-box">
+            <div class="stat-label">Hexagones estimés</div>
+            <div class="stat-value" id="stat-hexagones">0</div>
+        </div>
+    </div>
+
+    <!-- Mapbox GL JS -->
+    <script src="https://api.mapbox.com/mapbox-gl-js/v2.15.0/mapbox-gl.js"></script>
+    
+    <!-- Deck.gl -->
+    <script src="https://unpkg.com/deck.gl@8.9.0/dist.min.js"></script>
+
+    <script>
+    (function() {
+        'use strict';
+        
+        // ============================================================
+        // CONFIGURATION GLOBALE - VARIABLES DJANGO
+        // ============================================================
+        // Ces variables peuvent être facilement remplacées par des valeurs
+        // venant de Django via template tags : {{ zone_latitude }}
+        
+        /**
+         * Configuration des différentes zones géographiques disponibles
+         * 
+         * DJANGO: Ces données peuvent venir de :
+         * - Un modèle Django "Zone" avec latitude, longitude, zoom
+         * - Une API REST qui renvoie les zones disponibles
+         * - Un fichier de configuration settings.py
+         * 
+         * Format pour Django template:
+         * const CONFIGURATION_ZONES = {{ zones_json|safe }};
+         */
+        const CONFIGURATION_ZONES = {
+            // Gratte-ciels de Villeurbanne (échelle quartier)
+            villeurbanne_grattes_ciel: {
+                nom: 'Villeurbanne - Gratte-ciels',
+                latitude: 45.7681,        // DJANGO: {{ zone.latitude }}
+                longitude: 4.8796,        // DJANGO: {{ zone.longitude }}
+                rayonKm: 0.3,             // Zone de 300m de rayon
+                zoom: 16,                 // Zoom très proche pour voir les bâtiments
+                descriptionDjango: 'Quartier des gratte-ciels, immeubles Bauhaus années 30'
+            },
+            
+            // Part-Dieu Lyon (quartier d'affaires)
+            lyon_part_dieu: {
+                nom: 'Lyon - Part-Dieu',
+                latitude: 45.7603,
+                longitude: 4.8577,
+                rayonKm: 0.4,
+                zoom: 15,
+                descriptionDjango: 'Quartier d\'affaires avec tour Part-Dieu'
+            },
+            
+            // La Défense Paris
+            paris_defense: {
+                nom: 'Paris - La Défense',
+                latitude: 48.8915,
+                longitude: 2.2380,
+                rayonKm: 0.5,
+                zoom: 15,
+                descriptionDjango: 'Quartier d\'affaires avec gratte-ciels'
+            },
+            
+            // Confluence Lyon
+            lyon_confluence: {
+                nom: 'Lyon - Confluence',
+                latitude: 45.7362,
+                longitude: 4.8161,
+                rayonKm: 0.4,
+                zoom: 15,
+                descriptionDjango: 'Quartier moderne avec nouveaux immeubles'
+            }
+        };
+        
+        /**
+         * Configuration des styles de carte disponibles
+         * 
+         * DJANGO: Peut venir d'un choix utilisateur stocké en base
+         * ou d'une configuration par défaut dans settings.py
+         */
+        const STYLES_CARTE_DISPONIBLES = {
+            dark: {
+                nom: 'Sombre',
+                url: 'https://basemaps.cartocdn.com/gl/dark-matter-gl-style/style.json',
+                descriptionDjango: 'Style sombre pour visualisation moderne'
+            },
+            light: {
+                nom: 'Clair',
+                url: 'https://basemaps.cartocdn.com/gl/positron-gl-style/style.json',
+                descriptionDjango: 'Style clair pour impression et présentation'
+            },
+            streets: {
+                nom: 'Rues',
+                url: 'https://basemaps.cartocdn.com/gl/voyager-gl-style/style.json',
+                descriptionDjango: 'Style avec détails des rues'
+            },
+            satellite: {
+                nom: 'Satellite',
+                url: 'https://basemaps.cartocdn.com/gl/dark-matter-nolabels-gl-style/style.json',
+                descriptionDjango: 'Vue satellite réelle (utilise fond sombre en attendant)'
+            }
+        };
+        
+        /**
+         * Palettes de couleurs disponibles pour les hexagones
+         * Chaque palette a un nom et un tableau de couleurs RGB
+         * 
+         * DJANGO: Ces palettes peuvent venir :
+         * - D'un modèle "PaletteCouleur" avec nom et couleurs en JSON
+         * - De catégories de données (trafic = rouge, pollution = vert, etc.)
+         * - Des préférences utilisateur
+         * 
+         * Format RGB : [Rouge, Vert, Bleu] avec valeurs de 0 à 255
+         */
+        const PALETTES_COULEURS_DISPONIBLES = {
+            // Palette 1 : Bleu → Rose → Rouge (inspirée de l'image)
+            bleu_rouge: {
+                nom: 'Bleu → Rouge',
+                couleurs: [
+                    [26, 51, 83],        // Bleu très foncé (base)
+                    [38, 76, 124],       // Bleu foncé
+                    [87, 117, 144],      // Bleu moyen
+                    [135, 169, 199],     // Bleu clair
+                    [255, 133, 133],     // Rose clair
+                    [255, 107, 107],     // Rose vif
+                    [255, 71, 87]        // Rouge intense
+                ],
+                descriptionDjango: 'Palette froide vers chaude, idéale pour activité'
+            },
+            
+            // Palette 2 : Jaune → Orange → Rouge (type carte de chaleur)
+            jaune_rouge: {
+                nom: 'Jaune → Rouge',
+                couleurs: [
+                    [255, 255, 178],     // Jaune très clair (base)
+                    [254, 217, 118],     // Jaune clair
+                    [254, 178, 76],      // Orange clair
+                    [253, 141, 60],      // Orange
+                    [252, 78, 42],       // Orange-rouge
+                    [227, 26, 28],       // Rouge vif
+                    [177, 0, 38]         // Rouge foncé
+                ],
+                descriptionDjango: 'Carte de chaleur classique, universelle'
+            },
+            
+            // Palette 3 : Vert → Jaune → Rouge (type pollution/alerte)
+            vert_rouge: {
+                nom: 'Vert → Rouge',
+                couleurs: [
+                    [26, 152, 80],       // Vert foncé (bon)
+                    [102, 189, 99],      // Vert moyen
+                    [166, 217, 106],     // Vert clair
+                    [255, 255, 191],     // Jaune clair (neutre)
+                    [253, 174, 97],      // Orange clair
+                    [244, 109, 67],      // Orange-rouge
+                    [215, 48, 39]        // Rouge (alerte)
+                ],
+                descriptionDjango: 'Code couleur alerte, pollution, qualité'
+            },
+            
+            // Palette 4 : Violet → Rose → Orange (type coucher de soleil)
+            violet_orange: {
+                nom: 'Violet → Orange',
+                couleurs: [
+                    [94, 79, 162],       // Violet foncé
+                    [158, 154, 200],     // Violet clair
+                    [188, 189, 220],     // Mauve
+                    [253, 184, 199],     // Rose clair
+                    [254, 153, 139],     // Saumon
+                    [254, 109, 67],      // Orange
+                    [240, 59, 32]        // Orange-rouge vif
+                ],
+                descriptionDjango: 'Palette artistique, coucher de soleil'
+            },
+            
+            // Palette 5 : Bleu → Cyan → Vert (type océan/eau)
+            bleu_vert: {
+                nom: 'Bleu → Vert',
+                couleurs: [
+                    [8, 48, 107],        // Bleu marine foncé
+                    [33, 102, 172],      // Bleu
+                    [67, 147, 195],      // Bleu clair
+                    [146, 197, 222],     // Cyan clair
+                    [209, 229, 240],     // Cyan très clair
+                    [178, 226, 226],     // Turquoise
+                    [102, 194, 164]      // Vert d'eau
+                ],
+                descriptionDjango: 'Thème eau, océan, fraîcheur'
+            }
+        };
+        
+        // DJANGO EXEMPLE: const PALETTES = {{ palettes_json|safe }};
+        
+        
+        // ============================================================
+        // CLASSE GENERATEUR DE POINTS
+        // Génère des points géographiques aléatoires à l'échelle d'un quartier
+        // ============================================================
+        class GenerateurPointsQuartier {
+            
+            /**
+             * Constructeur du générateur
+             */
+            constructor() {
+                // Zone géographique actuellement sélectionnée
+                this.zoneActuelle = CONFIGURATION_ZONES.villeurbanne_grattes_ciel;
+            }
+            
+            /**
+             * Change la zone géographique sélectionnée
+             * 
+             * DJANGO: Cette méthode sera appelée avec {{ zone_id }} du template
+             * 
+             * @param {string} codeZone - Code de la zone (ex: 'villeurbanne_grattes_ciel')
+             */
+            changerZone(codeZone) {
+                if (CONFIGURATION_ZONES[codeZone]) {
+                    this.zoneActuelle = CONFIGURATION_ZONES[codeZone];
+                    console.log(`Zone changée vers: ${this.zoneActuelle.nom}`);
+                }
+            }
+            
+            /**
+             * Génère des points en clusters pour simuler l'activité dans un quartier
+             * À l'échelle d'un quartier, les clusters représentent :
+             * - Des bâtiments avec beaucoup d'activité
+             * - Des zones de passage (rues commerçantes)
+             * - Des points d'intérêt (commerces, services)
+             * 
+             * DJANGO: Cette méthode peut recevoir des données réelles depuis :
+             * - Une API qui renvoie des positions GPS réelles
+             * - Une table "PointActivite" avec latitude, longitude, valeur
+             * - Des données de capteurs IoT dans le quartier
+             * 
+             * @param {number} nombrePointsTotal - Nombre total de points à générer
+             * @returns {Array} - Tableau de points [{longitude, latitude, valeur}]
+             */
+            genererPointsEnClusters(nombrePointsTotal) {
+                const pointsGeneres = [];
+                
+                // Créer 8 à 12 clusters (simule 8-12 bâtiments avec activité)
+                const nombreClusters = Math.floor(Math.random() * 5) + 8;
+                const pointsParCluster = Math.floor(nombrePointsTotal / nombreClusters);
+                
+                console.log(`Génération de ${nombreClusters} clusters avec ~${pointsParCluster} points chacun`);
+                
+                // Générer chaque cluster (représente un bâtiment ou zone)
+                for (let indexCluster = 0; indexCluster < nombreClusters; indexCluster++) {
+                    
+                    // Position du centre du cluster (centre d'un bâtiment)
+                    const centreCluster = this.genererPointDansZone(
+                        this.zoneActuelle.latitude,
+                        this.zoneActuelle.longitude,
+                        this.zoneActuelle.rayonKm
+                    );
+                    
+                    // Intensité du cluster (certains bâtiments ont plus d'activité)
+                    const intensiteCluster = Math.random();
+                    
+                    // Générer des points autour de ce centre
+                    for (let indexPoint = 0; indexPoint < pointsParCluster; indexPoint++) {
+                        
+                        // Point aléatoire très proche du centre (dans le bâtiment)
+                        // Rayon de 20m maximum pour rester dans un bâtiment
+                        const point = this.genererPointDansZone(
+                            centreCluster.latitude,
+                            centreCluster.longitude,
+                            0.02  // 20 mètres de rayon en km
+                        );
+                        
+                        // Calculer la distance au centre du cluster
+                        const distanceAuCentre = this.calculerDistanceNormalisee(
+                            point.latitude,
+                            point.longitude,
+                            centreCluster.latitude,
+                            centreCluster.longitude
+                        );
+                        
+                        // Valeur du point (plus proche du centre = valeur plus élevée)
+                        // Multipliée par l'intensité du cluster
+                        const valeurBase = (1 - distanceAuCentre) * 100;
+                        point.valeur = Math.max(1, Math.floor(valeurBase * intensiteCluster));
+                        
+                        pointsGeneres.push(point);
+                    }
+                }
+                
+                console.log(`${pointsGeneres.length} points générés au total`);
+                return pointsGeneres;
+            }
+            
+            /**
+             * Génère un point aléatoire dans une zone circulaire
+             * Utilise une distribution uniforme pour répartir les points
+             * 
+             * @param {number} latitudeCentre - Latitude du centre de la zone
+             * @param {number} longitudeCentre - Longitude du centre de la zone
+             * @param {number} rayonKm - Rayon de la zone en kilomètres
+             * @returns {Object} - Point avec {latitude, longitude}
+             */
+            genererPointDansZone(latitudeCentre, longitudeCentre, rayonKm) {
+                // Convertir le rayon en degrés (approximation)
+                // 1 degré de latitude ≈ 111 km
+                const rayonDegres = rayonKm / 111;
+                
+                // Générer un angle aléatoire (direction)
+                const angle = Math.random() * 2 * Math.PI;
+                
+                // Générer une distance aléatoire avec distribution uniforme
+                // On utilise sqrt pour avoir une répartition homogène sur la surface
+                const distance = Math.sqrt(Math.random()) * rayonDegres;
+                
+                // Calculer les décalages en latitude et longitude
+                const deltaLatitude = distance * Math.cos(angle);
+                
+                // La longitude nécessite une correction car les méridiens se rapprochent
+                // plus on s'éloigne de l'équateur
+                const deltaLongitude = distance * Math.sin(angle) / 
+                    Math.cos(latitudeCentre * Math.PI / 180);
+                
+                return {
+                    latitude: latitudeCentre + deltaLatitude,
+                    longitude: longitudeCentre + deltaLongitude
+                };
+            }
+            
+            /**
+             * Calcule la distance normalisée entre deux points (0 à 1)
+             * Utile pour calculer l'intensité en fonction de la proximité
+             * 
+             * @param {number} lat1 - Latitude du premier point
+             * @param {number} lon1 - Longitude du premier point
+             * @param {number} lat2 - Latitude du deuxième point
+             * @param {number} lon2 - Longitude du deuxième point
+             * @returns {number} - Distance normalisée entre 0 et 1
+             */
+            calculerDistanceNormalisee(lat1, lon1, lat2, lon2) {
+                const deltaX = lat2 - lat1;
+                const deltaY = lon2 - lon1;
+                return Math.sqrt(deltaX * deltaX + deltaY * deltaY);
+            }
+        }
+        
+        
+        // ============================================================
+        // CLASSE APPLICATION
+        // Gère toute l'application avec Deck.gl
+        // ============================================================
+        class ApplicationHexMap {
+            
+            /**
+             * Constructeur de l'application
+             */
+            constructor() {
+                console.log('=== Initialisation de l\'application HexMap ===');
+                
+                // Générateur de points pour le quartier
+                this.generateur = new GenerateurPointsQuartier();
+                
+                // Données actuelles (points affichés)
+                this.donneesPoints = [];
+                
+                // Configuration des hexagones
+                // DJANGO: Ces valeurs peuvent venir de settings ou d'un modèle ConfigurationHexagones
+                this.configurationHexagones = {
+                    rayon: 5,              // Rayon en mètres (1 à 10m)
+                    elevationMax: 3,       // Élévation maximale en mètres (1 à 5m)
+                    opacite: 0.8           // Opacité (0 à 1)
+                };
+                
+                // Palette de couleurs actuellement sélectionnée
+                // DJANGO: Peut venir des préférences utilisateur
+                this.paletteCouleursActuelle = 'bleu_rouge';
+                
+                // Style de carte actuel
+                this.styleCarteActuel = 'dark';
+                
+                // Instance Deck.gl
+                this.instanceDeckGL = null;
+                
+                // Initialiser l'application
+                this.initialiser();
+            }
+            
+            /**
+             * Initialise l'application
+             * Crée la carte et charge les données initiales
+             */
+            initialiser() {
+                console.log('Création de la carte...');
+                
+                // Créer la carte Deck.gl
+                this.creerCarte();
+                
+                // Générer des données initiales
+                console.log('Génération des données initiales...');
+                this.genererDonnees();
+            }
+            
+            /**
+             * Crée la carte Deck.gl avec la vue initiale
+             * Configure la position, le zoom et le style
+             */
+            creerCarte() {
+                const zone = this.generateur.zoneActuelle;
+                const style = STYLES_CARTE_DISPONIBLES[this.styleCarteActuel];
+                
+                console.log(`Création de la carte sur: ${zone.nom}`);
+                console.log(`Style: ${style.nom}`);
+                
+                // Créer l'instance Deck.gl
+                this.instanceDeckGL = new window.deck.DeckGL({
+                    // Élément HTML où afficher la carte
+                    container: 'map-container',
+                    
+                    // Configuration de la vue initiale (position de la caméra)
+                    initialViewState: {
+                        longitude: zone.longitude,    // Position Est-Ouest
+                        latitude: zone.latitude,      // Position Nord-Sud
+                        zoom: zone.zoom,              // Niveau de zoom (16 = échelle quartier)
+                        pitch: 45,                    // Angle de vue (45° pour effet 3D)
+                        bearing: 0                    // Rotation de la carte (0° = Nord en haut)
+                    },
+                    
+                    // Activer les contrôles utilisateur
+                    controller: true,  // Permet de zoomer, déplacer, pivoter la carte
+                    
+                    // Style de la carte de fond
+                    mapStyle: style.url,
+                    
+                    // Couches de visualisation (vide au départ, sera rempli après)
+                    layers: []
+                });
+                
+                console.log('Carte créée avec succès');
+            }
+            
+            /**
+             * Génère des données et met à jour la visualisation
+             * 
+             * DJANGO: Cette méthode sera remplacée par un appel AJAX/Fetch pour récupérer
+             * les vraies données depuis une API Django :
+             * 
+             * async genererDonnees() {
+             *     const response = await fetch('/api/points-quartier/');
+             *     const data = await response.json();
+             *     this.donneesPoints = data.points;
+             *     this.mettreAJourCouche();
+             * }
+             */
+            genererDonnees() {
+                console.log('=== Génération de nouvelles données ===');
+                
+                // Récupérer le nombre de points demandé par l'utilisateur
+                const nombrePointsDemandes = parseInt(
+                    document.getElementById('nb-points').value
+                );
+                
+                console.log(`Nombre de points demandés: ${nombrePointsDemandes}`);
+                
+                // Générer les points via le générateur
+                this.donneesPoints = this.generateur.genererPointsEnClusters(
+                    nombrePointsDemandes
+                );
+                
+                // Mettre à jour la visualisation avec les nouvelles données
+                this.mettreAJourCouche();
+                
+                // Mettre à jour les statistiques affichées
+                this.mettreAJourStatistiques();
+                
+                console.log('Données générées et affichées');
+            }
+            
+            /**
+             * Met à jour la couche hexagonale 3D sur la carte
+             * C'est ici que la magie opère : transformation des points en hexagones
+             */
+            mettreAJourCouche() {
+                console.log('Mise à jour de la couche hexagonale...');
+                
+                // Récupérer la palette de couleurs actuellement sélectionnée
+                const paletteSelectionnee = PALETTES_COULEURS_DISPONIBLES[this.paletteCouleursActuelle];
+                
+                console.log(`Utilisation de la palette: ${paletteSelectionnee.nom}`);
+                
+                // Créer la couche hexagonale 3D avec Deck.gl
+                const coucheHexagones3D = new window.deck.HexagonLayer({
+                    // Identifiant unique de la couche
+                    id: 'hexagones-3d-quartier',
+                    
+                    // === DONNÉES ===
+                    // Les points à agréger en hexagones
+                    data: this.donneesPoints,
+                    
+                    // Fonction pour extraire la position de chaque point
+                    // Retourne [longitude, latitude] pour chaque point
+                    getPosition: point => [point.longitude, point.latitude],
+                    
+                    // Fonction pour extraire le poids de chaque point (pour l'élévation)
+                    getElevationWeight: point => point.valeur,
+                    
+                    // === CONFIGURATION SPATIALE ===
+                    // Rayon de chaque hexagone en MÈTRES (1 à 10m pour échelle quartier)
+                    radius: this.configurationHexagones.rayon,
+                    
+                    // Facteur d'échelle pour l'élévation (hauteur des hexagones)
+                    // elevationScale transforme les valeurs en hauteur réelle
+                    elevationScale: this.configurationHexagones.elevationMax / 100,
+                    
+                    // === ACTIVATION 3D ===
+                    // Activer l'extrusion 3D (sinon ce serait des hexagones plats)
+                    extruded: true,
+                    
+                    // === STYLE VISUEL ===
+                    // Opacité globale de la couche
+                    opacity: this.configurationHexagones.opacite,
+                    
+                    // Palette de couleurs (utilise la palette sélectionnée)
+                    // Format: array de [R, G, B] pour chaque niveau
+                    colorRange: paletteSelectionnee.couleurs,
+                    
+                    // === AGRÉGATION DES DONNÉES ===
+                    // Comment agréger l'élévation : somme de tous les points dans l'hexagone
+                    elevationAggregation: 'SUM',
+                    
+                    // Comment agréger la couleur : moyenne des valeurs
+                    colorAggregation: 'MEAN',
+                    
+                    // Couverture : 0.9 = 90% de la surface hexagonale remplie
+                    // (laisse un petit espace entre les hexagones)
+                    coverage: 0.9,
+                    
+                    // === INTERACTION ===
+                    // Rendre la couche cliquable/survolable
+                    pickable: true,
+                    
+                    // Activer le highlight automatique au survol
+                    autoHighlight: true,
+                    
+                    // Couleur du highlight (blanc semi-transparent)
+                    highlightColor: [255, 255, 255, 100]
+                });
+                
+                // Mettre à jour les couches affichées dans Deck.gl
+                this.instanceDeckGL.setProps({
+                    layers: [coucheHexagones3D]
+                });
+                
+                console.log(`Couche mise à jour avec ${this.donneesPoints.length} points`);
+            }
+            
+            /**
+             * Change la zone géographique et met à jour la vue
+             * Avec animation fluide de transition
+             * 
+             * @param {string} codeZone - Code de la nouvelle zone
+             */
+            changerZone(codeZone) {
+                console.log(`=== Changement de zone vers: ${codeZone} ===`);
+                
+                // Changer la zone dans le générateur
+                this.generateur.changerZone(codeZone);
+                
+                const nouvelleZone = this.generateur.zoneActuelle;
+                
+                // Animer la transition de caméra vers la nouvelle zone
+                this.instanceDeckGL.setProps({
+                    initialViewState: {
+                        longitude: nouvelleZone.longitude,
+                        latitude: nouvelleZone.latitude,
+                        zoom: nouvelleZone.zoom,
+                        pitch: 45,
+                        bearing: 0,
+                        transitionDuration: 1000,  // Animation de 1 seconde
+                        transitionInterpolator: new window.deck.FlyToInterpolator()
+                    }
+                });
+                
+                // Générer de nouvelles données pour cette zone
+                this.genererDonnees();
+                
+                console.log(`Zone changée: ${nouvelleZone.nom}`);
+            }
+            
+            /**
+             * Met à jour le rayon des hexagones
+             * 
+             * DJANGO: Cette valeur peut être stockée dans les préférences utilisateur
+             * ou dans un modèle de configuration
+             * 
+             * @param {number} nouveauRayonMetres - Nouveau rayon en mètres (1 à 10)
+             */
+            mettreAJourRayon(nouveauRayonMetres) {
+                const rayon = parseFloat(nouveauRayonMetres);
+                this.configurationHexagones.rayon = rayon;
+                
+                // Mettre à jour l'affichage du label
+                document.getElementById('rayon-label').textContent = rayon;
+                
+                // Recalculer la couche avec le nouveau rayon
+                this.mettreAJourCouche();
+                
+                console.log(`Rayon hexagones mis à jour: ${rayon}m`);
+            }
+            
+            /**
+             * Met à jour l'élévation maximale des hexagones
+             * 
+             * @param {number} nouvelleElevationMetres - Nouvelle élévation en mètres (1 à 5m)
+             */
+            mettreAJourElevation(nouvelleElevationMetres) {
+                const elevation = parseFloat(nouvelleElevationMetres);
+                this.configurationHexagones.elevationMax = elevation;
+                
+                // Mettre à jour l'affichage (avec 1 décimale si nécessaire)
+                document.getElementById('elevation-label').textContent = elevation;
+                
+                // Recalculer la couche
+                this.mettreAJourCouche();
+                
+                console.log(`Élévation max mise à jour: ${elevation}m`);
+            }
+            
+            /**
+             * Met à jour l'opacité des hexagones
+             * 
+             * @param {number} nouvelleOpacitePourcent - Nouvelle opacité (0 à 100)
+             */
+            mettreAJourOpacite(nouvelleOpacitePourcent) {
+                const opacite = parseInt(nouvelleOpacitePourcent) / 100;
+                this.configurationHexagones.opacite = opacite;
+                
+                // Mettre à jour l'affichage
+                document.getElementById('opacite-label').textContent = nouvelleOpacitePourcent;
+                
+                // Recalculer la couche
+                this.mettreAJourCouche();
+                
+                console.log(`Opacité mise à jour: ${opacite}`);
+            }
+            
+            /**
+             * Change le style de la carte de fond
+             * 
+             * DJANGO: Le style peut être une préférence utilisateur
+             * stockée dans le profil : user.preferences.map_style
+             * 
+             * @param {string} codeStyle - Code du style ('dark', 'light', etc.)
+             */
+            changerStyleCarte(codeStyle) {
+                console.log(`=== Changement de style carte: ${codeStyle} ===`);
+                
+                if (STYLES_CARTE_DISPONIBLES[codeStyle]) {
+                    this.styleCarteActuel = codeStyle;
+                    const style = STYLES_CARTE_DISPONIBLES[codeStyle];
+                    
+                    // Mettre à jour le style de la carte
+                    this.instanceDeckGL.setProps({
+                        mapStyle: style.url
+                    });
+                    
+                    console.log(`Style carte changé: ${style.nom}`);
+                }
+            }
+            
+            /**
+             * Change la palette de couleurs des hexagones
+             * 
+             * DJANGO: La palette peut venir de :
+             * - Préférences utilisateur : user.preferences.couleur_preference
+             * - Type de données visualisées (trafic, pollution, chaleur, etc.)
+             * - Thème de l'application
+             * 
+             * @param {string} codePalette - Code de la palette (ex: 'jaune_rouge')
+             */
+            changerPaletteCouleurs(codePalette) {
+                console.log(`=== Changement de palette couleurs: ${codePalette} ===`);
+                
+                if (PALETTES_COULEURS_DISPONIBLES[codePalette]) {
+                    this.paletteCouleursActuelle = codePalette;
+                    const palette = PALETTES_COULEURS_DISPONIBLES[codePalette];
+                    
+                    // Recalculer la couche avec la nouvelle palette
+                    this.mettreAJourCouche();
+                    
+                    console.log(`Palette changée: ${palette.nom}`);
+                }
+            }
+            
+            /**
+             * Met à jour les statistiques affichées dans le panneau
+             */
+            mettreAJourStatistiques() {
+                // Nombre de points
+                const nombrePoints = this.donneesPoints.length;
+                document.getElementById('stat-points').textContent = nombrePoints;
+                
+                // Estimer le nombre d'hexagones
+                // Formule : aire de la zone / aire d'un hexagone
+                const rayonMetres = this.configurationHexagones.rayon;
+                const aireHexagone = 2.598 * rayonMetres * rayonMetres; // en m²
+                
+                const rayonZoneMetres = this.generateur.zoneActuelle.rayonKm * 1000;
+                const aireZone = Math.PI * rayonZoneMetres * rayonZoneMetres; // en m²
+                
+                const hexagonesEstimes = Math.ceil(aireZone / aireHexagone);
+                
+                document.getElementById('stat-hexagones').textContent = hexagonesEstimes;
+                
+                console.log(`Stats - Points: ${nombrePoints}, Hexagones estimés: ${hexagonesEstimes}`);
+            }
+        }
+        
+        
+        // ============================================================
+        // DÉMARRAGE DE L'APPLICATION
+        // ============================================================
+        
+        // Variable globale pour accéder à l'app depuis les événements HTML
+        let app;
+        
+        // Attendre que la page soit complètement chargée
+        window.addEventListener('load', () => {
+            console.log('=== Page chargée, démarrage de l\'application ===');
+            
+            // Créer l'instance de l'application
+            app = new ApplicationHexMap();
+            
+            // Exposer globalement pour les événements onclick dans le HTML
+            window.app = app;
+            
+            console.log('=== Application démarrée avec succès ===');
+        });
+        
+    })();
+    </script>
+</body>
+</html>

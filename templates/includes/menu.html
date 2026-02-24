@@ -24,6 +24,9 @@
                 <li class="nav-item">
                     <a class="nav-link" href="{% url 'core:structure-list' %}">Structures</a>
                 </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'index-list' %}">Carte 3D</a>
+                </li>
                 {% if request.user.is_authenticated == True %}
                     <li class="nav-item dropdown">
                         <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">

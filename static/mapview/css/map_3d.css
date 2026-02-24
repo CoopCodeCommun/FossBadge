@@ -1,0 +1,337 @@
+/*
+ * Style pour la carte hexagonale 3D
+ * Styles for the 3D Hexagon Map
+ *
+ * Ce fichier définit l'apparence de la carte plein écran et du panneau flottant.
+ * This file defines the appearance of the full-screen map and floating panel.
+ */
+
+body, html {
+    margin: 0;
+    padding: 0;
+    height: 100%;
+    width: 100%;
+    overflow: hidden;
+    font-family: system-ui, -apple-system, sans-serif;
+}
+
+/* Container pour la carte — PREND TOUTE LA PAGE */
+/* Map container — TAKES FULL PAGE */
+#map-container {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+}
+
+/* =============================================
+   PANNEAU FLOTTANT (glassmorphism)
+   Floating control panel (glassmorphism)
+   ============================================= */
+
+.panneau-flottant {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    z-index: 1000;
+    background: rgba(17, 25, 40, 0.92);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 16px;
+    padding: 24px;
+    width: 460px;
+    max-height: 85vh;
+    overflow-y: auto;
+    backdrop-filter: blur(12px);
+    color: white;
+}
+
+/* Scrollbar discrète dans le panneau */
+/* Subtle scrollbar in the panel */
+.panneau-flottant::-webkit-scrollbar {
+    width: 4px;
+}
+.panneau-flottant::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.15);
+    border-radius: 4px;
+}
+
+.panneau-flottant h2 {
+    color: white;
+    font-size: 20px;
+    font-weight: bold;
+    margin: 0;
+}
+
+/* =============================================
+   COMPTEURS (vue globale, en haut du panneau)
+   Counters (global view, top of panel)
+   ============================================= */
+
+.compteurs {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 20px;
+}
+
+.compteur-box {
+    flex: 1;
+    text-align: center;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 10px;
+    padding: 14px 10px;
+}
+
+.compteur-valeur {
+    font-size: 28px;
+    font-weight: 700;
+    color: white;
+    line-height: 1;
+}
+
+.compteur-label {
+    font-size: 11px;
+    color: #94A3B8;
+    margin-top: 4px;
+}
+
+/* =============================================
+   SÉPARATEUR AVEC TEXTE CENTRÉ
+   Separator with centered text
+   ============================================= */
+
+.section-sep {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    color: #64748B;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin: 20px 0 14px;
+    white-space: nowrap;
+}
+
+/* Lignes horizontales de chaque côté du texte */
+/* Horizontal lines on each side of the text */
+.section-sep::before,
+.section-sep::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: rgba(255, 255, 255, 0.1);
+}
+
+/* =============================================
+   CARTE DE STRUCTURE (vue globale)
+   Structure card (global view)
+   ============================================= */
+
+.structure-card {
+    background: rgba(255, 255, 255, 0.04);
+    padding: 14px;
+    border-radius: 10px;
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    cursor: pointer;
+    transition: background 0.2s, border-color 0.2s;
+}
+
+.structure-card:hover {
+    background: rgba(255, 255, 255, 0.09);
+    border-color: rgba(255, 255, 255, 0.15);
+}
+
+/* Ligne du haut : pastille + nom + type + compteurs */
+/* Top row: dot + name + type + counters */
+.structure-card-top {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+/* Pastille colorée à gauche du nom de la structure */
+/* Colored dot on the left of the structure name */
+.structure-pastille {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: #E65100;
+    flex-shrink: 0;
+}
+
+.structure-nom {
+    font-size: 13px;
+    font-weight: 600;
+    color: white;
+}
+
+.structure-type {
+    color: #94A3B8;
+    font-size: 11px;
+}
+
+/* Compteurs à droite : badges et personnes */
+/* Right counters: badges and people */
+.structure-stats {
+    margin-left: auto;
+    display: flex;
+    gap: 8px;
+    flex-shrink: 0;
+}
+
+.structure-stat {
+    color: #94A3B8;
+    font-size: 11px;
+    white-space: nowrap;
+}
+
+.structure-stat-valeur {
+    color: #a5b4fc;
+    font-weight: 600;
+}
+
+/* Description tronquée à 2 lignes */
+/* Description truncated to 2 lines */
+.structure-description {
+    color: #64748B;
+    font-size: 12px;
+    margin: 6px 0 0 18px;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    line-height: 1.4;
+}
+
+.structure-vide {
+    color: #64748B;
+    font-size: 13px;
+}
+
+/* =============================================
+   EN-TÊTE DE STRUCTURE (vue détail)
+   Structure header (detail view)
+   ============================================= */
+
+.structure-header {
+    text-align: center;
+    padding: 24px 16px;
+    background: rgba(255, 255, 255, 0.04);
+    border-radius: 12px;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    margin-bottom: 4px;
+}
+
+.structure-header-icon {
+    display: inline-block;
+    width: 48px;
+    height: 48px;
+    border-radius: 12px;
+    background: rgba(230, 81, 0, 0.2);
+    border: 2px solid rgba(230, 81, 0, 0.4);
+    line-height: 48px;
+    font-size: 22px;
+    margin-bottom: 10px;
+}
+
+.structure-header-nom {
+    font-size: 18px;
+    font-weight: 700;
+    color: white;
+    margin-bottom: 4px;
+}
+
+.structure-header-type {
+    font-size: 12px;
+    color: #94A3B8;
+    margin-bottom: 8px;
+}
+
+.structure-header-description {
+    font-size: 12px;
+    color: #94A3B8;
+    margin: 8px 0;
+    line-height: 1.4;
+}
+
+.structure-header-compteur {
+    font-size: 13px;
+    color: #a5b4fc;
+    font-weight: 600;
+}
+
+/* =============================================
+   CARTE DE BADGE (vue détail, bordure colorée)
+   Badge card (detail view, colored border)
+   ============================================= */
+
+.badge-card {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    background: rgba(255, 255, 255, 0.04);
+    border-left: 3px solid;
+    padding: 8px 14px;
+    border-radius: 0 6px 6px 0;
+}
+
+.badge-card-nom {
+    font-size: 13px;
+    font-weight: 500;
+    color: white;
+}
+
+.badge-card-niveau {
+    font-size: 11px;
+    color: #94A3B8;
+}
+
+/* Nombre de détenteurs dans la badge card */
+/* Number of holders in the badge card */
+.badge-card-holders {
+    font-size: 11px;
+    color: #a5b4fc;
+    font-weight: 500;
+}
+
+/* =============================================
+   CONTRÔLES (sliders, sélecteur de style)
+   Controls (sliders, style selector)
+   ============================================= */
+
+.panneau-flottant label {
+    color: #94A3B8;
+    font-size: 12px;
+    display: block;
+    margin-bottom: 6px;
+}
+
+.panneau-flottant input[type="range"] {
+    width: 100%;
+    margin-bottom: 14px;
+    accent-color: #667eea;
+}
+
+.panneau-flottant select {
+    width: 100%;
+    padding: 8px;
+    background: rgba(255, 255, 255, 0.08);
+    color: white;
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    border-radius: 6px;
+    font-size: 13px;
+}
+
+.panneau-flottant select option {
+    background: #1a1a2e;
+    color: white;
+}
+
+/* =============================================
+   LÉGENDE
+   Legend
+   ============================================= */
+
+.legende-texte {
+    color: #94A3B8;
+    font-size: 12px;
+}

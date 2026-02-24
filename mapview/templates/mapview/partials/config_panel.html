@@ -1,0 +1,42 @@
+<!-- 
+    Panneau de configuration de la carte 
+    Map configuration panel
+-->
+<div id="config-panel">
+    <div class="section-titre">📍 Configuration Visuelle</div>
+    
+    <div class="mb-4">
+        <label>Rayon hexagone: <span id="radius-label">5</span>m</label>
+        <input type="range" min="1" max="50" step="1" value="5"
+               oninput="document.getElementById('radius-label').textContent = this.value; app.setRadius(this.value)">
+    </div>
+
+    <div class="mb-4">
+        <label>Échelle hauteur: <span id="elevation-label">1</span>x</label>
+        <input type="range" min="1" max="100" step="1" value="1"
+               oninput="document.getElementById('elevation-label').textContent = this.value; app.setElevation(this.value)">
+    </div>
+
+    <div class="mb-4">
+        <label>Opacité: <span id="opacity-label">80</span>%</label>
+        <input type="range" min="0" max="100" step="5" value="80"
+               oninput="document.getElementById('opacity-label').textContent = this.value; app.setOpacity(this.value)">
+    </div>
+
+    <div class="section-titre">🎨 Style de carte</div>
+    <select onchange="app.setStyle(this.value)">
+        <option value="streets">Rues (Streets)</option>
+        <option value="dark">Sombre (Dark)</option>
+        <option value="light">Clair (Light)</option>
+    </select>
+
+    <div class="section-titre">📊 Légende</div>
+    <div class="legende-texte">
+        La hauteur des hexagones représente le niveau d'expertise des badges :
+        <ul class="mt-2 ps-3">
+            <li>Petit : Débutant</li>
+            <li>Moyen : Intermédiaire</li>
+            <li>Grand : Expert</li>
+        </ul>
+    </div>
+</div>

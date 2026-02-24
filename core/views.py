@@ -47,20 +47,283 @@ def reload(request):
     return HttpResponseClientRedirect(request.headers['Referer'])
 
 
+def read_category_filters(request):
+    """
+    Lit les filtres de catégorie depuis les paramètres GET.
+    Les checkboxes non cochées ne sont pas envoyées.
+    Si aucun filtre n'est présent, on active tout par défaut.
+
+    Reads category filters from GET params.
+    Unchecked checkboxes are not sent.
+    If no filter param is present, all are enabled by default.
+    """
+    has_any_filter_param = any(
+        param in request.GET for param in ('badges', 'structures', 'personnes')
+    )
+    if has_any_filter_param:
+        return {
+            'search_badges_enabled': 'badges' in request.GET,
+            'search_structures_enabled': 'structures' in request.GET,
+            'search_personnes_enabled': 'personnes' in request.GET,
+        }
+    return {
+        'search_badges_enabled': True,
+        'search_structures_enabled': True,
+        'search_personnes_enabled': True,
+    }
+
+
 class HomeViewSet(viewsets.ViewSet):
     """
-    ViewSet for the home page of the site.
+    ViewSet pour la page d'accueil avec recherche unifiée.
+    ViewSet for the home page with unified search.
     """
-    def list(self, request):
-        # Get some recent badges and structures for the home page
-        recent_badges = Badge.objects.all().order_by('-pk')[:4]
-        popular_structures = Structure.objects.all().order_by('-pk')[:4]
 
+    def list(self, request):
+        # Page d'accueil — champ de recherche centré, pas de données
+        # Home page — centered search field, no data
         return render(request, 'core/home/index.html', {
-            'title': 'FossBadge - Accueil',
-            'recent_badges': recent_badges,
-            'popular_structures': popular_structures
+            'title': 'FossBadge',
         })
+
+    @action(detail=False, methods=["GET"])
+    def search(self, request):
+        """
+        Recherche unifiée sur badges, structures et personnes.
+        Fouille dans tous les champs pertinents : noms, descriptions,
+        notes d'endorsement, badges assignés, etc.
+        Retourne un partiel HTML avec 3 colonnes de résultats.
+
+        Unified search across badges, structures and people.
+        Searches all relevant fields: names, descriptions,
+        endorsement notes, assigned badges, etc.
+        Returns an HTML partial with 3 result columns.
+        """
+        search_query = request.GET.get('q', '').strip()
+
+        # Si la requête est trop courte, retourner un partiel vide
+        # If query is too short, return empty partial
+        query_is_too_short = len(search_query) < 4
+        if query_is_too_short:
+            return HttpResponse('')
+
+        # Lire les filtres de catégorie / Read category filters
+        category_filters = read_category_filters(request)
+        search_badges_enabled = category_filters['search_badges_enabled']
+        search_structures_enabled = category_filters['search_structures_enabled']
+        search_personnes_enabled = category_filters['search_personnes_enabled']
+
+        # Limite de résultats par catégorie / Result limit per category
+        max_results_per_category = 5
+
+        # --- Badges ---
+        badges_found_list = []
+        if search_badges_enabled:
+            # Cherche dans : nom, description, structure émettrice, notes d'endorsement
+            # Search in: name, description, issuing structure, endorsement notes
+            badges_found_list = Badge.objects.select_related('issuing_structure').filter(
+                Q(name__icontains=search_query)
+                | Q(description__icontains=search_query)
+                | Q(issuing_structure__name__icontains=search_query)
+                | Q(endorsements__notes__icontains=search_query)
+            ).distinct()[:max_results_per_category]
+
+        # --- Structures ---
+        structures_found_list = []
+        if search_structures_enabled:
+            # Cherche dans : nom, description, noms des badges émis
+            # Search in: name, description, issued badge names
+            structures_found_list = Structure.objects.filter(
+                Q(name__icontains=search_query)
+                | Q(description__icontains=search_query)
+                | Q(issued_badges__name__icontains=search_query)
+            ).distinct()[:max_results_per_category]
+
+        # --- Personnes ---
+        people_found_list = []
+        if search_personnes_enabled:
+            # Cherche dans : prénom, nom, pseudo, ET aussi dans les noms/descriptions
+            # des badges que la personne possède, et les notes d'assignation
+            # Search in: first name, last name, username, AND also in names/descriptions
+            # of badges the person holds, and assignment notes
+            people_found_list = User.objects.filter(
+                Q(first_name__icontains=search_query)
+                | Q(last_name__icontains=search_query)
+                | Q(username__icontains=search_query)
+                | Q(badge_assignments__badge__name__icontains=search_query)
+                | Q(badge_assignments__badge__description__icontains=search_query)
+                | Q(badge_assignments__notes__icontains=search_query)
+            ).distinct()[:max_results_per_category]
+
+        search_context = {
+            'badges_found_list': badges_found_list,
+            'structures_found_list': structures_found_list,
+            'people_found_list': people_found_list,
+            'search_query': search_query,
+            'search_badges_enabled': search_badges_enabled,
+            'search_structures_enabled': search_structures_enabled,
+            'search_personnes_enabled': search_personnes_enabled,
+        }
+
+        # Requête HTMX → retourner seulement le partiel des résultats
+        # HTMX request → return only the results partial
+        if request.htmx:
+            return render(request, 'core/home/partial/search_results.html', search_context)
+
+        # Requête classique (fallback sans JS) → retourner la page complète avec résultats
+        # Regular request (no-JS fallback) → return full page with results
+        search_context['title'] = 'FossBadge — Recherche'
+        return render(request, 'core/home/index.html', search_context)
+
+    @action(detail=False, methods=["GET"], url_path="badge-focus/(?P<badge_pk>[^/.]+)")
+    def badge_focus(self, request, badge_pk=None):
+        """
+        Vue focus sur un badge : affiche le badge en détail dans la colonne gauche,
+        les structures liées (émettrice + endorseuses) au centre,
+        et les personnes qui possèdent ce badge à droite.
+        Remplace les résultats de recherche sans quitter la page /home.
+
+        Badge focus view: shows badge detail in the left column,
+        related structures (issuer + endorsers) in the center,
+        and people who hold this badge on the right.
+        Replaces search results without leaving /home.
+        """
+        badge_focused = get_object_or_404(
+            Badge.objects.select_related('issuing_structure'), uuid=badge_pk
+        )
+
+        # Structures liées : la structure émettrice + celles qui endossent ce badge
+        # Related structures: the issuing structure + those endorsing this badge
+        related_structures_list = Structure.objects.filter(
+            Q(pk=badge_focused.issuing_structure_id)
+            | Q(endorsements__badge=badge_focused)
+        ).distinct()
+
+        # Personnes qui possèdent ce badge (via BadgeAssignment)
+        # People who hold this badge (via BadgeAssignment)
+        related_people_list = User.objects.filter(
+            badge_assignments__badge=badge_focused
+        ).distinct()
+
+        # Conserver la requête de recherche pour le bouton retour
+        # Keep the search query for the back button
+        search_query_for_back = request.GET.get('q', '')
+
+        # Lire les filtres de catégorie / Read category filters
+        category_filters = read_category_filters(request)
+
+        badge_focus_context = {
+            'focused_badge': badge_focused,
+            'related_structures_list': related_structures_list,
+            'related_people_list': related_people_list,
+            'search_query': search_query_for_back,
+            **category_filters,
+        }
+
+        # Requête HTMX → retourner seulement le partiel focus
+        # HTMX request → return only the focus partial
+        if request.htmx:
+            return render(request, 'core/home/partial/badge_focus.html', badge_focus_context)
+
+        # Requête directe (fallback sans JS) → page complète avec focus pré-rempli
+        # Direct request (no-JS fallback) → full page with pre-filled focus
+        badge_focus_context['focus_partial'] = 'core/home/partial/badge_focus.html'
+        return render(request, 'core/home/index.html', badge_focus_context)
+
+    @action(detail=False, methods=["GET"], url_path="structure-focus/(?P<structure_pk>[^/.]+)")
+    def structure_focus(self, request, structure_pk=None):
+        """
+        Vue focus sur une structure : affiche la structure en détail dans la colonne gauche,
+        les badges liés (émis + endossés) au centre,
+        et les membres de la structure à droite.
+
+        Structure focus view: shows structure detail in the left column,
+        related badges (issued + endorsed) in the center,
+        and structure members on the right.
+        """
+        structure_focused = get_object_or_404(Structure, uuid=structure_pk)
+
+        # Badges liés : émis par cette structure OU endossés par elle
+        # Related badges: issued by this structure OR endorsed by it
+        related_badges_list = Badge.objects.select_related('issuing_structure').filter(
+            Q(issuing_structure=structure_focused)
+            | Q(endorsements__structure=structure_focused)
+        ).distinct()
+
+        # Membres de la structure (admins + éditeurs + utilisateurs)
+        # Structure members (admins + editors + users)
+        related_people_list = User.objects.filter(
+            Q(structures_admins=structure_focused)
+            | Q(structures_editors=structure_focused)
+            | Q(structures_users=structure_focused)
+        ).distinct()
+
+        # Conserver la requête de recherche pour le bouton retour
+        # Keep the search query for the back button
+        search_query_for_back = request.GET.get('q', '')
+
+        category_filters = read_category_filters(request)
+
+        structure_focus_context = {
+            'focused_structure': structure_focused,
+            'related_badges_list': related_badges_list,
+            'related_people_list': related_people_list,
+            'search_query': search_query_for_back,
+            **category_filters,
+        }
+
+        if request.htmx:
+            return render(request, 'core/home/partial/structure_focus.html', structure_focus_context)
+
+        structure_focus_context['focus_partial'] = 'core/home/partial/structure_focus.html'
+        return render(request, 'core/home/index.html', structure_focus_context)
+
+    @action(detail=False, methods=["GET"], url_path="person-focus/(?P<person_pk>[^/.]+)")
+    def person_focus(self, request, person_pk=None):
+        """
+        Vue focus sur une personne : affiche la personne en détail dans la colonne gauche,
+        les badges qu'elle possède au centre,
+        et les structures auxquelles elle appartient à droite.
+
+        Person focus view: shows person detail in the left column,
+        badges they hold in the center,
+        and structures they belong to on the right.
+        """
+        person_focused = get_object_or_404(User, uuid=person_pk)
+
+        # Badges possédés par cette personne (via BadgeAssignment)
+        # Badges held by this person (via BadgeAssignment)
+        related_badges_list = Badge.objects.select_related('issuing_structure').filter(
+            assignments__user=person_focused
+        ).distinct()
+
+        # Structures auxquelles la personne appartient (admin, éditeur ou utilisateur)
+        # Structures the person belongs to (admin, editor or user)
+        related_structures_list = Structure.objects.filter(
+            Q(admins=person_focused)
+            | Q(editors=person_focused)
+            | Q(users=person_focused)
+        ).distinct()
+
+        # Conserver la requête de recherche pour le bouton retour
+        # Keep the search query for the back button
+        search_query_for_back = request.GET.get('q', '')
+
+        category_filters = read_category_filters(request)
+
+        person_focus_context = {
+            'focused_person': person_focused,
+            'related_badges_list': related_badges_list,
+            'related_structures_list': related_structures_list,
+            'search_query': search_query_for_back,
+            **category_filters,
+        }
+
+        if request.htmx:
+            return render(request, 'core/home/partial/person_focus.html', person_focus_context)
+
+        person_focus_context['focus_partial'] = 'core/home/partial/person_focus.html'
+        return render(request, 'core/home/index.html', person_focus_context)
 
 class BadgeViewSet(viewsets.ViewSet):
     """

@@ -1,46 +1,213 @@
-{% extends 'base.html' %}
+{% extends 'core/home/base_home.html' %}
+{% load static %}
+{% load i18n %}
 
-{% block title %}{{ title }}{% endblock %}
+{% block title %}FossBadge — {% translate "Recherche" %}{% endblock %}
 
 {% block content %}
-    <div class="row">
-        <div class="col-md-12">
-            <div class="jumbotron text-center">
-                <h1 class="display-4">Bienvenue sur FossBadge</h1>
-                <p class="lead">Un système de badges pour valoriser les compétences et les contributions.</p>
-                <hr class="my-4">
-                <p>FossBadge est une plateforme qui permet de créer, gérer et partager des badges numériques.</p>
+<div id="home-search-wrapper" class="home-search-wrapper{% if focus_partial or badges_found_list or structures_found_list or people_found_list %} has-results{% endif %}" data-testid="home-search-wrapper">
+
+    <!-- Bloc de recherche centré / Centered search block -->
+    <div class="home-search-box" data-testid="home-search-box">
+        <h1 class="home-title text-body">FossBadge</h1>
+        <p class="home-subtitle text-muted">
+            {% translate "Explorez les badges, les structures et les personnes" %}
+        </p>
+
+        <!-- Fallback sans JS : le form pointe vers /search/ en GET
+             No-JS fallback: form submits to /search/ via GET -->
+        <form
+            id="home-search-form"
+            role="search"
+            action="{% url 'core:home-search' %}"
+            method="get"
+            data-testid="home-search-form"
+        >
+            <div class="position-relative">
+                <input
+                    id="home-search-input"
+                    class="home-search-input"
+                    type="search"
+                    name="q"
+                    autocomplete="off"
+                    value="{{ search_query|default:'' }}"
+                    placeholder="{% translate 'Rechercher un savoir-faire, un métier, une compétence…' %}"
+                    aria-label="{% translate 'Recherche globale' %}"
+                    hx-get="{% url 'core:home-search' %}"
+                    hx-trigger="keyup changed delay:300ms, search"
+                    hx-target="#search-results"
+                    hx-swap="innerHTML"
+                    hx-push-url="false"
+                    hx-params="q,badges,structures,personnes"
+                    hx-include="#home-search-filters"
+                    hx-indicator="#search-spinner"
+                    data-testid="home-search-input"
+                >
+                <!-- Spinner discret à droite de l'input / Subtle spinner on the right -->
+                <div id="search-spinner" class="htmx-indicator home-search-spinner">
+                    <div class="spinner-border spinner-border-sm text-muted" role="status">
+                        <span class="visually-hidden">{% translate "Chargement..." %}</span>
+                    </div>
+                </div>
             </div>
+
+            <!-- Filtres par catégorie — toggles activés par défaut
+                 Category filters — toggles enabled by default -->
+            <div id="home-search-filters" class="home-search-filters" data-testid="home-search-filters">
+                <label class="home-filter-toggle" data-testid="filter-toggle-badges">
+                    <input type="checkbox" name="badges" value="1" checked>
+                    <span class="home-filter-label">
+                        <span class="home-filter-dot home-filter-dot-badges" aria-hidden="true"></span>
+                        {% translate "Badges" %}
+                    </span>
+                </label>
+                <label class="home-filter-toggle" data-testid="filter-toggle-structures">
+                    <input type="checkbox" name="structures" value="1" checked>
+                    <span class="home-filter-label">
+                        <span class="home-filter-dot home-filter-dot-structures" aria-hidden="true"></span>
+                        {% translate "Structures" %}
+                    </span>
+                </label>
+                <label class="home-filter-toggle" data-testid="filter-toggle-personnes">
+                    <input type="checkbox" name="personnes" value="1" checked>
+                    <span class="home-filter-label">
+                        <span class="home-filter-dot home-filter-dot-personnes" aria-hidden="true"></span>
+                        {% translate "Personnes" %}
+                    </span>
+                </label>
+            </div>
+
+            <!-- Indication du minimum de caractères / Minimum character hint -->
+            <p class="home-search-hint text-muted" id="home-search-hint" data-testid="home-search-hint">
+                {% translate "Tapez au moins 4 lettres" %}
+            </p>
+        </form>
+    </div>
+
+    <!-- Spinner de chargement centré pour les liens focus / Centered loading spinner for focus links -->
+    <div id="results-spinner" class="home-results-spinner" style="display: none;">
+        <div class="spinner-border text-muted" role="status">
+            <span class="visually-hidden">{% translate "Chargement..." %}</span>
         </div>
     </div>
 
-    <div class="row mt-5">
-        <div class="col-md-4">
-            <div class="card mb-4">
-                <div class="card-body text-center">
-                    <h5 class="card-title">Badges</h5>
-                    <p class="card-text">Découvrez les différents badges disponibles.</p>
-                    <a href="{% url 'core:badge-list' %}" class="btn btn-primary">Voir les badges</a>
-                </div>
-            </div>
-        </div>
-        <div class="col-md-4">
-            <div class="card mb-4">
-                <div class="card-body text-center">
-                    <h5 class="card-title">Structures</h5>
-                    <p class="card-text">Explorez les structures et entreprises partenaires.</p>
-                    <a href="{% url 'core:structure-list' %}" class="btn btn-primary">Voir les structures</a>
-                </div>
-            </div>
-        </div>
-        <div class="col-md-4">
-            <div class="card mb-4">
-                <div class="card-body text-center">
-                    <h5 class="card-title">Profils</h5>
-                    <p class="card-text">Découvrez tous les utilisateurs et leurs badges.</p>
-                    <a href="{% url 'core:user-list' %}" class="btn btn-primary">Voir les profils</a>
-                </div>
-            </div>
-        </div>
+    <!-- Zone de résultats — mise à jour par HTMX / Results area — updated by HTMX -->
+    <div
+        id="search-results"
+        class="home-search-results"
+        aria-live="polite"
+        data-testid="home-search-results"
+    >
+        {# Pré-rempli si fallback sans JS, sinon vide (rempli par HTMX) #}
+        {# Pre-filled if no-JS fallback, otherwise empty (filled by HTMX) #}
+        {% if focus_partial %}
+            {% include focus_partial %}
+        {% elif badges_found_list or structures_found_list or people_found_list %}
+            {% include "core/home/partial/search_results.html" %}
+        {% endif %}
     </div>
+
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+(function() {
+    var search_input = document.getElementById("home-search-input");
+    var search_wrapper = document.getElementById("home-search-wrapper");
+    var search_results_container = document.getElementById("search-results");
+    var search_hint = document.getElementById("home-search-hint");
+    var filter_checkboxes = document.querySelectorAll("#home-search-filters input[type=checkbox]");
+
+    // Bloquer la requête HTMX si moins de 4 caractères (sauf si vide pour reset)
+    // Block HTMX request if fewer than 4 characters (except empty to reset)
+    search_input.addEventListener("htmx:configRequest", function(event) {
+        var query_value = search_input.value.trim();
+        if (query_value.length > 0 && query_value.length < 4) {
+            event.preventDefault();
+        }
+    });
+
+    // Relancer la recherche quand un filtre change (en mode recherche ou focus)
+    // Re-trigger search when a filter changes (in search or focus mode)
+    for (var i = 0; i < filter_checkboxes.length; i++) {
+        filter_checkboxes[i].addEventListener("change", function() {
+            var query_value = search_input.value.trim();
+            if (query_value.length >= 4) {
+                // Vérifier si on est en mode focus (partiel avec data-focus-type)
+                // Check if we're in focus mode (partial with data-focus-type)
+                var focus_element = search_results_container.querySelector("[data-focus-type]");
+                if (focus_element) {
+                    // En mode focus : trouver le dernier lien HTMX qui a généré ce focus
+                    // et le re-déclencher avec les filtres mis à jour.
+                    // In focus mode: find the back link and re-trigger the search.
+                    // Le plus simple : revenir aux résultats de recherche avec les nouveaux filtres
+                    // Simplest approach: go back to search results with updated filters
+                    htmx.trigger(search_input, "search");
+                } else {
+                    htmx.trigger(search_input, "search");
+                }
+            }
+        });
+    }
+
+    // Spinner : afficher quand un lien dans #search-results fait une requête
+    // Spinner: show when a link inside #search-results triggers a request
+    var results_spinner = document.getElementById("results-spinner");
+
+    document.body.addEventListener("htmx:beforeRequest", function(event) {
+        var trigger_element = event.detail.elt;
+        // Vérifier que l'élément déclencheur est dans #search-results (lien focus)
+        // Check that the trigger element is inside #search-results (focus link)
+        if (search_results_container.contains(trigger_element)) {
+            results_spinner.style.display = "flex";
+        }
+    });
+
+    // Ajouter / retirer la classe .has-results après le swap HTMX
+    // Animer les items de résultat avec un délai progressif
+    // Add / remove .has-results class after HTMX swap
+    // Animate result items with a staggered delay
+    document.body.addEventListener("htmx:afterSwap", function(event) {
+        if (event.detail.target.id === "search-results") {
+            // Masquer le spinner après le chargement / Hide spinner after loading
+            results_spinner.style.display = "none";
+
+            var has_content = search_results_container.innerHTML.trim().length > 0;
+            if (has_content) {
+                search_wrapper.classList.add("has-results");
+
+                // Animation progressive des items : chaque item apparaît avec un petit délai
+                // Staggered animation: each item appears with a slight delay
+                var result_items = search_results_container.querySelectorAll(".home-result-item, .home-column-title");
+                for (var j = 0; j < result_items.length; j++) {
+                    result_items[j].style.animationDelay = (j * 0.02) + "s";
+                }
+            } else {
+                search_wrapper.classList.remove("has-results");
+            }
+        }
+    });
+
+    // Afficher/masquer l'indication "4 lettres minimum" selon la frappe
+    // Show/hide "4 letters minimum" hint based on input
+    search_input.addEventListener("input", function() {
+        var query_length = search_input.value.trim().length;
+
+        // Vider les résultats si l'input est vide / Clear results if input is empty
+        if (query_length === 0) {
+            search_results_container.innerHTML = "";
+            search_wrapper.classList.remove("has-results");
+        }
+
+        // Montrer l'indication si entre 1 et 3 caractères / Show hint if between 1-3 chars
+        if (query_length > 0 && query_length < 4) {
+            search_hint.classList.add("visible");
+        } else {
+            search_hint.classList.remove("visible");
+        }
+    });
+})();
+</script>
 {% endblock %}

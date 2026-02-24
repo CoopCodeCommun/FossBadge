@@ -1,0 +1,150 @@
+{% load i18n %}
+{% load pictures %}
+
+{# Résultats de recherche en colonnes dynamiques : Badges / Structures / Personnes #}
+{# Search results in dynamic columns: Badges / Structures / People #}
+
+{# Compter le nombre de colonnes actives pour adapter la grille #}
+{# Count active columns to adapt the grid #}
+{% with show_badges=badges_found_list|length|default:0 show_structures=structures_found_list|length|default:0 show_people=people_found_list|length|default:0 %}
+
+<div class="row g-4" data-testid="home-results-columns">
+
+    {% if search_badges_enabled is not False %}
+    <!-- Colonne Badges / Badges column -->
+    <div class="col-md" data-testid="home-results-badges">
+        <h2 class="home-column-title">
+            {% translate "Badges" %}
+            {% if badges_found_list %}
+                <span class="home-count-badge" aria-label="{% translate 'résultats' %}">{{ badges_found_list|length }}</span>
+            {% endif %}
+        </h2>
+
+        {% if badges_found_list %}
+            {% for badge in badges_found_list %}
+                <a
+                    href="{% url 'core:home-badge-focus' badge_pk=badge.pk %}"
+                    hx-get="{% url 'core:home-badge-focus' badge_pk=badge.pk %}?q={{ search_query|urlencode }}"
+                    hx-target="#search-results"
+                    hx-swap="innerHTML"
+                    hx-push-url="true"
+                    hx-include="#home-search-filters"
+                    class="home-result-item"
+                    data-testid="home-result-badge-{{ badge.pk }}"
+                >
+                    <div class="home-result-icon">
+                        {% if badge.icon %}
+                            {% picture badge.icon img_alt=badge.name ratio="1/1" %}
+                        {% else %}
+                            <div class="home-result-icon-placeholder home-result-icon-placeholder-badges">
+                                <span aria-hidden="true">&#9733;</span>
+                            </div>
+                        {% endif %}
+                    </div>
+                    <div class="home-result-text">
+                        <span class="home-result-name">{{ badge.name }}</span>
+                        <span class="home-result-desc text-muted">
+                            {{ badge.description|truncatewords:12 }}
+                        </span>
+                    </div>
+                </a>
+            {% endfor %}
+        {% else %}
+            <p class="home-empty-message text-muted">{% translate "Aucun badge trouvé." %}</p>
+        {% endif %}
+    </div>
+    {% endif %}
+
+    {% if search_structures_enabled is not False %}
+    <!-- Colonne Structures / Structures column -->
+    <div class="col-md" data-testid="home-results-structures">
+        <h2 class="home-column-title">
+            {% translate "Structures" %}
+            {% if structures_found_list %}
+                <span class="home-count-badge" aria-label="{% translate 'résultats' %}">{{ structures_found_list|length }}</span>
+            {% endif %}
+        </h2>
+
+        {% if structures_found_list %}
+            {% for structure in structures_found_list %}
+                <a
+                    href="{% url 'core:home-structure-focus' structure_pk=structure.pk %}"
+                    hx-get="{% url 'core:home-structure-focus' structure_pk=structure.pk %}?q={{ search_query|urlencode }}"
+                    hx-target="#search-results"
+                    hx-swap="innerHTML"
+                    hx-push-url="true"
+                    hx-include="#home-search-filters"
+                    class="home-result-item"
+                    data-testid="home-result-structure-{{ structure.pk }}"
+                >
+                    <div class="home-result-icon">
+                        {% if structure.logo %}
+                            {% picture structure.logo img_alt=structure.name ratio="1/1" %}
+                        {% else %}
+                            <div class="home-result-icon-placeholder home-result-icon-placeholder-structures">
+                                <span aria-hidden="true">&#9737;</span>
+                            </div>
+                        {% endif %}
+                    </div>
+                    <div class="home-result-text">
+                        <span class="home-result-name">{{ structure.name }}</span>
+                        <span class="home-result-desc text-muted">
+                            {{ structure.description|truncatewords:12 }}
+                        </span>
+                    </div>
+                </a>
+            {% endfor %}
+        {% else %}
+            <p class="home-empty-message text-muted">{% translate "Aucune structure trouvée." %}</p>
+        {% endif %}
+    </div>
+    {% endif %}
+
+    {% if search_personnes_enabled is not False %}
+    <!-- Colonne Personnes / People column -->
+    <div class="col-md" data-testid="home-results-people">
+        <h2 class="home-column-title">
+            {% translate "Personnes" %}
+            {% if people_found_list %}
+                <span class="home-count-badge" aria-label="{% translate 'résultats' %}">{{ people_found_list|length }}</span>
+            {% endif %}
+        </h2>
+
+        {% if people_found_list %}
+            {% for person in people_found_list %}
+                <a
+                    href="{% url 'core:home-person-focus' person_pk=person.pk %}"
+                    hx-get="{% url 'core:home-person-focus' person_pk=person.pk %}?q={{ search_query|urlencode }}"
+                    hx-target="#search-results"
+                    hx-swap="innerHTML"
+                    hx-push-url="true"
+                    hx-include="#home-search-filters"
+                    class="home-result-item"
+                    data-testid="home-result-person-{{ person.pk }}"
+                >
+                    <div class="home-result-icon home-result-icon-round">
+                        {% if person.avatar %}
+                            {% picture person.avatar img_alt=person.get_full_name|default:person.username ratio="1/1" %}
+                        {% else %}
+                            <div class="home-result-icon-placeholder home-result-icon-placeholder-personnes home-result-icon-round">
+                                <span aria-hidden="true">&#9679;</span>
+                            </div>
+                        {% endif %}
+                    </div>
+                    <div class="home-result-text">
+                        <span class="home-result-name">{{ person.get_full_name|default:person.username }}</span>
+                        <span class="home-result-desc text-muted">
+                            {{ person.get_badges.count }} badge{{ person.get_badges.count|pluralize }}
+                        </span>
+                    </div>
+                </a>
+            {% endfor %}
+        {% else %}
+            <p class="home-empty-message text-muted">{% translate "Aucune personne trouvée." %}</p>
+        {% endif %}
+    </div>
+    {% endif %}
+
+</div>
+
+{% endwith %}

@@ -230,3 +230,572 @@ picture.text-center img.badge-icon {
     width:32px !important;
     height:32px !important;
 }
+
+/* ============================================================
+   HOME — Recherche unifiée
+   HOME — Unified search
+   ============================================================ */
+
+/* Couleurs sémantiques par catégorie / Semantic colors per category */
+:root {
+    --home-color-badges: #e8a735;
+    --home-color-structures: #5b8def;
+    --home-color-personnes: #6ec477;
+}
+
+/* Conteneur principal — centré verticalement au départ
+   Main wrapper — vertically centered initially */
+.home-search-wrapper {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 80vh;
+    padding: 2rem 1.5rem;
+    transition: min-height 0.25s ease, justify-content 0.25s ease, padding 0.25s ease;
+}
+
+/* Quand les résultats sont affichés, le wrapper se repositionne en haut
+   When results are shown, wrapper moves to the top */
+.home-search-wrapper.has-results {
+    justify-content: flex-start;
+    min-height: auto;
+    padding-top: 1.5rem;
+}
+
+/* Bloc de recherche (titre + input + filtres) — centré, avec transition
+   Search block (title + input + filters) — centered, with transition */
+.home-search-box {
+    text-align: center;
+    width: 100%;
+    max-width: 680px;
+    transition: max-width 0.4s ease;
+}
+
+.home-search-wrapper.has-results .home-search-box {
+    max-width: 100%;
+}
+
+/* Titre et sous-titre / Title and subtitle */
+.home-title {
+    font-size: 2.4rem;
+    font-weight: 700;
+    margin-bottom: 0.25rem;
+    letter-spacing: -0.02em;
+}
+
+.home-subtitle {
+    font-size: 1.05rem;
+    margin-bottom: 1.5rem;
+}
+
+/* Masquer titre/sous-titre avec fondu quand résultats visibles
+   Fade out title/subtitle when results are visible */
+.home-title,
+.home-subtitle {
+    transition: opacity 0.3s ease, max-height 0.3s ease, margin 0.3s ease;
+    opacity: 1;
+    max-height: 100px;
+    overflow: hidden;
+}
+
+.home-search-wrapper.has-results .home-title,
+.home-search-wrapper.has-results .home-subtitle {
+    opacity: 0;
+    max-height: 0;
+    margin: 0;
+    padding: 0;
+}
+
+/* Champ de recherche arrondi avec ombre douce
+   Rounded search input with soft shadow */
+.home-search-input {
+    width: 100%;
+    padding: 0.9rem 1.6rem;
+    font-size: 1.1rem;
+    border: 1px solid #dfe1e5;
+    border-radius: 50px;
+    background-color: #fff;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+    transition: box-shadow 0.25s ease, border-color 0.25s ease;
+    color: #333;
+}
+
+.home-search-input::placeholder {
+    color: #9aa0a6;
+    font-size: 0.95rem;
+}
+
+/* Focus accessible — outline visible + ombre
+   Accessible focus — visible outline + shadow */
+.home-search-input:focus {
+    border-color: #a8c7fa;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+    outline: 2px solid #4a90d9;
+    outline-offset: 2px;
+}
+
+/* Spinner à droite de l'input / Spinner on the right of input */
+.home-search-spinner {
+    position: absolute;
+    right: 1.2rem;
+    top: 50%;
+    transform: translateY(-50%);
+}
+
+/* Spinner centré pour le chargement des focus / Centered spinner for focus loading */
+.home-results-spinner {
+    display: flex;
+    justify-content: center;
+    padding: 2rem 0;
+}
+
+/* ---- Filtres par catégorie / Category filter toggles ---- */
+
+.home-search-filters {
+    display: flex;
+    justify-content: center;
+    gap: 0.5rem;
+    margin-top: 0.9rem;
+    flex-wrap: wrap;
+}
+
+/* Toggle pill — checkbox caché, label stylé en pill
+   Toggle pill — hidden checkbox, label styled as pill */
+.home-filter-toggle {
+    cursor: pointer;
+    user-select: none;
+    margin: 0;
+}
+
+.home-filter-toggle input[type="checkbox"] {
+    position: absolute;
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+.home-filter-label {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.35rem 0.9rem;
+    border-radius: 50px;
+    font-size: 0.85rem;
+    font-weight: 500;
+    border: 1.5px solid #dfe1e5;
+    color: #5f6368;
+    background-color: #fff;
+    transition: all 0.2s ease;
+}
+
+/* Quand le toggle est coché — pill active avec couleur de la catégorie
+   When toggle is checked — active pill with category color */
+.home-filter-toggle input:checked + .home-filter-label {
+    border-color: currentColor;
+    background-color: #f8f9fa;
+}
+
+.home-filter-toggle:has(input[name="badges"]:checked) .home-filter-label {
+    color: var(--home-color-badges);
+    border-color: var(--home-color-badges);
+    background-color: rgba(232, 167, 53, 0.08);
+}
+
+.home-filter-toggle:has(input[name="structures"]:checked) .home-filter-label {
+    color: var(--home-color-structures);
+    border-color: var(--home-color-structures);
+    background-color: rgba(91, 141, 239, 0.08);
+}
+
+.home-filter-toggle:has(input[name="personnes"]:checked) .home-filter-label {
+    color: var(--home-color-personnes);
+    border-color: var(--home-color-personnes);
+    background-color: rgba(110, 196, 119, 0.08);
+}
+
+/* Quand le toggle est décoché — grisé
+   When toggle is unchecked — grayed out */
+.home-filter-toggle input:not(:checked) + .home-filter-label {
+    color: #b0b3b8;
+    border-color: #e8eaed;
+}
+
+/* Point de couleur dans le toggle / Color dot in the toggle */
+.home-filter-dot {
+    display: inline-block;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    transition: opacity 0.2s ease;
+}
+
+.home-filter-dot-badges { background-color: var(--home-color-badges); }
+.home-filter-dot-structures { background-color: var(--home-color-structures); }
+.home-filter-dot-personnes { background-color: var(--home-color-personnes); }
+
+.home-filter-toggle input:not(:checked) + .home-filter-label .home-filter-dot {
+    opacity: 0.3;
+}
+
+/* Focus accessible sur les toggles / Accessible focus on toggles */
+.home-filter-toggle input:focus-visible + .home-filter-label {
+    outline: 2px solid #4a90d9;
+    outline-offset: 2px;
+}
+
+/* ---- Indication "4 lettres minimum" / "4 letters minimum" hint ---- */
+
+.home-search-hint {
+    font-size: 0.82rem;
+    margin-top: 0.5rem;
+    opacity: 0;
+    max-height: 0;
+    overflow: hidden;
+    transition: opacity 0.25s ease, max-height 0.25s ease;
+}
+
+.home-search-hint.visible {
+    opacity: 1;
+    max-height: 2rem;
+}
+
+/* Masquer le hint quand il y a des résultats
+   Hide hint when results are shown */
+.home-search-wrapper.has-results .home-search-hint {
+    display: none;
+}
+
+/* ---- Zone de résultats / Results area ---- */
+
+.home-search-results {
+    width: 100%;
+    max-width: 1100px;
+    margin: 0 auto;
+    padding-top: 1rem;
+}
+
+/* Animation d'apparition des résultats : fondu + glissement vers le haut
+   Results appear animation: fade-in + slide up */
+@keyframes homeResultFadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(12px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Titre de colonne / Column title */
+.home-column-title {
+    font-size: 0.9rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: #5f6368;
+    border-bottom: 2px solid #e8eaed;
+    padding-bottom: 0.5rem;
+    margin-bottom: 0.75rem;
+    animation: homeResultFadeIn 0.2s ease both;
+}
+
+/* Compteur de résultats lisible / Readable result count */
+.home-count-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 1.4rem;
+    height: 1.4rem;
+    padding: 0 0.35rem;
+    border-radius: 50px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    background-color: #e8eaed;
+    color: #5f6368;
+    margin-left: 0.4rem;
+    vertical-align: middle;
+}
+
+/* Message quand colonne vide / Empty column message */
+.home-empty-message {
+    font-size: 0.85rem;
+    font-style: italic;
+    margin-top: 0.5rem;
+    padding: 0.5rem 0;
+}
+
+/* Item de résultat / Result item */
+.home-result-item {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.6rem 0.75rem;
+    border-radius: 12px;
+    text-decoration: none;
+    color: inherit;
+    transition: background-color 0.15s ease, box-shadow 0.15s ease;
+    margin-bottom: 0.2rem;
+    /* Animation progressive — le délai est défini en JS via style.animationDelay
+       Staggered animation — delay is set in JS via style.animationDelay */
+    animation: homeResultFadeIn 0.2s ease both;
+}
+
+.home-result-item:hover {
+    background-color: #f1f3f4;
+    text-decoration: none;
+    color: inherit;
+}
+
+/* Focus accessible sur les items — reprend le style hover
+   Accessible focus on items — mirrors hover style */
+.home-result-item:focus-visible {
+    background-color: #f1f3f4;
+    outline: 2px solid #4a90d9;
+    outline-offset: -2px;
+}
+
+/* Icône / logo miniature / Thumbnail icon */
+.home-result-icon {
+    width: 40px;
+    height: 40px;
+    flex-shrink: 0;
+    border-radius: 8px;
+    overflow: hidden;
+    background-color: #f8f9fa;
+}
+
+.home-result-icon picture,
+.home-result-icon picture img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.home-result-icon-round,
+.home-result-icon-round picture img {
+    border-radius: 50%;
+}
+
+.home-result-icon-placeholder {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1rem;
+    border-radius: inherit;
+}
+
+/* Couleurs de placeholder par catégorie / Placeholder colors per category */
+.home-result-icon-placeholder-badges {
+    background-color: rgba(232, 167, 53, 0.12);
+    color: var(--home-color-badges);
+}
+
+.home-result-icon-placeholder-structures {
+    background-color: rgba(91, 141, 239, 0.12);
+    color: var(--home-color-structures);
+}
+
+.home-result-icon-placeholder-personnes {
+    background-color: rgba(110, 196, 119, 0.12);
+    color: var(--home-color-personnes);
+}
+
+/* Texte du résultat / Result text */
+.home-result-text {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+}
+
+.home-result-name {
+    font-size: 0.95rem;
+    font-weight: 500;
+    color: #202124;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.home-result-desc {
+    font-size: 0.8rem;
+    line-height: 1.3;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+/* ---- Responsive — colonnes empilées sur mobile ----
+   ---- Responsive — stacked columns on mobile ---- */
+@media (max-width: 768px) {
+    .home-search-wrapper {
+        min-height: 60vh;
+        padding: 1.5rem 1rem;
+    }
+
+    .home-search-input {
+        font-size: 1rem;
+        padding: 0.75rem 1.2rem;
+    }
+
+    .home-title {
+        font-size: 1.8rem;
+    }
+
+    /* Séparateur entre colonnes empilées / Separator between stacked columns */
+    .home-search-results .col-md + .col-md {
+        border-top: 1px solid #e8eaed;
+        padding-top: 1rem;
+        margin-top: 0.5rem;
+    }
+
+    .home-search-filters {
+        gap: 0.35rem;
+    }
+
+    .home-filter-label {
+        font-size: 0.8rem;
+        padding: 0.3rem 0.7rem;
+    }
+}
+
+/* ---- Badge Focus — Vue détail inline ----
+   ---- Badge Focus — Inline detail view ---- */
+
+.home-back-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+    font-size: 0.85rem;
+    color: #5f6368;
+    text-decoration: none;
+    margin-bottom: 1rem;
+    padding: 0.3rem 0;
+    transition: color 0.2s ease;
+}
+
+.home-back-link:hover {
+    color: #202124;
+}
+
+.home-badge-focus-card {
+    animation: homeResultFadeIn 0.2s ease forwards;
+}
+
+.home-badge-focus-icon {
+    width: 120px;
+    height: 120px;
+    margin: 0 auto 1rem;
+    border-radius: 16px;
+    overflow: hidden;
+}
+
+.home-badge-focus-icon img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.home-badge-focus-name {
+    font-size: 1.4rem;
+    font-weight: 600;
+    color: #202124;
+    margin-bottom: 0.5rem;
+}
+
+.home-badge-focus-level {
+    margin-bottom: 0.75rem;
+}
+
+.home-level-tag {
+    display: inline-block;
+    font-size: 0.75rem;
+    font-weight: 500;
+    padding: 0.25rem 0.75rem;
+    border-radius: 50px;
+}
+
+.home-level-beginner {
+    background-color: rgba(59, 130, 246, 0.12);
+    color: #3b82f6;
+}
+
+.home-level-intermediate {
+    background-color: rgba(232, 167, 53, 0.12);
+    color: #b8860b;
+}
+
+.home-level-expert {
+    background-color: rgba(110, 196, 119, 0.12);
+    color: #2d8a3e;
+}
+
+.home-badge-focus-issuer {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+    margin-bottom: 1rem;
+    padding: 0.75rem;
+    background: #f8f9fa;
+    border-radius: 12px;
+}
+
+.home-badge-focus-issuer-link {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: #202124;
+    text-decoration: none;
+    font-weight: 500;
+    font-size: 0.9rem;
+}
+
+.home-badge-focus-issuer-link:hover {
+    color: var(--home-color-structures);
+}
+
+.home-badge-focus-issuer-logo {
+    width: 28px;
+    height: 28px;
+    border-radius: 6px;
+    overflow: hidden;
+    flex-shrink: 0;
+}
+
+.home-badge-focus-issuer-logo img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.home-badge-focus-description {
+    font-size: 0.88rem;
+    color: #5f6368;
+    line-height: 1.6;
+}
+
+/* Tags de relation (Émetteur / Endosse) / Relation tags (Issuer / Endorses) */
+.home-relation-tag {
+    display: inline-block;
+    font-size: 0.65rem;
+    font-weight: 500;
+    padding: 0.15rem 0.5rem;
+    border-radius: 50px;
+    margin-left: 0.4rem;
+    vertical-align: middle;
+}
+
+.home-relation-tag-issuer {
+    background-color: rgba(232, 167, 53, 0.15);
+    color: #b8860b;
+}
+
+.home-relation-tag-endorser {
+    background-color: rgba(91, 141, 239, 0.12);
+    color: #3b6fd9;
+}

@@ -24,7 +24,9 @@
     </div>
 
     {% if request.user == user and not request.user.has_dream_badge %}
-        <div class="alert alert-info">
+        <div class="alert alert-info" style="display: flex;
+                                              justify-content: space-between;
+                                              align-items: center;">
             Vous n'avez pas créé votre badge de rêve, n'hésitez pas le faire maintenant !
             <button class="btn btn-primary"
                     hx-get="{% url 'core:badge-create-dream' %}"

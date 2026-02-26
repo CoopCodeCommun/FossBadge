@@ -259,7 +259,7 @@ class Badge(models.Model):
     icon_height = models.PositiveIntegerField(blank=True, null=True, editable=False)
     icon = PictureField(upload_to='badges/icons/', blank=True, null=True, verbose_name="Icône", 
                        aspect_ratios=[None, "1/1"], width_field='icon_width', height_field='icon_height')
-    level = models.CharField(max_length=20, choices=LEVEL_CHOICES, verbose_name="Niveau")
+    level = models.CharField(max_length=20, choices=LEVEL_CHOICES, verbose_name="Niveau",null=True, blank=True)
     description = models.TextField(verbose_name="Description")
 
     is_dream_badge = models.BooleanField(default=False, verbose_name="Badge de rêve")
@@ -269,7 +269,8 @@ class Badge(models.Model):
         Structure, 
         on_delete=models.CASCADE, 
         related_name='issued_badges',
-        verbose_name="Structure émettrice"
+        verbose_name="Structure émettrice",
+        null=True,
     )
     user = models.ForeignKey(User, related_name='issued_badges', verbose_name="User", null=True, on_delete=models.SET_NULL)
 
@@ -293,6 +294,11 @@ class Badge(models.Model):
             Q(endorsements__badge=self.pk) | # 1
             Q(pk=self.issuing_structure.pk) # 2
         ).distinct()
+
+    @staticmethod
+    def get_all_badges_except_dream():
+        return Badge.objects.filter(is_dream_badge=False)
+
 
     def get_holders(self):
         """

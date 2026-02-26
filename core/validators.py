@@ -75,3 +75,8 @@ class BadgeEndorsementValidator(serializers.Serializer):
     def validate(self, data):
 
         return data
+
+class DreamBadgeValidator(serializers.Serializer):
+    name = serializers.CharField(required=True)
+    icon = serializers.ImageField(required=False)
+    description = serializers.CharField()

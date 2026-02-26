@@ -20,7 +20,7 @@ from .forms import BadgeForm, StructureForm, UserForm, PartialUserForm
 import sweetify
 
 from .permissions import IsBadgeEditor, IsStructureAdmin, CanEditUser, CanAssignBadge, CanEndorseBadge
-from .validators import BadgeAssignmentValidator, BadgeEndorsementValidator
+from .validators import BadgeAssignmentValidator, BadgeEndorsementValidator, DreamBadgeValidator
 
 
 def raise403(request, msg=None):
@@ -94,7 +94,7 @@ class BadgeViewSet(viewsets.ViewSet):
         structure_filter = request.GET.get('structure', '')
 
         # Start with all badges
-        badges = Badge.objects.all()
+        badges = Badge.get_all_badges_except_dream()
 
         # Apply search filter if provided
         if search_query:
@@ -341,7 +341,30 @@ class BadgeViewSet(viewsets.ViewSet):
 
     @action(detail=False, methods=['get','post'], url_path="create-dream")
     def create_dream(self,request):
+        """
+        View for creating a dream badge. Only with HTMX
+        """
+        if not request.htmx:
+            return raise403(request)
 
+        if request.method == "GET":
+            return render(request, 'core/badges/dream/create_dream_badge.html')
+
+        validator = DreamBadgeValidator(data=request.data)
+        is_valid = validator.is_valid()
+
+        if not is_valid:
+            return render(request, 'core/badges/dream/create_dream_badge.html',context={
+                "defaults": validator.data,
+                "errors" : validator.errors,
+            })
+        data={
+            "is_dream_badge":True,
+            "user":request.user,
+        }
+        data.update(validator.validated_data)
+        print(data)
+        badge = Badge.objects.create(**data)
 
         return render(request, 'core/badges/dream/create_dream_badge.html')
 

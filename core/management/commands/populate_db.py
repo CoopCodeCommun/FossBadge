@@ -407,11 +407,6 @@ class Command(BaseCommand):
                             )
                         self.stdout.write(f"Added icon {os.path.basename(image_path)} to {badge.name}")
 
-                # Add some valid structures
-                valid_structures = random.sample(structures, random.randint(1, 3))
-                for structure in valid_structures:
-                    badge.valid_structures.add(structure)
-
                 # Add some holders with realistic dates based on badge level
                 holders = random.sample(users, random.randint(1, len(users)))
 
@@ -450,7 +445,7 @@ class Command(BaseCommand):
                     self.stdout.write(f"Assigned {badge.name} to {user.username} on {assignment_date.strftime('%Y-%m-%d')}")
 
                 # Add endorsements for this badge from some structures
-                endorsing_structures = random.sample(valid_structures, random.randint(1, len(valid_structures)))
+                endorsing_structures = random.sample(structures, random.randint(1, len(structures)))
                 for structure in endorsing_structures:
                     # Endorsements happen after badge creation but before most assignments
                     endorsement_date = start_date - timedelta(days=random.randint(30, 180))

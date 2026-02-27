@@ -11,7 +11,12 @@
             <p> Créer par : </p>
             <p>
                 {{ course.structure.name }}
-                {% picture course.structure.logo img_alt=course.structure.name img_class="badge-icon" ratio="1/1" %}
+                {% if course.structure.logo %}
+                    {% picture course.structure.logo img_alt=course.structure.name img_class="badge-icon" ratio="1/1" %}
+                {% else %}
+                    <img src="{{ course.structure.logo }}" alt="Logo {{ course.structure.name }}" class="me-3" style="width: 80px; height: 80px;">
+                {% endif %}
+
             </p>
             <a href="{% url 'core:course-detail' pk=course.pk %}" class="btn btn-primary">Voir le parcours</a>
         </div>

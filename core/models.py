@@ -52,6 +52,13 @@ class User(AbstractUser):
         """
         return Badge.objects.filter(user=self,is_dream_badge=True).exists()
 
+    @property
+    def dream_badge(self):
+        """
+        Return the dream badge linked to the user
+        """
+        return Badge.objects.get(user=self,is_dream_badge=True)
+
     def get_badges(self):
         """
         Returns all badges held by this user

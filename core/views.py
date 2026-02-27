@@ -358,15 +358,18 @@ class BadgeViewSet(viewsets.ViewSet):
                 "defaults": validator.data,
                 "errors" : validator.errors,
             })
+
+        # Create default data for dream badge and add the validator's data to it
         data={
             "is_dream_badge":True,
             "user":request.user,
         }
         data.update(validator.validated_data)
-        print(data)
+
         badge = Badge.objects.create(**data)
 
-        return render(request, 'core/badges/dream/create_dream_badge.html')
+        messages.success(request, "Votre badge de rêve a bien été créé")
+        return reload(request)
 
 
 

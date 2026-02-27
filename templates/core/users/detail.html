@@ -92,6 +92,21 @@
                         <div class="col-md-4 fw-bold">Adresse:</div>
                         <div class="col-md-8">{{ user.address }}</div>
                     </div>
+                    {% if user.has_dream_badge %}
+                    <hr>
+                    <div class="row mb-2">
+                        <h2>Mon badge de rêve</h2>
+                        {% if user.dream_badge.icon %}
+                            {% picture user.dream_badge.icon img_alt=user.dream_badge.name img_class="badge-icon mb-3" ratio="1/1" picture_class="text-center" %}
+                        {% else %}
+                            <img src="{{ placeholder_dream_badge }}" alt="{{ user.dream_badge.name }}" class="badge-icon mb-3"
+                                 style="width: 150px; height: 150px;">
+                        {% endif %}
+                        <h2 class="card-title text-center">{{ user.dream_badge.name }}</h2>
+                        <p> {{ user.dream_badge.description }}</p>
+
+                    </div>
+                    {% endif %}
                 </div>
             </div>
         </div>

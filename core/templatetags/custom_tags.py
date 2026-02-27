@@ -1,5 +1,5 @@
 from django import template
-from django.template import loader, Context
+from django.template import loader
 
 register = template.Library()
 

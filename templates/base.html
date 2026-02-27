@@ -1,4 +1,4 @@
-{% load static django_htmx sweetify %}
+{% load static django_htmx %}
 <!DOCTYPE html>
 <html lang="fr">
 <head>
@@ -37,8 +37,6 @@
 
     {%include 'show_message.html'%}
 
-    <!-- Load sweetify (for sweetalert2) -->
-    {% sweetify %}
 
     {# Must be last, to use other scrips things #}
     <!-- Custom JS -->

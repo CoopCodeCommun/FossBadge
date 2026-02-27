@@ -12,11 +12,11 @@
             <div class="col-md-4">
                 <a class="btn btn-success mb-4" href="{% url 'core:structure-edit' pk=structure.pk %}"> Éditer </a>
                 <a class="btn btn-danger mb-4" href="{% url 'core:structure-delete' pk=structure.pk %}"> Supprimer </a>
-                <button class="btn btn-primary"
+                <button class="btn btn-primary mb-4"
                         hx-get="{% url 'core:structure-invite' structure.pk %}"
                         hx-on:htmx:after-request="showpopup()"
                         hx-target="#customPopup-content"
-                        hx-swap="innerHTML"> Inviter ! </button>
+                        hx-swap="innerHTML"> Inviter </button>
 
             </div>
         {% endif %}

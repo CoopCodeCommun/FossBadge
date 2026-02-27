@@ -1,5 +1,5 @@
 {% extends 'base.html' %}
-{% load pictures %}
+{% load pictures custom_tags %}
 
 {% block title %}Badge {{ badge.name }}{% endblock %}
 
@@ -167,6 +167,9 @@
             </div>
         </div>
     </div>
+
+    {% popup %}{% endpopup %}
+
     {%comment%}
     <script>
         window.openAssignPopUp = () =>{

@@ -1,7 +1,5 @@
 {% extends 'base.html' %}
-{% load pictures %}
-{% load humanize %}
-{% load custom_filters %}
+{% load pictures humanize custom_filters custom_tags %}
 
 {% block title %}Profil de {{ user.get_full_name|default:user.username }}{% endblock %}
 
@@ -184,7 +182,7 @@
             </div>
         </div>
     {% endif %}
-
+    {% popup %}{% endpopup %}
 {% endblock %}
 
 {% block extra_js %}

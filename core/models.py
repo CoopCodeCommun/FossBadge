@@ -59,6 +59,10 @@ class User(AbstractUser):
         """
         return Badge.objects.get(user=self,is_dream_badge=True)
 
+    @property
+    def has_dream_course(self):
+        return DreamCourse.objects.filter(user=self).exists()
+
     def get_badges(self):
         """
         Returns all badges held by this user
@@ -466,7 +470,8 @@ class Course(models.Model):
     Model to show a course made of badges
     """
     uuid = models.UUIDField(default=uuid.uuid7, primary_key=True, db_index=True)
-    structure = models.ForeignKey(Structure, on_delete=models.CASCADE, related_name='courses', verbose_name="Structure")
+    # TODO : when course creation will be implemented, make sure that in the validator the `structure` field is required
+    structure = models.ForeignKey(Structure, on_delete=models.CASCADE, related_name='courses', verbose_name="Structure", null=True, default=None)
     name = models.TextField(blank=False, null=False, verbose_name="Nom")
 
     def get_items_for_cytoscape(self):
@@ -513,6 +518,9 @@ class Course(models.Model):
 
     def __str__(self):
         return f"{self.name}"
+
+class DreamCourse(Course):
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='dream_course', verbose_name="User")
 
 class CourseItem(models.Model):
     """

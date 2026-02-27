@@ -95,7 +95,14 @@
                     {% if user.has_dream_badge %}
                     <hr>
                     <div class="row mb-2">
-                        <h2>Mon badge de rêve</h2>
+                        <h2>
+                            Mon badge de rêve
+                            {% if request.user == user and not user.has_dream_course %}
+                                <a class="btn btn-primary" href="{% url "core:course-create-course" %}">
+                                    Créer votre parcours !
+                                </a>
+                            {% endif %}
+                        </h2>
                         {% if user.dream_badge.icon %}
                             {% picture user.dream_badge.icon img_alt=user.dream_badge.name img_class="badge-icon mb-3" ratio="1/1" picture_class="text-center" %}
                         {% else %}

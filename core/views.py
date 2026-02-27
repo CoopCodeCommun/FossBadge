@@ -910,3 +910,6 @@ class CourseViewSet(viewsets.ViewSet):
             "badges":badges,
         })
 
+    @action(detail=False,methods=['get','post'],url_path="create")
+    def create_course(self,request):
+        return render(request, "core/courses/create.html")

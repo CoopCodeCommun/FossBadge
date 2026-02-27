@@ -80,3 +80,11 @@ class DreamBadgeValidator(serializers.Serializer):
     name = serializers.CharField(required=True)
     icon = serializers.ImageField(required=False)
     description = serializers.CharField()
+
+
+class InviteUserValidator(serializers.Serializer):
+    """
+    Validator for user invite from a structure
+    """
+    email = serializers.EmailField()
+    role = serializers.ChoiceField(choices=Structure.ROLES)

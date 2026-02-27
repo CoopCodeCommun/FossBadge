@@ -20,7 +20,7 @@ from .forms import BadgeForm, StructureForm, UserForm, PartialUserForm
 import sweetify
 
 from .permissions import IsBadgeEditor, IsStructureAdmin, CanEditUser, CanAssignBadge, CanEndorseBadge
-from .validators import BadgeAssignmentValidator, BadgeEndorsementValidator, DreamBadgeValidator
+from .validators import BadgeAssignmentValidator, BadgeEndorsementValidator, DreamBadgeValidator, InviteUserValidator
 
 
 def raise403(request, msg=None):
@@ -499,7 +499,6 @@ class StructureViewSet(viewsets.ViewSet):
             'issued_badges': issued_badges,
             'is_editor': is_editor,
             'is_admin': is_admin,
-            "roles" : Structure.ROLES
         })
 
     @action(detail=True, methods=["get","post"])
@@ -564,27 +563,38 @@ class StructureViewSet(viewsets.ViewSet):
             'form': form
         })
 
-    @action(detail=True, methods=['post'])
+    @action(detail=True, methods=['get','post'])
     def invite(self, request, pk):
         """
         Invite a user to a structure.
         """
+        if not request.htmx:
+            return raise403(request)
+
+        context = {
+            "roles" : Structure.ROLES,
+            "structure_pk": pk,
+        }
+
+        if request.method == 'GET':
+            return render(request,"core/structures/partials/structure_invite.html",context=context)
+
         structure = get_object_or_404(Structure, pk=pk)
 
-        email = request.POST['email']
-        role = request.POST['role']
+        validator = InviteUserValidator(data=request.data)
+        is_valid = validator.is_valid()
 
         res = HttpResponse(headers={"HX-Redirect": reverse('core:structure-detail', kwargs={'pk': structure.pk}),})
 
-        if not any(role in item for item in Structure.ROLES):
-            messages.add_message(request,messages.ERROR,"Le role fourni est invalide")
-            return res
+        if not is_valid:
+            context.update({
+                "errors" : validator.errors,
+                "defaults" : validator.data,
+            })
+            return render(request,"core/structures/partials/structure_invite.html",context=context)
 
-        try:
-            validate_email(email)
-        except ValidationError:
-            messages.add_message(request,messages.ERROR,"Le mail est invalide")
-            return res
+        email = validator.validated_data['email']
+        role = validator.validated_data['role']
 
         invite_user_to_structure(email, role, structure)
 

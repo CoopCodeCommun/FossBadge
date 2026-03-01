@@ -80,12 +80,12 @@
 </style>
 
 <script>
-    function showpopup(){
+    function {{ open_func_name }}(){
         let popup = document.querySelector("#customPopup")
         popup.classList.add("showed")
     }
 
-    function hidepopup(){
+    function {{ close_func_name }}(){
         let popup = document.querySelector("#customPopup")
         popup.classList.remove("showed")
     }

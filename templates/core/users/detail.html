@@ -28,7 +28,7 @@
             Vous n'avez pas créé votre badge de rêve, n'hésitez pas le faire maintenant !
             <button class="btn btn-primary"
                     hx-get="{% url 'core:badge-create-dream' %}"
-                    hx-on:htmx:after-request="showpopup()"
+                    hx-on:htmx:after-request="{%  popup_open %}"
                     hx-target="#customPopup-content"
                     hx-swap="innerHTML"> Créer votre badge de rêve ! </button>
         </div>

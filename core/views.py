@@ -17,7 +17,6 @@ from .helpers import TokenHelper
 from .helpers.utils import get_or_create_user, invite_user_to_structure
 from .models import Structure, Badge, User, BadgeAssignment, Course
 from .forms import BadgeForm, StructureForm, UserForm, PartialUserForm
-import sweetify
 
 from .permissions import IsBadgeEditor, IsStructureAdmin, CanEditUser, CanAssignBadge, CanEndorseBadge
 from .validators import BadgeAssignmentValidator, BadgeEndorsementValidator, DreamBadgeValidator, InviteUserValidator
@@ -789,7 +788,8 @@ class UserViewSet(viewsets.ViewSet):
         # TODO when authentication will be added :
         # Send a mail containing a link to delete the account
 
-        sweetify.toast(request, "L'utilisateur a bien été désactivé",showCloseButton=True, timer=10000)
+        messages.success(request, "L'utilisateur a bien été désactivé")
+
         user = get_object_or_404(User, pk=pk)
         user.is_active = False
         user.save()
@@ -843,19 +843,22 @@ class UserViewSet(viewsets.ViewSet):
 
             login(request, user)
 
-            sweetify.toast(request, f"Connexion réussi !", showCloseButton=True, timer=10000)
+            messages.success(request, f"Connexion réussi !")
+
             return redirect('core:home-list')
         except SignatureExpired:
-            sweetify.toast(request, f"Ce lien est expiré, veuillez refaire une demande de connexion", icon="error",showCloseButton=True, timer=10000)
+            messages.error(request, f"Ce lien est expiré, veuillez refaire une demande de connexion")
+
             return redirect('core:home-list')
         except Exception:
-            sweetify.toast(request, f"Ce lien est invalide, veuillez refaire une demande de connexion", icon="error",showCloseButton=True, timer=10000)
+
+            messages.error(request, f"Ce lien est invalide, veuillez refaire une demande de connexion")
             return redirect('core:home-list')
 
     @action(detail=False, methods=['get'])
     def logout(self, request):
         logout(request)
-        sweetify.toast(request, f"Déconnexion réussi", icon="success", showCloseButton=True, timer=10000)
+        messages.success(request, f"Déconnexion réussi")
         return redirect('core:home-list')
 
 class CourseViewSet(viewsets.ViewSet):

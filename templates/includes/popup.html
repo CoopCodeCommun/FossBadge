@@ -1,5 +1,5 @@
 <div id="customPopup">
-    <div id="customPopup-content">
+    <div id="{{ popup_content_id }}">
         {{ content }}
     </div>
     <div id="customPopup-bg"></div>
@@ -18,7 +18,7 @@
     }
 
     #customPopup #customPopup-content{
-        width:40%;
+        width:{{ popup_width }};
         min-height:10%;
         min-width:400px;
 

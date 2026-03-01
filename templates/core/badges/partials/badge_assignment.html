@@ -1,4 +1,5 @@
 {%include 'show_message.html'%}
+{% load custom_tags %}
 
 {% comment %}
 	This template must be used with the popup system. To do so you need at least 2 things
@@ -10,7 +11,7 @@
     <button class="btn btn-primary mb-4"
          hx-get="{% url 'core:badge-assign' badge.pk %}"
          hx-on:htmx:after-request="{%  popup_open %}"
-         hx-target="#customPopup-content"
+         hx-target="{% popup_content_id %}"
          hx-swap="innerHTML"> Endosser </button>
      ```
      2. In the view :
@@ -63,6 +64,6 @@
                 hx-swap="innerHTML">
             Envoyer</button>
 
-        <button class="btn btn-danger" onclick="hidepopup()" type="button">Annuler</button>
+        <button class="btn btn-danger" onclick="{% popup_close %}" type="button">Annuler</button>
     </form>
 </div>

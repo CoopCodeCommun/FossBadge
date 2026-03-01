@@ -1,4 +1,5 @@
 {%include 'show_message.html'%}
+{% load custom_tags %}
 
 <div id="dream-badge-form">
     <h2>Créer mon badge de rêve</h2>
@@ -47,7 +48,7 @@
 
         <button class="btn btn-primary">Envoyer</button>
 
-        <button class="btn btn-danger" onclick="hidepopup()" type="button">Annuler</button>
+        <button class="btn btn-danger" onclick="{% popup_close %}" type="button">Annuler</button>
     </form>
 </div>
 

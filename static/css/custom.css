@@ -135,14 +135,14 @@ a:focus, button:focus, input:focus, select:focus, textarea:focus {
 }
 
 /* Structure detail logo fix */
-.text-center picture {
+.text-center picture:not(.ignore) {
     display: block;
     width: 100%;
     max-width: 200px;
     margin: 0 auto;
 }
 
-.text-center picture img {
+.text-center picture:not(.ignore) img {
     width: 100%;
     height: auto;
     object-fit: contain;

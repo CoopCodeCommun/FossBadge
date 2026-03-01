@@ -21,12 +21,12 @@
 {% block extra_js %}
 
     <script src="{% static 'js/cytoscape.min.js' %}" defer></script> {# cytoscape js for the graph #}
-    <script src="{% static 'js/cytoscape-html.js' %}" defer></script> {# cytoscape-html to render the node as HTML - TODO check if there is a better way to use the script #}
     <script src="{% static 'js/dagre.min.js' %}" defer></script> {# Needed for cytoscape-dagre #}
     <script src="{% static 'js/cytoscape-dagre.min.js' %}" defer onload="showGraph()"></script> {# For "tree" like display, it is "juste" a layout #}
     <script>
         const ZOOM_FACTOR = 0.5;
         var cy;
+        var layout;
         var nodes = {% autoescape off %}{{ nodes }}{% endautoescape %}
         var edges = {% autoescape off %}{{ edges }}{% endautoescape %}
 
@@ -43,8 +43,10 @@
                     {
                         selector: 'node',
                         style: {
-                            'background-color': '#666',
+                            'background-color': 'white',
                             'label': 'data(name)',
+                            "width": 75,
+                            "height":75,
                         }
                     },
 
@@ -62,21 +64,22 @@
                     }
                 ],
 
-                // Node layout
-                layout: {
-                    name: 'dagre',
-                    spacingFactor: 3,
-                    padding: 20,
-                    rankDir:"TB",
-                },
-
                 // Interactions :
                 boxSelectionEnabled: false,
                 autoungrabify:true
 
 
             });
-            cy.nodes().renderHTMLNodes({ hideOriginal: true });
+
+            layout = cy.layout({
+                name: 'dagre',
+                spacingFactor: 3,
+                padding: 20,
+                rankDir:"TB",
+            })
+            layout.run()
+
+
             cy.on('dblclick', (event) => {
                 zoomIn(event);
             });
@@ -96,7 +99,6 @@
             }
 
             cy.zoom(data);
-            cy.nodes().renderHTMLNodes({ hideOriginal: true });
         }
         function zoomOut(){
             let currentZoom = cy.zoom()

@@ -925,4 +925,32 @@ class CourseViewSet(viewsets.ViewSet):
 
     @action(detail=False,methods=['get','post'],url_path="create")
     def create_course(self,request):
-        return render(request, "core/courses/create.html")
+        is_dream = request.GET.get('is_dream', '')
+
+        if is_dream:
+            similar_badges = Badge.objects.order_by('?')[:5]
+
+
+        return render(request, "core/courses/create.html", context={
+            "is_dream":is_dream,
+            "similar_badges":similar_badges,
+
+        })
+
+    @action(detail=False,methods=['get','post'])
+    def add_badge_popup(self,request):
+        if not request.htmx:
+            return raise403(request)
+
+        search_query = request.GET.get('name', '')
+        parent_pk = request.GET.get('parent_pk', '')
+        print(request.GET)
+
+        badges = []
+        if search_query:
+            badges = Badge.objects.filter(name__icontains=search_query)
+
+        return render(request, "core/courses/partial/add_badge_popup.html",context={
+            "badges":badges,
+            "parent_pk":parent_pk,
+        })

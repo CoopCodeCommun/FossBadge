@@ -29,7 +29,7 @@
             <button class="btn btn-primary"
                     hx-get="{% url 'core:badge-create-dream' %}"
                     hx-on:htmx:after-request="{%  popup_open %}"
-                    hx-target="#customPopup-content"
+                    hx-target="{% popup_content_id %}"
                     hx-swap="innerHTML"> Créer votre badge de rêve ! </button>
         </div>
     {% endif %}
@@ -96,7 +96,7 @@
                         <h2>
                             Mon badge de rêve
                             {% if request.user == user and not user.has_dream_course %}
-                                <a class="btn btn-primary" href="{% url "core:course-create-course" %}">
+                                <a class="btn btn-primary" href="{% url "core:course-create-course" %}?is_dream=true">
                                     Créer votre parcours !
                                 </a>
                             {% endif %}

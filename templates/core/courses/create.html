@@ -1,5 +1,5 @@
 {% extends 'base.html' %}
-{% load static %}
+{% load static custom_tags pictures %}
 
 {% block title %} Parcours {% endblock %}
 
@@ -16,35 +16,86 @@
         </div>
     </div>
 
+    {% popup popup_width="80%" %}
+        <h2>Création de votre parcours de rêve :</h2>
+        <hr>
+        <h3>Badge similaire :</h3>
+        <p>Voici une liste de badge similaire à votre badge de rêve, veuillez en sélectionner un pour commencer à créer votre parcours.</p>
+        <hr>
+
+        {% include "core/courses/partial/badge_list_add.html" with badges=similar_badges %}
+    {% endpopup %}
+
 {% endblock %}
 
 {% block extra_js %}
-
     <script src="{% static 'js/cytoscape.min.js' %}" defer></script> {# cytoscape js for the graph #}
-    <script src="{% static 'js/cytoscape-html.js' %}" defer></script> {# cytoscape-html to render the node as HTML #}
     <script src="{% static 'js/dagre.min.js' %}" defer></script> {# Needed for cytoscape-dagre #}
+    <script src="{% static 'js/cytoscape-cxtmenu.min.js' %}" defer ></script> {# For "tree" like display, it is "juste" a layout #}
     <script src="{% static 'js/cytoscape-dagre.min.js' %}" defer onload="showGraph()"></script> {# For "tree" like display, it is "juste" a layout #}
     <script>
+        {%  popup_open %};
         const ZOOM_FACTOR = 0.5;
         var cy;
+        var layout;
+        var menu;
         {#var nodes = {% autoescape off %}{{ nodes }}{% endautoescape %}#}
         {#var edges = {% autoescape off %}{{ edges }}{% endautoescape %}#}
+
+        function addFirstNode(name,id,img,parent){
+            addNode(name,id,img,parent);
+            {% popup_close %}
+        }
+
+        function addNode(name,id,img,parent){
+            cy.add({
+                group: 'nodes',
+                data: {
+                    "name": name,
+                    "id":id,
+                    {#"html": `<div class="text-center m-1 my-html-node" id='${id}'><img src='${img}' class="h-16 w-16 m-auto"/><p>${name}</p></div>`#}
+                },
+                style:{
+                    "background-image" : img,
+                    "background-fit": "contain"
+                },
+            });
+            if (parent !== undefined){
+                console.log(parent)
+                console.log("FORTNITE")
+                cy.add({
+                    group:'edges',
+                    data:{
+                        "id":`${parent}-${id}`,
+                        "source":parent,
+                        "target":id ,
+                    }
+                })
+            }
+            reloadLayout();
+        }
+        /*
+        document.querySelector(".my-html-node").id
+        cy.getElementById("019bc66b-61cb-739b-9e66-f8c9ce51316a").trigger("taphold")
+         */
 
         function showGraph(){
             cy = cytoscape({
                 container: document.getElementById('cy'), // container to render in
-                {#elements: {#}
-                {#    "nodes" : nodes,#}
-                {#    "edges" : edges#}
-                {#},#}
+                /*elements: {
+                    "nodes" : nodes,
+                    "edges" : edges
+                },*/
 
                 // Stylesheet for the graph
                 style: [
                     {
                         selector: 'node',
                         style: {
-                            'background-color': '#666',
+                            'background-color': 'white',
                             'label': 'data(name)',
+                            "width": 75,
+                            "height":75,
                         }
                     },
 
@@ -62,13 +113,6 @@
                     }
                 ],
 
-                // Node layout
-                layout: {
-                    name: 'dagre',
-                    spacingFactor: 3,
-                    padding: 20,
-                    rankDir:"TB",
-                },
 
                 // Interactions :
                 boxSelectionEnabled: false,
@@ -76,10 +120,55 @@
 
 
             });
-            cy.nodes().renderHTMLNodes({ hideOriginal: true });
+            {#cy.nodes().renderHTMLNodes({ hideOriginal: true });#}
             cy.on('dblclick', (event) => {
                 zoomIn(event);
             });
+
+            menu = cy.cxtmenu({
+                openMenuEvents:"cxttapstart taphold",
+                selector: 'node',
+
+                commands: [
+                    {
+                        content: 'Ajouter',
+                        select: function(ele){
+                            let source = ele.id();
+
+                            //htmx
+                            htmx.ajax('GET',`{% url 'core:course-add-badge-popup' %}?parent_pk=${source}`,"{% popup_content_id %}").then((e)=>{
+                                {% popup_open %}
+                            })
+                        }
+                    },
+                    {
+                        content: 'Remove',
+                        select: function(ele){
+                            ele.remove()
+                        }
+                    },
+                    {
+                        content: 'Text',
+                        select: function(ele){
+                            console.log( ele.position() );
+                        }
+                    }
+                ]
+            });
+
+            reloadLayout()
+
+        }
+
+        function reloadLayout(){
+            // I'm forced to do reset the layout because else it doesn't work (because of HTMX call ?)
+            layout = cy.layout({
+                name: 'dagre',
+                spacingFactor: 3,
+                padding: 20,
+                rankDir:"TB",
+            })
+            layout.run()
         }
 
         function zoomIn(event){
@@ -96,7 +185,7 @@
             }
 
             cy.zoom(data);
-            cy.nodes().renderHTMLNodes({ hideOriginal: true });
+            {#cy.nodes().renderHTMLNodes({ hideOriginal: true });#}
         }
         function zoomOut(){
             let currentZoom = cy.zoom()

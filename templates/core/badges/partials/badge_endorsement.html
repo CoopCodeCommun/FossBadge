@@ -1,4 +1,5 @@
 {%include 'show_message.html'%}
+{% load custom_tags %}
 
 <div id="badge-endorsment-form">
     <h2>Endorser un badge</h2>
@@ -35,6 +36,6 @@
          hx-swap="innerHTML">
             Envoyer</button>
 
-        <p class="btn btn-danger" onclick="hidepopup()">Annuler</p>
+        <button class="btn btn-danger" onclick="{% popup_close %}" type="button">Annuler</button>
     </form>
 </div>

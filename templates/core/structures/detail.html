@@ -15,7 +15,7 @@
                 <button class="btn btn-primary mb-4"
                         hx-get="{% url 'core:structure-invite' structure.pk %}"
                         hx-on:htmx:after-request="{%  popup_open %}"
-                        hx-target="#customPopup-content"
+                        hx-target="{% popup_content_id %}"
                         hx-swap="innerHTML"> Inviter </button>
 
             </div>

@@ -488,8 +488,13 @@ class Course(models.Model):
                 "data": {
                     "name":item.badge.name,
                     "id":str(item.pk),
-                    "html":f"<div style='text-align: center; margin:10px;'><img src='{src}' style='width:32px;height:32px;'/><p>{item.badge.name}</p></div>"
-                }
+                    # "html":f"<div class='text-center m-1'><img src='{src}' class='w-16 h-16 m-auto'/><p>{item.badge.name}</p></div>"
+                },
+                "style":{
+                    "background-image" : src,
+                    "background-fit": "contain"
+                },
+
             })
 
         return items

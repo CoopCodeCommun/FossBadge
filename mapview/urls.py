@@ -1,12 +1,6 @@
-from django.urls import path, include
-from rest_framework.routers import DefaultRouter
-from . import views
+# Les routes /map/ ont été retirées.
+# Les données carte sont servies par HomeViewSet.map_data dans core/urls.py.
+# Map routes have been removed.
+# Map data is served by HomeViewSet.map_data in core/urls.py.
 
-router = DefaultRouter()
-
-router.register(r'', views.IndexViewSet, basename='index')
-
-# The API URLs are now determined automatically by the router
-urlpatterns = [
-    path('', include(router.urls)),
-]
+urlpatterns = []

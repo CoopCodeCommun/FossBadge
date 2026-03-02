@@ -842,3 +842,341 @@ picture.text-center img.badge-icon {
     outline: 2px solid #4a90d9;
     outline-offset: 2px;
 }
+
+/* ---- Toggle vue liste / carte ----
+   ---- View toggle list / map ---- */
+
+/* Séparateur entre filtres et toggle vue / Separator between filters and view toggle */
+.home-filter-separator {
+    display: inline-block;
+    width: 1px;
+    height: 20px;
+    background-color: #dfe1e5;
+    margin: 0 0.2rem;
+    vertical-align: middle;
+}
+
+/* Toggle vue — même style que les filtres / View toggle — same style as filters */
+.home-view-toggle {
+    cursor: pointer;
+    user-select: none;
+    margin: 0;
+}
+
+.home-view-toggle input[type="radio"] {
+    position: absolute;
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+.home-view-label {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0.35rem 0.55rem;
+}
+
+/* Etat non-actif / Inactive state */
+.home-view-toggle input:not(:checked) + .home-view-label {
+    color: #b0b3b8;
+    border-color: #e8eaed;
+}
+
+/* Etat actif / Active state */
+.home-view-toggle input:checked + .home-view-label {
+    color: #202124;
+    border-color: #5f6368;
+    background-color: #f1f3f4;
+}
+
+.home-view-toggle input:focus-visible + .home-view-label {
+    outline: 2px solid #4a90d9;
+    outline-offset: 2px;
+}
+
+/* ---- Carte MapLibre ----
+   ---- MapLibre Map ---- */
+
+#home-map {
+    width: 100%;
+    height: 500px;
+    animation: homeResultFadeIn 0.3s ease forwards;
+}
+
+#home-map-container {
+    position: relative;
+    overflow: clip;
+    clip-path: inset(0 round 12px);
+    border: 1px solid #e8eaed;
+    height: 500px;
+    width: 100%;
+    max-width: 1100px;
+    margin: 0 auto;
+}
+
+/* Popup MapLibre — style cohérent avec la home / MapLibre popup — consistent with home style */
+.home-map-popup {
+    font-family: inherit;
+}
+
+.home-map-popup-title {
+    display: block;
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: #202124;
+    text-decoration: none;
+    margin-bottom: 0.4rem;
+}
+
+.home-map-popup-title:hover {
+    color: var(--home-color-structures);
+}
+
+.home-map-popup-badges {
+    display: flex;
+    flex-direction: column;
+    gap: 0.2rem;
+}
+
+.home-map-popup-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+    font-size: 0.8rem;
+    color: #5f6368;
+}
+
+.home-map-popup-badge span[aria-hidden] {
+    color: var(--home-color-badges);
+    font-size: 0.7rem;
+}
+
+.home-map-popup-more {
+    font-size: 0.75rem;
+    font-style: italic;
+    margin-top: 0.2rem;
+}
+
+/* Override styles MapLibre popup / Override MapLibre popup styles */
+.maplibregl-popup-content {
+    border-radius: 12px;
+    padding: 0.75rem 1rem;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
+    max-width: 280px;
+}
+
+/* Masquer les contrôles de navigation MapLibre / Hide MapLibre navigation controls */
+.maplibregl-ctrl-top-right {
+    display: none;
+}
+
+/* Conteneur carte : position relative + overflow hidden pour clipper le panneau
+   Map container: relative position + overflow hidden to clip the panel */
+
+/* ---- Bouton liste flottant / Floating list button ---- */
+
+.home-map-list-btn {
+    position: absolute;
+    bottom: 1rem;
+    left: 1rem;
+    z-index: 2;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    border: none;
+    border-radius: 10px;
+    background: #fff;
+    color: #5f6368;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+    cursor: pointer;
+    transition: transform 0.15s ease, box-shadow 0.15s ease, opacity 0.2s ease;
+}
+
+.home-map-list-btn:hover {
+    transform: scale(1.08);
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.2);
+    color: var(--home-color-structures);
+}
+
+.home-map-list-btn:active {
+    transform: scale(0.95);
+}
+
+.home-map-list-btn.hidden {
+    opacity: 0;
+    pointer-events: none;
+}
+
+/* ---- Panneau liste coulissant / Slide-up list panel ---- */
+
+.home-map-list-panel {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    z-index: 3;
+    max-height: 60%;
+    transform: translateY(100%);
+    transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    pointer-events: none;
+    overflow: hidden;
+}
+
+.home-map-list-panel.open {
+    transform: translateY(0);
+    pointer-events: auto;
+}
+
+.home-map-list-panel-inner {
+    background: rgba(255, 255, 255, 0.97);
+    backdrop-filter: blur(12px);
+    display: flex;
+    flex-direction: column;
+    max-height: 100%;
+}
+
+.home-map-list-panel-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.6rem 1rem;
+    border-bottom: 1px solid #e8eaed;
+    flex-shrink: 0;
+}
+
+.home-map-list-panel-title {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: #202124;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+}
+
+.home-map-list-panel-close {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 26px;
+    height: 26px;
+    border: none;
+    border-radius: 8px;
+    background: transparent;
+    color: #9aa0a6;
+    font-size: 1.1rem;
+    cursor: pointer;
+    transition: background-color 0.15s ease, color 0.15s ease;
+}
+
+.home-map-list-panel-close:hover {
+    background: rgba(0, 0, 0, 0.06);
+    color: #202124;
+}
+
+.home-map-list-panel-body {
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    padding: 0.4rem 0.5rem;
+    max-height: 250px;
+}
+
+/* Items de la liste / List items */
+
+.home-map-list-item {
+    display: flex;
+    flex-direction: column;
+    gap: 0.2rem;
+    padding: 0.5rem 0.6rem;
+    border-radius: 10px;
+    text-decoration: none;
+    color: inherit;
+    transition: background-color 0.12s ease;
+}
+
+.home-map-list-item:hover {
+    background-color: #f1f3f4;
+    text-decoration: none;
+    color: inherit;
+}
+
+.home-map-list-item-header {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.home-map-list-item-icon {
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+}
+
+.home-map-list-item-name {
+    flex: 1;
+    font-size: 0.88rem;
+    font-weight: 500;
+    color: #202124;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.home-map-list-item-count {
+    flex-shrink: 0;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 1.4rem;
+    height: 1.4rem;
+    padding: 0 0.3rem;
+    border-radius: 50px;
+    font-size: 0.7rem;
+    font-weight: 600;
+    background: rgba(232, 167, 53, 0.12);
+    color: var(--home-color-badges);
+}
+
+.home-map-list-item-badges {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.25rem;
+    padding-left: 1.6rem;
+}
+
+.home-map-list-item-badge {
+    font-size: 0.72rem;
+    color: #5f6368;
+    white-space: nowrap;
+}
+
+.home-map-list-item-badge-more {
+    font-weight: 600;
+    color: var(--home-color-badges);
+}
+
+/* ---- Responsive carte / Responsive map ---- */
+@media (max-width: 768px) {
+    #home-map,
+    #home-map-container {
+        height: 350px;
+        border-radius: 8px;
+        clip-path: inset(0 round 8px);
+    }
+
+    .home-map-list-panel {
+        max-height: 65%;
+    }
+
+    .home-map-list-panel-body {
+        max-height: 200px;
+    }
+
+    .home-map-list-btn {
+        bottom: 0.75rem;
+        left: 0.75rem;
+        width: 36px;
+        height: 36px;
+    }
+}

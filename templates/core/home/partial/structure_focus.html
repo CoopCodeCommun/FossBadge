@@ -6,6 +6,9 @@
 {# Structure focus: structure expands in the Structures column, #}
 {# the other two columns filter to show related objects. #}
 
+{# Contexte carte / Map context #}
+<div id="map-context" hidden data-structures="{{ focused_structure.pk }}"></div>
+
 <div class="row g-4" data-testid="home-structure-focus" data-focus-type="structure">
 
     {# === Colonne Badges : émis ou endossés par cette structure === #}

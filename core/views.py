@@ -4,7 +4,7 @@ from django.contrib.auth import logout, get_user_model, authenticate, login
 from django.core.exceptions import ValidationError, PermissionDenied
 from django.core.signing import SignatureExpired
 from django.core.validators import validate_email
-from django.http import HttpResponse
+from django.http import HttpResponse, JsonResponse
 from django.shortcuts import render, get_object_or_404, redirect
 from django.db.models import Q
 from django.urls import reverse
@@ -133,7 +133,7 @@ class HomeViewSet(viewsets.ViewSet):
         if search_structures_enabled:
             # Cherche dans : nom, description, noms des badges émis
             # Search in: name, description, issued badge names
-            structures_found_list = Structure.objects.filter(
+            structures_found_list = Structure.objects.select_related('marker').filter(
                 Q(name__icontains=search_query)
                 | Q(description__icontains=search_query)
                 | Q(issued_badges__name__icontains=search_query)
@@ -155,6 +155,13 @@ class HomeViewSet(viewsets.ViewSet):
                 | Q(badge_assignments__notes__icontains=search_query)
             ).distinct()[:max_results_per_category]
 
+        # PKs des structures trouvées avec marker (pour la carte)
+        # PKs of found structures with markers (for the map)
+        structures_pks_csv = ','.join(
+            str(s.pk) for s in structures_found_list
+            if hasattr(s, 'marker') and s.marker_id
+        )
+
         search_context = {
             'badges_found_list': badges_found_list,
             'structures_found_list': structures_found_list,
@@ -163,6 +170,7 @@ class HomeViewSet(viewsets.ViewSet):
             'search_badges_enabled': search_badges_enabled,
             'search_structures_enabled': search_structures_enabled,
             'search_personnes_enabled': search_personnes_enabled,
+            'structures_pks_csv': structures_pks_csv,
         }
 
         # Requête HTMX → retourner seulement le partiel des résultats
@@ -194,7 +202,7 @@ class HomeViewSet(viewsets.ViewSet):
 
         # Structures liées : la structure émettrice + celles qui endossent ce badge
         # Related structures: the issuing structure + those endorsing this badge
-        related_structures_list = Structure.objects.filter(
+        related_structures_list = Structure.objects.select_related('marker').filter(
             Q(pk=badge_focused.issuing_structure_id)
             | Q(endorsements__badge=badge_focused)
         ).distinct()
@@ -212,11 +220,19 @@ class HomeViewSet(viewsets.ViewSet):
         # Lire les filtres de catégorie / Read category filters
         category_filters = read_category_filters(request)
 
+        # PKs des structures liées avec marker (pour la carte)
+        # PKs of related structures with markers (for the map)
+        related_structures_pks = ','.join(
+            str(s.pk) for s in related_structures_list
+            if hasattr(s, 'marker') and s.marker_id
+        )
+
         badge_focus_context = {
             'focused_badge': badge_focused,
             'related_structures_list': related_structures_list,
             'related_people_list': related_people_list,
             'search_query': search_query_for_back,
+            'related_structures_pks': related_structures_pks,
             **category_filters,
         }
 
@@ -310,7 +326,9 @@ class HomeViewSet(viewsets.ViewSet):
                 Badge.objects.select_related('issuing_structure'), uuid=badge_pk
             )
         if structure_pk:
-            selected_structure = get_object_or_404(Structure, uuid=structure_pk)
+            selected_structure = get_object_or_404(
+                Structure.objects.select_related('marker'), uuid=structure_pk
+            )
         if person_pk:
             selected_person = get_object_or_404(User, uuid=person_pk)
 
@@ -355,6 +373,12 @@ class HomeViewSet(viewsets.ViewSet):
         search_query_for_back = request.GET.get('q', '')
         category_filters = read_category_filters(request)
 
+        # PKs des structures avec marker pour la carte
+        # PKs of structures with markers for the map
+        multi_structures_pks = ''
+        if selected_structure and hasattr(selected_structure, 'marker') and selected_structure.marker_id:
+            multi_structures_pks = str(selected_structure.pk)
+
         multi_focus_context = {
             'selected_badge': selected_badge,
             'selected_structure': selected_structure,
@@ -363,6 +387,7 @@ class HomeViewSet(viewsets.ViewSet):
             'intersection_list': intersection_list,
             'items_count': provided_params_count,
             'search_query': search_query_for_back,
+            'multi_structures_pks': multi_structures_pks,
             **category_filters,
         }
 
@@ -393,7 +418,7 @@ class HomeViewSet(viewsets.ViewSet):
 
         # Structures auxquelles la personne appartient (admin, éditeur ou utilisateur)
         # Structures the person belongs to (admin, editor or user)
-        related_structures_list = Structure.objects.filter(
+        related_structures_list = Structure.objects.select_related('marker').filter(
             Q(admins=person_focused)
             | Q(editors=person_focused)
             | Q(users=person_focused)
@@ -405,11 +430,19 @@ class HomeViewSet(viewsets.ViewSet):
 
         category_filters = read_category_filters(request)
 
+        # PKs des structures liées avec marker (pour la carte)
+        # PKs of related structures with markers (for the map)
+        related_structures_pks = ','.join(
+            str(s.pk) for s in related_structures_list
+            if hasattr(s, 'marker') and s.marker_id
+        )
+
         person_focus_context = {
             'focused_person': person_focused,
             'related_badges_list': related_badges_list,
             'related_structures_list': related_structures_list,
             'search_query': search_query_for_back,
+            'related_structures_pks': related_structures_pks,
             **category_filters,
         }
 
@@ -418,6 +451,67 @@ class HomeViewSet(viewsets.ViewSet):
 
         person_focus_context['focus_partial'] = 'core/home/partial/person_focus.html'
         return render(request, 'core/home/index.html', person_focus_context)
+
+    @action(detail=False, methods=["GET"], url_path="map-data")
+    def map_data(self, request):
+        """
+        Retourne les structures avec marker au format GeoJSON,
+        filtrées par la recherche en cours.
+        Returns structures with markers as GeoJSON, filtered by current search.
+        """
+        pks_param = request.GET.get('pks', '')
+        search_query = request.GET.get('q', '')
+
+        structures_with_markers = Structure.objects.filter(
+            marker__isnull=False
+        ).select_related('marker')
+
+        # Si des PKs sont fournis, filtrer par ces PKs uniquement
+        # If PKs are provided, filter by those PKs only
+        if pks_param:
+            pk_list = [p.strip() for p in pks_param.split(',') if p.strip()]
+            structures_with_markers = structures_with_markers.filter(pk__in=pk_list)
+        elif len(search_query) >= 4:
+            # Filtrer par la recherche si assez de caractères
+            # Filter by search if enough characters
+            structures_with_markers = structures_with_markers.filter(
+                Q(name__icontains=search_query)
+                | Q(description__icontains=search_query)
+                | Q(issued_badges__name__icontains=search_query)
+                | Q(issued_badges__description__icontains=search_query)
+            ).distinct()
+
+        # Pour chaque structure, inclure les badges qui matchent la recherche
+        # For each structure, include badges that match the search
+        features = []
+        for structure in structures_with_markers:
+            matching_badges = Badge.objects.filter(
+                Q(issuing_structure=structure) | Q(endorsements__structure=structure)
+            ).distinct()
+            if len(search_query) >= 4:
+                matching_badges = matching_badges.filter(
+                    Q(name__icontains=search_query)
+                    | Q(description__icontains=search_query)
+                )
+
+            features.append({
+                'type': 'Feature',
+                'geometry': {
+                    'type': 'Point',
+                    'coordinates': [structure.marker.lng, structure.marker.lat],
+                },
+                'properties': {
+                    'pk': str(structure.pk),
+                    'name': structure.name,
+                    'badges': [
+                        {'pk': str(b.pk), 'name': b.name}
+                        for b in matching_badges[:10]
+                    ],
+                    'badge_count': matching_badges.count(),
+                },
+            })
+
+        return JsonResponse({'type': 'FeatureCollection', 'features': features})
 
 class BadgeViewSet(viewsets.ViewSet):
     """

@@ -132,43 +132,254 @@ Objectif : pouvoir sélectionner **plusieurs objets** de colonnes différentes e
 
 ---
 
-### B. Vue carte dans la recherche
+### B. Carte des lieux sous la recherche
 
-Objectif : basculer entre la vue **liste** (3 colonnes) et une vue **carte** depuis la page d'accueil.
+Objectif : afficher une **carte MapLibre** sous le champ de recherche, montrant les structures (lieux) qui correspondent à la recherche. Cliquer sur un marqueur ouvre un **tooltip** listant les badges recherchés que ce lieu possède.
 
-**Code existant dans `mapview/` :**
-- Stack : **Deck.gl** (colonnes 3D) + **MapLibre GL** (fond CARTO)
-- `mapview/views.py` → `IndexViewSet` avec `data_json()` qui retourne badges + structures en JSON
-- `static/mapview/js/map_3d.js` → classe `ApplicationMap3D` (layers Deck.gl, gestion events)
-- `mapview/partials/structure_list.html` → liste latérale filtrée par viewport (`?bounds=`)
-- Modèle `Marker` (lat, lng) lié à `Structure` via FK nullable (`Structure.marker`)
-- Distribution Fibonacci des badges autour des structures (spirale dorée)
-- Hexagones 3D : hauteur = niveau (beginner/intermediate/expert), couleur jaune→orange→rouge
+**Pas de Deck.gl, pas de 3D, pas de hexagones.** Juste MapLibre GL JS + des marqueurs + des popups.
 
-**Étapes d'intégration :**
+**L'ancien code `mapview/` est une expérimentation à nettoyer** (voir B.6).
 
-1. **Toggle Liste/Carte dans l'UI**
-   - Ajouter un bouton switch (icône liste / icône carte) à côté des filtres toggle.
-   - Le bouton charge un partiel différent dans `#search-results`.
+#### B.0 — Ce qui existe et qu'on réutilise
 
-2. **Nouveau partiel : `partial/search_map.html`**
-   - Contient le `<canvas>` Deck.gl + le side-panel avec les résultats filtrés.
-   - Réutilise `map_3d.js` tel quel (ou une version allégée).
-   - Les résultats de recherche (`?q=social`) filtrent les structures affichées sur la carte.
+- Modèle `Marker` (`mapview/models.py`) : `name`, `lat`, `lng`, `icon`. Lié à `Structure` via FK nullable.
+- `Structure.marker` : si non-null, la structure est affichable sur la carte.
+- `Structure.latitude` / `Structure.longitude` : champs directs, inutilisés pour l'instant. Alternative possible au `Marker`.
+- `MapViewConfig` (django-solo) : centre par défaut de la carte (Lyon : 45.77, 4.88).
+- MapLibre GL JS déjà dans les dépendances front.
+- Fond de carte CARTO (voyager, positron, dark-matter) — pas de clé API.
 
-3. **Nouvelle action : `HomeViewSet.search_map()`**
-   - Filtre les structures ayant un `marker` (lat/lng) parmi les résultats de recherche.
-   - Retourne le partiel carte avec les données JSON pré-filtrées.
+#### B.1 — Layout : toggle Liste / Carte
 
-4. **Interaction carte ↔ focus**
-   - Clic sur un marqueur de structure → charge le `structure_focus` dans le side-panel.
-   - Clic sur un hexagone badge → charge le `badge_focus`.
-   - Le side-panel utilise les mêmes partiels focus que la vue liste.
+Un bouton toggle (icône liste / icône carte) est placé **à côté des filtres** Badges / Structures / Personnes.
+Il bascule entre la vue liste (3 colonnes, comportement actuel) et la vue carte.
 
-5. **Contraintes à gérer**
-   - `map_3d.js` initialise le canvas dans `DOMContentLoaded` → il faut le réinitialiser après un swap HTMX (`htmx:afterSwap`).
-   - Les assets Deck.gl + MapLibre sont lourds (~500ko) → les charger en lazy si pas utilisés.
-   - Les structures sans `marker` (sans coordonnées) ne sont pas affichables sur la carte.
+```
+┌──────────────────────────────────────────────────┐
+│              🔍 Barre de recherche               │
+│  [Badges] [Structures] [Personnes]   [≡] [🗺️]  │  ← filtres + toggle vue
+├──────────────────────────────────────────────────┤
+│  Mode liste :                                    │
+│  Badges  │  Structures  │  Personnes             │  ← #search-results
+├──────────────────────────────────────────────────┤
+│  Mode carte :                                    │
+│  ┌──────────────────────────────────────────┐    │
+│  │            🗺️ Carte MapLibre            │    │  ← #search-results
+│  │          📍 📍    📍                     │    │
+│  │                📍                        │    │
+│  └──────────────────────────────────────────┘    │
+└──────────────────────────────────────────────────┘
+```
+
+**Implémentation du toggle :**
+- 2 boutons radio stylisés en pill (comme les filtres), groupés à droite des filtres catégorie.
+- Le bouton "Liste" est actif par défaut.
+- Cliquer "Carte" → `hx-get` vers `/search-map/?q=...` qui retourne le partiel carte.
+- Cliquer "Liste" → `hx-get` vers `/search/?q=...` qui retourne les colonnes habituelles.
+- En mode carte, la carte occupe ~500px de haut dans `#search-results`.
+- Sans recherche (< 4 chars) : la carte affiche toutes les structures avec marker.
+- Le toggle conserve les filtres via `hx-include="#home-search-filters"`.
+
+#### B.2 — Nouvelle action : `HomeViewSet.map_data()`
+
+Endpoint JSON léger qui retourne les structures filtrées par la recherche.
+
+```python
+@action(detail=False, methods=["GET"], url_path="map-data")
+def map_data(self, request):
+    """
+    Retourne les structures avec marker au format GeoJSON,
+    filtrées par la recherche en cours.
+    Returns structures with markers as GeoJSON, filtered by current search.
+    """
+    search_query = request.GET.get('q', '')
+    structures_with_markers = Structure.objects.filter(
+        marker__isnull=False
+    ).select_related('marker')
+
+    if len(search_query) >= 4:
+        structures_with_markers = structures_with_markers.filter(
+            Q(name__icontains=search_query)
+            | Q(description__icontains=search_query)
+            | Q(issued_badges__name__icontains=search_query)
+            | Q(issued_badges__description__icontains=search_query)
+        ).distinct()
+
+    # Pour chaque structure, inclure les badges qui matchent la recherche
+    features = []
+    for structure in structures_with_markers:
+        matching_badges = Badge.objects.filter(
+            Q(issuing_structure=structure) | Q(endorsements__structure=structure)
+        ).distinct()
+        if len(search_query) >= 4:
+            matching_badges = matching_badges.filter(
+                Q(name__icontains=search_query)
+                | Q(description__icontains=search_query)
+            )
+
+        features.append({
+            'type': 'Feature',
+            'geometry': {
+                'type': 'Point',
+                'coordinates': [structure.marker.lng, structure.marker.lat],
+            },
+            'properties': {
+                'pk': str(structure.pk),
+                'name': structure.name,
+                'badges': [
+                    {'pk': str(b.pk), 'name': b.name}
+                    for b in matching_badges[:10]
+                ],
+                'badge_count': matching_badges.count(),
+            },
+        })
+
+    return JsonResponse({'type': 'FeatureCollection', 'features': features})
+```
+
+**Exception à la règle "pas de JSON pour l'UI"** : ici le JSON est une donnée géographique consommée par MapLibre, pas du pilotage d'UI. Le tooltip est rendu côté client par MapLibre (API native `Popup`).
+
+#### B.3 — Template : bloc carte dans `index.html`
+
+Ajouter un `<div id="home-map">` sous `#search-results` dans `index.html`.
+
+```html
+{# Carte des lieux / Map of places #}
+<div id="home-map" style="height: 400px; border-radius: 12px; overflow: hidden; margin-top: 1rem;"></div>
+```
+
+Le JS de la carte est dans un nouveau fichier : `static/js/home_map.js` (~80 lignes).
+Chargement lazy : le `<script>` est dans `index.html`, MapLibre GL CSS/JS via CDN.
+
+#### B.4 — JS : `home_map.js`
+
+Script simple, pas de classe complexe. Fonctionnalités :
+
+1. **Init** : créer la carte MapLibre centrée sur `MapViewConfig` (ou Lyon par défaut).
+2. **Chargement des marqueurs** : `fetch('/map-data/?q=...')` → ajouter les features comme source GeoJSON.
+3. **Marqueurs** : layer `circle` ou `symbol` MapLibre (pastilles bleues `--home-color-structures`).
+4. **Clic sur marqueur** → `Popup` MapLibre avec :
+   - Nom de la structure (lien vers `structure-focus/`)
+   - Liste des badges matchés (liens vers `badge-focus/`)
+   - Si > 10 badges : "et X autres..."
+5. **Mise à jour** : écouter `htmx:afterSwap` sur `#search-results` pour re-fetch `/map-data/` avec le `q` courant.
+6. **Pas de filtrage par viewport** (contrairement à l'ancien code). Toutes les structures matchées sont affichées.
+
+```javascript
+// Pseudo-code simplifié / Simplified pseudo-code
+document.addEventListener('DOMContentLoaded', function() {
+    const map = new maplibregl.Map({
+        container: 'home-map',
+        style: 'https://basemaps.cartocdn.com/gl/voyager-gl-style/style.json',
+        center: [4.88, 45.77],  // Lyon par défaut / Lyon default
+        zoom: 5,
+    });
+
+    function updateMarkers() {
+        const searchInput = document.getElementById('home-search-input');
+        const query = searchInput ? searchInput.value : '';
+        fetch(`/map-data/?q=${encodeURIComponent(query)}`)
+            .then(r => r.json())
+            .then(geojson => {
+                // Mettre à jour la source GeoJSON / Update GeoJSON source
+                if (map.getSource('structures')) {
+                    map.getSource('structures').setData(geojson);
+                } else {
+                    map.addSource('structures', { type: 'geojson', data: geojson });
+                    map.addLayer({ /* circle layer */ });
+                }
+            });
+    }
+
+    map.on('load', updateMarkers);
+
+    // Re-fetch quand la recherche change / Re-fetch when search changes
+    document.body.addEventListener('htmx:afterSwap', function(event) {
+        if (event.detail.target.id === 'search-results') {
+            updateMarkers();
+        }
+    });
+
+    // Popup au clic / Popup on click
+    map.on('click', 'structures-layer', function(e) {
+        const props = e.features[0].properties;
+        const badges = JSON.parse(props.badges);
+        // Construire le HTML du popup / Build popup HTML
+        new maplibregl.Popup()
+            .setLngLat(e.lngLat)
+            .setHTML(popupHtml)
+            .addTo(map);
+    });
+});
+```
+
+#### B.5 — CSS carte
+
+Styles minimaux dans `custom.css` :
+
+```css
+#home-map {
+    height: 400px;
+    border-radius: 12px;
+    overflow: hidden;
+    margin-top: 1rem;
+    border: 1px solid #e8eaed;
+}
+
+/* Popup MapLibre — style cohérent avec le reste de la home */
+.maplibregl-popup-content {
+    border-radius: 12px;
+    padding: 0.75rem 1rem;
+    font-family: inherit;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+    max-width: 280px;
+}
+```
+
+#### B.6 — Nettoyage de l'ancien code `mapview/`
+
+L'app `mapview/` est une expérimentation. À nettoyer :
+
+**À supprimer :**
+- `mapview/views.py` → `IndexViewSet` (toutes les vues)
+- `mapview/urls.py` → routes `/map/`
+- `mapview/templates/mapview/` → tous les templates (index, partials, exploration)
+- `static/mapview/js/map_3d.js` → classe `ApplicationMap3D` (576 lignes)
+- `static/mapview/css/map_3d.css` → styles du panneau flottant
+- Référence dans le routeur principal (`urls.py` racine)
+
+**À conserver :**
+- `mapview/models.py` → modèle `Marker` + `MapViewConfig` (utilisés par la nouvelle carte)
+- `mapview/migrations/` → nécessaires pour la BDD
+- `mapview/fixtures/` → fichier KML d'exemple (utile pour le populate_db)
+- `mapview/admin.py` → à enrichir pour gérer les Markers dans Unfold
+
+**À vérifier :**
+- L'URL `/map/` dans la navbar ou ailleurs → la retirer
+- Les imports de `mapview.views` dans le `urls.py` racine → les retirer
+
+#### B.7 — Fichiers à créer / modifier
+
+| Fichier | Action |
+|---------|--------|
+| `core/views.py` | Ajouter `map_data()` dans `HomeViewSet` |
+| `core/urls.py` | L'action est auto-routée par DRF (`map-data/`) |
+| `templates/core/home/index.html` | Ajouter `<div id="home-map">` + `<script>` MapLibre + `home_map.js` |
+| `static/js/home_map.js` | **Nouveau** — ~80 lignes, init carte + marqueurs + popup |
+| `static/css/custom.css` | Ajouter styles `#home-map` + popup |
+| `mapview/views.py` | Vider (supprimer les vues) |
+| `mapview/urls.py` | Vider (supprimer les routes) |
+| `mapview/templates/` | Supprimer tout le dossier |
+| `static/mapview/` | Supprimer `js/map_3d.js` + `css/map_3d.css` |
+| URL racine (`urls.py`) | Retirer l'include de `mapview.urls` |
+
+#### B.8 — Filtres : retirer "Personnes" de la carte ?
+
+La carte ne montre que des **structures** (lieux) et des **badges**. Les personnes n'ont pas de coordonnées géographiques.
+
+Cependant, la recherche textuelle en colonnes continue à fonctionner avec les 3 filtres (Badges, Structures, Personnes). La carte ignore simplement le filtre "Personnes" et ne réagit qu'aux badges et structures.
+
+Pas besoin de retirer le filtre "Personnes" de l'UI — il reste utile pour les colonnes.
 
 ---
 

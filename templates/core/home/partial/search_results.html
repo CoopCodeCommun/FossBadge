@@ -6,6 +6,9 @@
 
 {# Compter le nombre de colonnes actives pour adapter la grille #}
 {# Count active columns to adapt the grid #}
+{# Contexte carte : PKs des structures avec marker / Map context: structure PKs with markers #}
+<div id="map-context" hidden data-structures="{{ structures_pks_csv }}"></div>
+
 {% with show_badges=badges_found_list|length|default:0 show_structures=structures_found_list|length|default:0 show_people=people_found_list|length|default:0 %}
 
 <div class="row g-4" data-testid="home-results-columns">

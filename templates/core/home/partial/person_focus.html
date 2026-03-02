@@ -21,8 +21,8 @@
         {% if related_badges_list %}
             {% for badge in related_badges_list %}
                 <a
-                    href="{% url 'core:home-badge-focus' badge_pk=badge.pk %}"
-                    hx-get="{% url 'core:home-badge-focus' badge_pk=badge.pk %}?q={{ search_query|urlencode }}"
+                    href="{% url 'core:home-multi-focus' %}?badge={{ badge.pk }}&person={{ focused_person.pk }}&q={{ search_query|urlencode }}"
+                    hx-get="{% url 'core:home-multi-focus' %}?badge={{ badge.pk }}&person={{ focused_person.pk }}&q={{ search_query|urlencode }}"
                     hx-target="#search-results"
                     hx-swap="innerHTML"
                     hx-push-url="true"
@@ -63,8 +63,8 @@
         {% if related_structures_list %}
             {% for structure in related_structures_list %}
                 <a
-                    href="{% url 'core:home-structure-focus' structure_pk=structure.pk %}"
-                    hx-get="{% url 'core:home-structure-focus' structure_pk=structure.pk %}?q={{ search_query|urlencode }}"
+                    href="{% url 'core:home-multi-focus' %}?structure={{ structure.pk }}&person={{ focused_person.pk }}&q={{ search_query|urlencode }}"
+                    hx-get="{% url 'core:home-multi-focus' %}?structure={{ structure.pk }}&person={{ focused_person.pk }}&q={{ search_query|urlencode }}"
                     hx-target="#search-results"
                     hx-swap="innerHTML"
                     hx-push-url="true"

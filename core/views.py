@@ -278,6 +278,100 @@ class HomeViewSet(viewsets.ViewSet):
         structure_focus_context['focus_partial'] = 'core/home/partial/structure_focus.html'
         return render(request, 'core/home/index.html', structure_focus_context)
 
+    @action(detail=False, methods=["GET"], url_path="multi-focus")
+    def multi_focus(self, request):
+        """
+        Vue multi-focus : sélectionner 2 ou 3 objets de colonnes différentes.
+        Avec 2 items : affiche les 2 en détail + l'intersection dans la 3e colonne.
+        Avec 3 items : affiche les 3 en détail, pas d'intersection.
+
+        Multi-focus view: select 2 or 3 objects from different columns.
+        With 2 items: shows both in detail + intersection in 3rd column.
+        With 3 items: shows all 3 in detail, no intersection.
+        """
+        badge_pk = request.GET.get('badge')
+        structure_pk = request.GET.get('structure')
+        person_pk = request.GET.get('person')
+
+        # Au moins 2 params sur 3 doivent être fournis
+        # At least 2 out of 3 params must be provided
+        provided_params_count = sum(1 for p in [badge_pk, structure_pk, person_pk] if p)
+        if provided_params_count < 2:
+            return HttpResponse('', status=400)
+
+        selected_badge = None
+        selected_structure = None
+        selected_person = None
+        intersection_type = ''
+        intersection_list = []
+
+        if badge_pk:
+            selected_badge = get_object_or_404(
+                Badge.objects.select_related('issuing_structure'), uuid=badge_pk
+            )
+        if structure_pk:
+            selected_structure = get_object_or_404(Structure, uuid=structure_pk)
+        if person_pk:
+            selected_person = get_object_or_404(User, uuid=person_pk)
+
+        # Intersection seulement avec 2 items / Intersection only with 2 items
+        if provided_params_count == 2:
+            # Badge + Structure → Personnes à l'intersection
+            # Badge + Structure → People at the intersection
+            if selected_badge and selected_structure:
+                intersection_type = 'personnes'
+                intersection_list = User.objects.filter(
+                    badge_assignments__badge=selected_badge,
+                ).filter(
+                    Q(structures_admins=selected_structure)
+                    | Q(structures_editors=selected_structure)
+                    | Q(structures_users=selected_structure)
+                ).distinct()
+
+            # Badge + Personne → Structures à l'intersection
+            # Badge + Person → Structures at the intersection
+            elif selected_badge and selected_person:
+                intersection_type = 'structures'
+                intersection_list = Structure.objects.filter(
+                    Q(issued_badges=selected_badge)
+                    | Q(endorsements__badge=selected_badge)
+                ).filter(
+                    Q(admins=selected_person)
+                    | Q(editors=selected_person)
+                    | Q(users=selected_person)
+                ).distinct()
+
+            # Structure + Personne → Badges à l'intersection
+            # Structure + Person → Badges at the intersection
+            elif selected_structure and selected_person:
+                intersection_type = 'badges'
+                intersection_list = Badge.objects.filter(
+                    assignments__user=selected_person,
+                ).filter(
+                    Q(issuing_structure=selected_structure)
+                    | Q(endorsements__structure=selected_structure)
+                ).distinct()
+
+        search_query_for_back = request.GET.get('q', '')
+        category_filters = read_category_filters(request)
+
+        multi_focus_context = {
+            'selected_badge': selected_badge,
+            'selected_structure': selected_structure,
+            'selected_person': selected_person,
+            'intersection_type': intersection_type,
+            'intersection_list': intersection_list,
+            'items_count': provided_params_count,
+            'search_query': search_query_for_back,
+            **category_filters,
+        }
+
+        if request.htmx:
+            return render(request, 'core/home/partial/multi_focus.html', multi_focus_context)
+
+        multi_focus_context['focus_partial'] = 'core/home/partial/multi_focus.html'
+        return render(request, 'core/home/index.html', multi_focus_context)
+
     @action(detail=False, methods=["GET"], url_path="person-focus/(?P<person_pk>[^/.]+)")
     def person_focus(self, request, person_pk=None):
         """

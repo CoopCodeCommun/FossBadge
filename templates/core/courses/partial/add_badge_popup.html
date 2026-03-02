@@ -3,12 +3,11 @@
 
 
 <div>
-    <form hx-get="{% url 'core:course-add-badge-popup' %}?parent_pk={{ parent_pk }}"
+    <form hx-get="{% url 'core:course-add-badge' course.pk %}?parent_pk={{ parent_pk }}"
             hx-target="{% popup_content_id %}"
             hx-swap="innerHTML">
         <input class="b-1" name="name" placeholder="Nom du badge" />
         <button class="btn btn-primary mb-4"> Chercher </button>
-
     </form>
 
     <div id="badge-list">

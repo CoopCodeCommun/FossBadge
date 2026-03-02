@@ -10,7 +10,7 @@
         {% endif %}
         <p>{{ badge.name }}</p>
         <button class="btn btn-primary"
-                onclick="addFirstNode(
+                onclick="addNode(
                     '{{ badge.name }}',
                     '{{ badge.pk }}',
                     '{% if badge.icon %}{{ badge.icon.url }}{% else %}{{ placeholder_image }}{% endif %}'

@@ -40,10 +40,10 @@
             <!-- User Avatar -->
             {% if user and user.avatar %}
                 <div class="mb-3" style="width: 150px; height: 150px; margin: 0 auto;">
-                    {% picture user.avatar img_alt="Avatar de "|add:user.get_full_name|default:user.username img_class="img-fluid rounded-circle" ratio="1/1" %}
+                    {% picture user.avatar img_alt="Avatar de "|add:user.get_full_name|default:user.username img_class="img-fluid rounded-circle m-auto" ratio="1/1" %}
                 </div>
             {% else %}
-                <img src="{{ placeholder_image }}" alt="Avatar utilisateur" class="img-fluid rounded-circle mb-3" style="width: 150px; height: 150px;">
+                <img src="{{ placeholder_image }}" alt="Avatar utilisateur" class="img-fluid rounded-circle mb-3 m-auto" style="width: 150px; height: 150px;">
             {% endif %}
 
             <!-- CV Buttons -->
@@ -95,9 +95,19 @@
                     <div class="row mb-2">
                         <h2>
                             Mon badge de rêve
-                            {% if request.user == user and not user.has_dream_course %}
-                                <a class="btn btn-primary" href="{% url "core:course-create-course" %}?is_dream=true">
-                                    Créer votre parcours !
+                            {% if request.user == user %}
+                                {% if user.has_dream_course %}
+                                    <a class="btn btn-primary" href="{% url "core:course-get-or-create-dream-course" %}">
+                                        Voir/modifier votre parcours !
+                                    </a>
+                                {% else %}
+                                    <a class="btn btn-primary" href="{% url "core:course-get-or-create-dream-course" %}">
+                                        Créer votre parcours !
+                                    </a>
+                                {% endif %}
+                            {% elif user.has_dream_course %}
+                                <a class="btn btn-primary" href="{% url "core:course-detail" user.dream_course.pk %}">
+                                    Voir le parcours lié !
                                 </a>
                             {% endif %}
                         </h2>

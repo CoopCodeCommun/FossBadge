@@ -15,7 +15,7 @@ from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.decorators import action,authentication_classes, permission_classes
 from .helpers import TokenHelper
 from .helpers.utils import get_or_create_user, invite_user_to_structure
-from .models import Structure, Badge, User, BadgeAssignment, Course
+from .models import Structure, Badge, User, BadgeAssignment, Course, DreamCourse, CourseItem
 from .forms import BadgeForm, StructureForm, UserForm, PartialUserForm
 
 from .permissions import IsBadgeEditor, IsStructureAdmin, CanEditUser, CanAssignBadge, CanEndorseBadge
@@ -869,13 +869,10 @@ class CourseViewSet(viewsets.ViewSet):
     def retrieve(self, request, pk=None):
 
         course = Course.objects.get(pk=pk)
-        items = course.get_items_for_cytoscape()
-        edges = course.get_items_connections_for_cytoscape()
 
         return render(request, "core/courses/detail.html",context={
             "course":course,
-            "nodes":items,
-            "edges":edges,
+            "editable":False,
         })
 
     def list(self,request):
@@ -924,33 +921,73 @@ class CourseViewSet(viewsets.ViewSet):
         })
 
     @action(detail=False,methods=['get','post'],url_path="create")
-    def create_course(self,request):
-        is_dream = request.GET.get('is_dream', '')
+    def get_or_create_dream_course(self,request):
 
-        if is_dream:
-            similar_badges = Badge.objects.order_by('?')[:5]
 
+        similar_badges = Badge.objects.order_by('?')[:5]
+
+        # Get or create the DreamCourse linked to the user
+        course, created = DreamCourse.objects.get_or_create(user=request.user, name=request.user.dream_badge.name)
 
         return render(request, "core/courses/create.html", context={
-            "is_dream":is_dream,
             "similar_badges":similar_badges,
-
+            "course":course,
+            "created":created,
+            "editable":True,
         })
 
-    @action(detail=False,methods=['get','post'])
-    def add_badge_popup(self,request):
+
+    @action(detail=True, methods=['get','post'])
+    def add_badge(self, request, pk=None):
         if not request.htmx:
             return raise403(request)
 
         search_query = request.GET.get('name', '')
         parent_pk = request.GET.get('parent_pk', '')
-        print(request.GET)
 
-        badges = []
-        if search_query:
-            badges = Badge.objects.filter(name__icontains=search_query)
+        course = Course.objects.get(pk=pk)
 
-        return render(request, "core/courses/partial/add_badge_popup.html",context={
-            "badges":badges,
-            "parent_pk":parent_pk,
-        })
+        if request.method == "GET":
+            badges = []
+            if search_query:
+                badges = Badge.objects.filter(name__icontains=search_query)
+                for badge in [item.badge for item in course.items.all()]:
+                    badges = badges.exclude(course_items__badge=badge)
+
+            return render(request, "core/courses/partial/add_badge_popup.html",context={
+                "badges":badges,
+                "parent_pk":parent_pk,
+                "course":course
+            })
+
+
+        child_badge_id = request.POST.get('child_id', '')
+        parent_badge_id = request.POST.get('parent_id', None)
+
+        badge = Badge.objects.get(pk=child_badge_id)
+        parent = None
+        if parent_badge_id:
+            parent = Badge.objects.get(pk=parent_badge_id)
+
+        CourseItem.add_to_course(course, badge, parent)
+
+        return HttpResponse()
+
+    @action(detail=True, methods=['post'])
+    def remove_badge(self, request, pk=None):
+        """
+
+        """
+
+        if not request.htmx:
+            return raise403(request)
+
+        course = Course.objects.get(pk=pk)
+
+        badge_pk = request.POST.get('pk', '')
+        badge = Badge.objects.get(pk=badge_pk)
+
+        course_item = CourseItem.objects.get(badge=badge, course=course)
+        course_item.delete()
+
+        return HttpResponse()

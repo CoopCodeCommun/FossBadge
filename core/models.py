@@ -61,7 +61,10 @@ class User(AbstractUser):
 
     @property
     def has_dream_course(self):
-        return DreamCourse.objects.filter(user=self).exists()
+        if hasattr(self, 'dream_course'):
+            return True
+
+        return False
 
     def get_badges(self):
         """
@@ -487,8 +490,7 @@ class Course(models.Model):
             items.append({
                 "data": {
                     "name":item.badge.name,
-                    "id":str(item.pk),
-                    # "html":f"<div class='text-center m-1'><img src='{src}' class='w-16 h-16 m-auto'/><p>{item.badge.name}</p></div>"
+                    "id":str(item.badge.pk),
                 },
                 "style":{
                     "background-image" : src,
@@ -511,9 +513,9 @@ class Course(models.Model):
             for parent in item.parents.all():
                 edges.append({
                     "data":{
-                        "id":f"{str(parent.pk)}-{str(item.pk)}",
-                        "source":str(parent.pk),
-                        "target":str(item.pk),
+                        "id":f"{str(parent.badge.pk)}-{str(item.badge.pk)}",
+                        "source":str(parent.badge.pk),
+                        "target":str(item.badge.pk),
                     }
                 })
         return edges
@@ -525,7 +527,7 @@ class Course(models.Model):
         return f"{self.name}"
 
 class DreamCourse(Course):
-    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='dream_course', verbose_name="User")
+    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='dream_course', verbose_name="User")
 
 class CourseItem(models.Model):
     """
@@ -538,6 +540,17 @@ class CourseItem(models.Model):
     parents = models.ManyToManyField('self', blank=True, related_name='children', verbose_name="Parent", symmetrical=False)
     course = models.ForeignKey(Course, on_delete=models.CASCADE, related_name='items', verbose_name="Course")
 
+    class Meta:
+        unique_together = [
+            ["course", "badge"]
+        ]
+
     def __str__(self):
         return f"{self.badge} pour {self.course}"
 
+    @staticmethod
+    def add_to_course(course, badge, parent):
+        c = CourseItem.objects.create(course=course,badge=badge)
+        if parent:
+            item = CourseItem.objects.get(badge=parent, course=course)
+            c.parents.add(item)

@@ -1,0 +1,194 @@
+{% load static custom_tags %}
+
+<script src="{% static 'js/cytoscape.min.js' %}" defer></script> {# cytoscape js for the graph #}
+<script src="{% static 'js/dagre.min.js' %}" defer></script> {# Needed for cytoscape-dagre #}
+<script src="{% static 'js/cytoscape-cxtmenu.min.js' %}" defer ></script> {# For context menu #}
+<script src="{% static 'js/cytoscape-dagre.min.js' %}" defer onload="showGraph()"></script> {# For "tree" like display, it is "juste" a layout #}
+<script>
+    const ZOOM_FACTOR = 0.5;
+    var cy;
+    var layout;
+    var menu;
+
+    var nodes = {% autoescape off %}{{ nodes }}{% endautoescape %}
+    var edges = {% autoescape off %}{{ edges }}{% endautoescape %}
+
+
+    function showGraph(){
+        cy = cytoscape({
+            container: document.getElementById('cy'), // container to render in
+
+                elements: {
+                    "nodes" : nodes,
+                    "edges" : edges
+                },
+
+
+            // Stylesheet for the graph
+            style: [
+                {
+                    selector: 'node',
+                    style: {
+                        'background-color': 'white',
+                        'label': 'data(name)',
+                        "width": 75,
+                        "height":75,
+                    }
+                },
+
+                {
+                    selector: 'edge',
+                    style: {
+                        'width': 3,
+                        'line-color': '#ccc',
+                        'target-arrow-color': '#ccc',
+                        'target-arrow-shape': 'triangle',
+                        'curve-style': 'bezier',
+                        'source-endpoint':'outside-to-node-or-label',
+                        'target-endpoint':'outside-to-node-or-label'
+                    }
+                }
+            ],
+
+
+            // Interactions :
+            boxSelectionEnabled: false,
+            autoungrabify:true
+
+
+        });
+
+        cy.on('dblclick', (event) => {
+            zoomIn(event);
+        });
+        {% if editable == True %}
+        menu = cy.cxtmenu({
+            openMenuEvents:"cxttapstart taphold",
+            selector: 'node',
+
+            commands: [
+                {
+                    content: 'Ajouter',
+                    select: function(ele){
+                        let source = ele.id();
+
+                        //htmx
+                        htmx.ajax('GET',`{% url 'core:course-add-badge' course.pk %}?parent_pk=${source}`,"{% popup_content_id %}").then((e)=>{
+                            {% popup_open %}
+                        })
+                    }
+                },
+                {
+                    content: 'Supprimer',
+                    select: function(ele){
+                        removeNode(ele.id())
+                    }
+                },
+                /*{
+                    content: 'Text',
+                    select: function(ele){
+                        console.log( ele.position() );
+                    }
+                }*/
+            ]
+        });
+        {% endif %}
+
+        reloadLayout()
+
+    }
+
+    function reloadLayout(){
+        // I'm forced to reset the layout because else it doesn't work (because of HTMX call ?)
+        layout = cy.layout({
+            name: 'dagre',
+            spacingFactor: 3,
+            padding: 20,
+            rankDir:"TB",
+        })
+        layout.run()
+    }
+
+    // Zoom in to the cursor position
+    function zoomIn(event){
+        let currentZoom = cy.zoom()
+        let data = {
+            level : currentZoom+ZOOM_FACTOR,
+            position : { x : 0 , y : 0 }
+        }
+
+        if (event != null){
+            let clickX = event.position.x
+            let clickY = event.position.y
+            data.position = { x : clickX , y : clickY }
+        }
+
+        cy.zoom(data);
+    }
+
+    // Zoom out to the cursor position
+    function zoomOut(){
+        let currentZoom = cy.zoom()
+        let data = {
+            level : currentZoom-ZOOM_FACTOR,
+            position : { x : 0 , y : 0 }
+        }
+        cy.zoom(data);
+    }
+
+    {% if editable == True %}
+    // Add a badge as a node to cytoscape and as a courseItem to the database
+    function addNode(name,id,img,parent){
+        addNodeToCyto(name,id,img,parent);
+        {% popup_close %};
+
+        let dataAjax = {"child_id" : id }
+        if (parent!==undefined){
+            dataAjax["parent_id"] = parent;
+        }
+
+        htmx.ajax("POST",
+            "{% url 'core:course-add-badge' course.pk %} ",
+            {values:dataAjax, target:'body', swap:'none'}
+        )
+
+    }
+
+    // Add a node to cytoscape
+    function addNodeToCyto(name,id,img,parent){
+        cy.add({
+            group: 'nodes',
+            data: {
+                "name": name,
+                "id":id,
+            },
+            style:{
+                "background-image" : img,
+                "background-fit": "contain"
+            },
+        });
+        if (parent !== undefined){
+            cy.add({
+                group:'edges',
+                data:{
+                    "id":`${parent}-${id}`,
+                    "source":parent,
+                    "target":id ,
+                }
+            })
+        }
+        reloadLayout();
+    }
+    // Remove a courseItem from the database and from cytoscape
+    function removeNode(id){
+        cy.getElementById(id).remove();
+        htmx.ajax("POST",
+            "{% url 'core:course-remove-badge' course.pk %} ",
+            {values:{"pk":id }, target:'body', swap:'none'}
+        )
+        reloadLayout();
+    }
+    {% endif %}
+
+
+</script>

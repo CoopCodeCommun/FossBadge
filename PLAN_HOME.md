@@ -440,11 +440,11 @@ def passeport(self, request, person_pk=None):
             'latest_date': orphan_assignments[0].assigned_date,
         })
 
-    # Structures avec marker pour la carte
-    # Structures with marker for the map
+    # Structures avec marker pour la carte (exclure les orphelins sans structure)
+    # Structures with marker for the map (exclude orphans without structure)
     structures_pks_csv = ','.join(
         str(p['structure'].pk) for p in places_list
-        if p['structure'].marker_id
+        if p['structure'] and p['structure'].marker_id
     )
 
     is_self = request.user.is_authenticated and request.user.pk == person.pk
@@ -489,18 +489,21 @@ Badge (page dédiée d'un badge)
   │
 Lieu (exploration d'un lieu)
   │
-  ├── clic badge           -> /badge/<uuid>/
+  ├── clic badge           -> déplie sur place (<details>) avec lien "Voir le badge" -> /badge/<uuid>/
   ├── clic personne        -> /passeport/<uuid>/
   ├── clic "Forger badge"  -> /badge/create/?structure=<pk>
   │
 Passeport (parcours d'une personne)
   │
+  ├── clic badge           -> déplie le détail assignment (<details>) avec lien "Voir le badge" -> /badge/<uuid>/
   ├── clic lieu            -> /lieu/<uuid>/
-  ├── clic badge           -> /badge/<uuid>/
   ├── clic "Éditer profil" -> modale HTMX (réutilise user_profile_edit.html)
 ```
 
-**Principe** : chaque clic sur un objet lié ouvre sa page dédiée. Pas de dépliable inter-page — les dépliables sont réservés au contenu contextuel sur la même page (ex: détails d'un assignment dans le passeport).
+**Deux modes d'interaction avec un badge** :
+- **Dans la home** : clic → ouvre `/badge/<uuid>/` (navigation vers la page dédiée).
+- **Dans vue lieu et passeport** : clic → déplie sur place (`<details>`) pour montrer le contexte local (notes, qui a assigné, boutons action). Un petit lien "Voir le badge" pointe vers `/badge/<uuid>/` pour les infos complètes.
+- **Raison** : dans lieu/passeport, le contexte est important (quel lieu ? quelle personne ?). Le dépliable garde ce contexte visible. Naviguer vers `/badge/` ferait perdre le fil.
 
 ---
 
@@ -631,11 +634,11 @@ Tout ce qui existe dans les templates Bootstrap classiques, à intégrer progres
 |---------|------------------|--------------------|
 | **Liste badges** | `badges/list.html` + `partials/badge_list.html` | Déjà remplacé par la colonne Badges de `/` |
 | **Détail badge** | `badges/detail.html` | Remplacé par `/badge/<uuid>/` (section B.6) |
-| **Créer badge** | `badges/create.html` | Modale HTMX depuis le focus ou bouton "+" dans la colonne Badges |
-| **Éditer badge** | `badges/edit.html` | Modale HTMX depuis le badge_focus (si permission IsBadgeEditor) |
-| **Supprimer badge** | `badges/delete.html` | Modale confirmation HTMX depuis badge_focus |
-| **Assigner badge** | `partials/badge_assignment.html` | Modale HTMX depuis badge_focus, bouton "Assigner" (si CanAssignBadge) |
-| **Endorser badge** | `partials/badge_endorsement.html` | Modale HTMX depuis badge_focus, bouton "Endorser" (si CanEndorseBadge) |
+| **Créer badge** | `badges/create.html` | Lié depuis "Forger un badge" (recherche + vue lieu) |
+| **Éditer badge** | `badges/edit.html` | Modale HTMX depuis `/badge/<uuid>/` (si IsBadgeEditor) |
+| **Supprimer badge** | `badges/delete.html` | Modale confirmation HTMX depuis `/badge/<uuid>/` (si IsBadgeEditor) |
+| **Assigner badge** | `partials/badge_assignment.html` | Modale HTMX depuis vue lieu + `/badge/<uuid>/` (si CanAssignBadge) |
+| **Endorser badge** | `partials/badge_endorsement.html` | Modale HTMX depuis vue lieu + `/badge/<uuid>/` (si CanEndorseBadge) |
 
 #### C.2 Features Structure (existant dans `core/structures/`)
 
@@ -808,14 +811,13 @@ Forger (créer)
 
 Attribuer (assigner à une personne)
   ├── Vue Lieu : dépliable badge (si admin/éditeur) ← principal
+  ├── Vue Badge /badge/<uuid>/ : bouton (si CanAssignBadge)
   ├── Multi-focus badge+structure : bloc récit (si CanAssignBadge)
-  ├── Multi-focus badge+structure+personne : bloc histoire (si CanAssignBadge)
-  └── Badge detail : bouton existant (inchangé)
+  └── Multi-focus badge+structure+personne : bloc histoire (si CanAssignBadge)
 
 Endosser (structure reconnaît un badge)
   ├── Vue Lieu : dépliable badge d'une autre structure (si admin/éditeur) ← principal
-  ├── Badge focus : bouton dans le détail (si CanEndorseBadge)
-  └── Badge detail : bouton existant (inchangé)
+  └── Vue Badge /badge/<uuid>/ : bouton (si CanEndorseBadge)
 ```
 
 ---
@@ -1072,7 +1074,7 @@ Les anciennes URLs (`/structures/<pk>/`, `/users/<pk>/`, `/users/<pk>/cv/`, `/as
 **Fluidité de navigation** :
 - La home est un **moteur de recherche** (explorer, chercher, découvrir).
 - Lieu et passeport sont des **pages de destination** (partager, lire, explorer un contexte).
-- Les clics dans les pages de destination ne doivent pas renvoyer vers la home. Un badge dans la vue lieu se déplie sur place. Un lieu dans le passeport ouvre `/lieu/`. On ne revient à la home que par le bouton "<- FossBadge".
+- Les clics dans les pages de destination ne doivent pas renvoyer vers la home. Un badge dans la vue lieu se déplie sur place (avec un lien discret vers `/badge/`). Un lieu dans le passeport ouvre `/lieu/`. On ne revient à la home que par le bouton "<- FossBadge".
 
 **Symétrie des 3 objets — chaque focus a sa page dédiée** :
 - Badge → `/badge/<uuid>/` (section B.6). Le badge est central dans l'application : c'est l'objet autour duquel tournent les structures (qui l'émettent/endossent) et les personnes (qui le détiennent).

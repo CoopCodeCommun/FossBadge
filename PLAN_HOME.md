@@ -468,42 +468,50 @@ def passeport(self, request, person_pk=None):
 
 #### B.5 — Liens entre les vues
 
-Les 4 vues (home, lieu, passeport, badge) se lient entre elles. Chaque "focus" dans la home peut être agrandi en page dédiée :
+**Règle fondamentale : le multi-focus ne change pas.**
 
-- **Structure focus** → `/lieu/<uuid>/` (page lieu)
-- **Person focus** → `/passeport/<uuid>/` (page passeport)
-- **Badge focus** → `/badge/<uuid>/` (page badge)
+Le mécanisme de focus et multi-focus dans la home (sections 4 et 9) est un élément central de l'architecture. Il reste **exactement comme il est** : clic sur un badge → badge_focus dans la colonne de gauche. Clic sur un second objet → multi-focus. Les 3 colonnes, les intersections, les boutons ×, tout ça reste intact.
+
+Les pages dédiées (`/lieu/`, `/passeport/`, `/badge/`) sont un **complément**, pas un remplacement. On y accède via un bouton explicite "Ouvrir le détail" dans chaque focus. Ce bouton **sort** de la home vers une page autonome.
+
+**Bouton "Ouvrir le détail" dans chaque focus :**
+- **Structure focus** → bouton "Voir le lieu" → `/lieu/<uuid>/`
+- **Person focus** → bouton "Voir le passeport" → `/passeport/<uuid>/`
+- **Badge focus** → bouton "Voir le badge" → `/badge/<uuid>/`
 
 ```
-Home (recherche)
+Home (recherche + focus + multi-focus)
   │
-  ├── clic structure       -> /lieu/<uuid>/
-  ├── clic personne        -> /passeport/<uuid>/
-  ├── clic badge           -> /badge/<uuid>/
+  ├── clic item            -> focus dans la colonne (comportement existant, inchangé)
+  ├── clic 2e item         -> multi-focus (comportement existant, inchangé)
   │
-Badge (page dédiée d'un badge)
+  ├── dans structure_focus : bouton "Voir le lieu"      -> /lieu/<uuid>/
+  ├── dans person_focus    : bouton "Voir le passeport" -> /passeport/<uuid>/
+  ├── dans badge_focus     : bouton "Voir le badge"     -> /badge/<uuid>/
+  │
+Badge (page dédiée /badge/<uuid>/)
   │
   ├── clic structure       -> /lieu/<uuid>/
   ├── clic personne        -> /passeport/<uuid>/
   ├── boutons action       -> assigner, endosser (modales HTMX)
   │
-Lieu (exploration d'un lieu)
+Lieu (page dédiée /lieu/<uuid>/)
   │
   ├── clic badge           -> déplie sur place (<details>) avec lien "Voir le badge" -> /badge/<uuid>/
   ├── clic personne        -> /passeport/<uuid>/
   ├── clic "Forger badge"  -> /badge/create/?structure=<pk>
   │
-Passeport (parcours d'une personne)
+Passeport (page dédiée /passeport/<uuid>/)
   │
   ├── clic badge           -> déplie le détail assignment (<details>) avec lien "Voir le badge" -> /badge/<uuid>/
   ├── clic lieu            -> /lieu/<uuid>/
   ├── clic "Éditer profil" -> modale HTMX (réutilise user_profile_edit.html)
 ```
 
-**Deux modes d'interaction avec un badge** :
-- **Dans la home** : clic → ouvre `/badge/<uuid>/` (navigation vers la page dédiée).
-- **Dans vue lieu et passeport** : clic → déplie sur place (`<details>`) pour montrer le contexte local (notes, qui a assigné, boutons action). Un petit lien "Voir le badge" pointe vers `/badge/<uuid>/` pour les infos complètes.
-- **Raison** : dans lieu/passeport, le contexte est important (quel lieu ? quelle personne ?). Le dépliable garde ce contexte visible. Naviguer vers `/badge/` ferait perdre le fil.
+**Comportement du clic badge selon le contexte** :
+- **Dans la home** : clic → **focus** dans la colonne (existant, inchangé). Bouton "Voir le badge" dans le focus pour aller vers `/badge/<uuid>/`.
+- **Dans vue lieu et passeport** : clic → **déplie sur place** (`<details>`) pour montrer le contexte local (notes, qui a assigné, boutons action). Lien discret "Voir le badge" vers `/badge/<uuid>/`.
+- **Raison** : dans chaque contexte, on reste dans le flux. On ne quitte la page que par un bouton explicite.
 
 ---
 
@@ -513,7 +521,7 @@ Passeport (parcours d'une personne)
 
 **URL** : `/badge/<uuid>/` (ex: `/badge/e1f2g3h4/`)
 
-**Remplace** : `badges/detail.html` (ancien détail Bootstrap) + `badge_focus.html` (version compacte dans la home).
+**Remplace** : `badges/detail.html` (ancien détail Bootstrap). Le `badge_focus.html` dans la home reste intact — c'est la version compacte. `/badge/<uuid>/` est la version complète, accessible via le bouton "Voir le badge" dans le focus.
 
 #### Design : "Fiche de badge"
 
@@ -675,7 +683,7 @@ Tout ce qui existe dans les templates Bootstrap classiques, à intégrer progres
 1. Vue Lieu (`/lieu/<uuid>/`) — affiche badges, personnes, carte. Réutilise le contenu de `structures/detail.html`.
 2. Vue Passeport (`/passeport/<uuid>/`) — parcours groupé par lieu, dépliable assignment. Réutilise `users/detail.html` + `assignments/detail.html`.
 3. Vue Badge (`/badge/<uuid>/`) — détail badge, structures, détenteurs, carte, boutons action. Remplace `badges/detail.html`.
-4. Mettre à jour les liens : structure_focus -> `/lieu/`, person_focus -> `/passeport/`, badge_focus -> `/badge/`.
+4. Ajouter bouton "Ouvrir le détail" dans chaque focus : structure_focus → `/lieu/`, person_focus → `/passeport/`, badge_focus → `/badge/`. Les focus eux-mêmes restent inchangés.
 5. Bouton "Forger un badge" dans la recherche et dans la vue lieu.
 6. Bloc récit dans le multi-focus : description/critères (badge+structure) + histoire (badge+structure+personne). Utilise les champs existants (`notes`, `assigned_by`).
 
@@ -1022,7 +1030,7 @@ Ce regroupement n'est pas prioritaire — phase 3 ou plus tard. En phase 1, chaq
 |---|---|---|
 | `core/home/index.html` | **Conservé** | Inchangé, page d'accueil recherche |
 | `core/home/partial/search_results.html` | **À modifier** | Ajouter bouton "Forger un badge" |
-| `core/home/partial/badge_focus.html` | **À modifier** | Lien "Voir le badge" pointe vers `/badge/`, lien "Voir le lieu" vers `/lieu/` |
+| `core/home/partial/badge_focus.html` | **À modifier** | Ajouter bouton "Voir le badge" → `/badge/<uuid>/` + lien "Voir le lieu" → `/lieu/<uuid>/` |
 | `core/home/partial/structure_focus.html` | **À modifier** | Lien "Voir le lieu" pointe vers `/lieu/` |
 | `core/home/partial/person_focus.html` | **À modifier** | Lien "Voir le passeport" pointe vers `/passeport/` |
 | `core/home/partial/multi_focus.html` | **À modifier** | Inclure `endorsement_story.html` en bas (section E) |
@@ -1076,11 +1084,13 @@ Les anciennes URLs (`/structures/<pk>/`, `/users/<pk>/`, `/users/<pk>/cv/`, `/as
 - Lieu et passeport sont des **pages de destination** (partager, lire, explorer un contexte).
 - Les clics dans les pages de destination ne doivent pas renvoyer vers la home. Un badge dans la vue lieu se déplie sur place (avec un lien discret vers `/badge/`). Un lieu dans le passeport ouvre `/lieu/`. On ne revient à la home que par le bouton "<- FossBadge".
 
-**Symétrie des 3 objets — chaque focus a sa page dédiée** :
-- Badge → `/badge/<uuid>/` (section B.6). Le badge est central dans l'application : c'est l'objet autour duquel tournent les structures (qui l'émettent/endossent) et les personnes (qui le détiennent).
-- Structure → `/lieu/<uuid>/` (section A).
-- Personne → `/passeport/<uuid>/` (section B).
-- Le badge_focus dans la home devient une vue compacte. Un lien "Voir la fiche complète" pointe vers `/badge/<uuid>/`.
+**Deux niveaux de lecture — focus (compact) et page dédiée (complet)** :
+- Chaque objet a une version compacte (focus dans la home) ET une page dédiée complète.
+- **Le focus et le multi-focus sont le cœur de la home. Ils ne changent pas.** Les pages dédiées sont un complément, pas un remplacement.
+- Badge : focus dans la home (existant) + `/badge/<uuid>/` (section B.6).
+- Structure : focus dans la home (existant) + `/lieu/<uuid>/` (section A).
+- Personne : focus dans la home (existant) + `/passeport/<uuid>/` (section B).
+- Bouton "Ouvrir le détail" dans chaque focus pour aller vers la page dédiée.
 
 **Dépliables plutôt que modales** :
 - Préférer les `<details>` HTML natifs aux modales SweetAlert2 pour les informations contextuelles.

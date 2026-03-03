@@ -288,11 +288,11 @@ def lieu(self, request, structure_pk=None):
 
 **Remplace** : `users/detail.html` (ancien profil) + `users/cv*.html` (anciens CV) + `assignments/list_user_assignment.html`.
 
-Ce n'est pas juste une liste de badges. C'est un **récit de parcours** : les badges sont regroupés par lieu, chaque lieu est une étape du voyage.
+Ce n'est pas juste une liste de badges. C'est un **récit de parcours** en timeline chronologique : les badges apparaissent du plus récent au plus ancien, chaque carte raconte un moment du voyage.
 
 #### B.1 — Design : "Carnet de route"
 
-Direction esthétique : sobre, éditorial, personnel. Même famille visuelle que la home et la vue lieu. Pas de gradient, pas de carte fancy. Juste une page propre qui raconte un parcours.
+Direction esthétique : sobre, éditorial, personnel. Même famille visuelle que la home et la vue lieu. Pas de gradient, pas de carte fancy. Juste une page propre qui raconte un parcours en **timeline chronologique**.
 
 ```
 ┌──────────────────────────────────────────────────────────┐
@@ -303,35 +303,42 @@ Direction esthétique : sobre, éditorial, personnel. Même famille visuelle que
 │                                                          │
 │  ── Parcours ─────────────────────────────────────────── │
 │                                                          │
-│  ┌─ Maison des Canuts ────────────────────────────────┐  │
-│  │  [logo 40px] Maison des Canuts · Lyon 4e           │  │
+│  ┌────────────────────────────────────────────────────┐  │
+│  │  [icon]  Tissage artisanal — Expert                │  │
+│  │          15 mars 2025 · via Maison des Canuts      │  │
+│  │          par Jean Martin                           │  │
 │  │                                                    │  │
-│  │  ┌──────────┐  ┌──────────┐  ┌──────────┐         │  │
-│  │  │ [icon]   │  │ [icon]   │  │ [icon]   │         │  │
-│  │  │ Tissage  │  │ Teinture │  │ Design   │         │  │
-│  │  │ Expert   │  │ Inter.   │  │ Débutant │         │  │
-│  │  │ mars 24  │  │ jan 24   │  │ nov 23   │         │  │
-│  │  └──────────┘  └──────────┘  └──────────┘         │  │
-│  │                                                    │  │
-│  │  [v] Détail "Tissage" (clic pour déplier)          │  │
+│  │  [v] Détail (clic pour déplier)                    │  │
 │  │  ┌──────────────────────────────────────────────┐  │  │
-│  │  │ Attribué le 15 mars 2024                     │  │  │
-│  │  │ par Jean Martin (Maison des Canuts)          │  │  │
-│  │  │                                              │  │  │
 │  │  │ Notes : "Marie a réalisé un projet           │  │  │
 │  │  │ remarquable de tissage Jacquard."            │  │  │
+│  │  │                                              │  │  │
+│  │  │ Voir le badge · Voir le lieu                 │  │  │
 │  │  └──────────────────────────────────────────────┘  │  │
 │  └────────────────────────────────────────────────────┘  │
 │                                                          │
-│  ┌─ FabLab de Villeurbanne ───────────────────────────┐  │
-│  │  [logo 40px] FabLab · Villeurbanne                 │  │
-│  │                                                    │  │
-│  │  ┌──────────┐  ┌──────────┐                        │  │
-│  │  │ [icon]   │  │ [icon]   │                        │  │
-│  │  │ Impres.  │  │ Arduino  │                        │  │
-│  │  │ Expert   │  │ Inter.   │                        │  │
-│  │  │ fev 25   │  │ dec 24   │                        │  │
-│  │  └──────────┘  └──────────┘                        │  │
+│  ┌────────────────────────────────────────────────────┐  │
+│  │  [icon]  Impression 3D — Expert                    │  │
+│  │          2 fév 2025 · via FabLab Villeurbanne      │  │
+│  │          par Alice Durand                          │  │
+│  └────────────────────────────────────────────────────┘  │
+│                                                          │
+│  ┌────────────────────────────────────────────────────┐  │
+│  │  [icon]  Arduino — Intermédiaire                   │  │
+│  │          12 déc 2024 · via FabLab Villeurbanne     │  │
+│  │          par Alice Durand                          │  │
+│  └────────────────────────────────────────────────────┘  │
+│                                                          │
+│  ┌────────────────────────────────────────────────────┐  │
+│  │  [icon]  Teinture — Intermédiaire                  │  │
+│  │          8 jan 2024 · via Maison des Canuts        │  │
+│  │          par Jean Martin                           │  │
+│  └────────────────────────────────────────────────────┘  │
+│                                                          │
+│  ┌────────────────────────────────────────────────────┐  │
+│  │  [icon]  Médiation numérique — Débutant            │  │
+│  │          3 nov 2023 · attribué par Paul Lefèvre    │  │
+│  │          (pas de structure)                         │  │
 │  └────────────────────────────────────────────────────┘  │
 │                                                          │
 │  ── Carte du parcours ────────────────────────────────── │
@@ -347,11 +354,12 @@ Direction esthétique : sobre, éditorial, personnel. Même famille visuelle que
 
 **Principes de design** :
 - En-tête horizontal : avatar (80px) à gauche, nom + adresse + compteurs à droite. Sobre, comme la vue lieu.
-- **Parcours groupé par lieu** : chaque structure est un bloc/carte. Le nom du lieu est un lien vers `/lieu/<uuid>/`.
-- Chaque badge dans le parcours montre : icône, nom, niveau (pastille), date d'obtention.
-- **Clic sur un badge → déplie le détail de l'assignment** (HTMX, `<details>` ou panneau), avec : date, assigné par qui, notes. Pas de redirection, tout sur place.
-- Les lieux sont triés par date du badge le plus récent (le lieu le plus actif en premier).
-- **Carte du parcours** en bas : MapLibre montrant les lieux du parcours.
+- **Timeline chronologique** : les badges sont listés du plus récent au plus ancien. Pas de groupement par structure. Chaque badge est une carte individuelle.
+- Chaque carte badge montre : icône, nom, niveau (pastille), date d'obtention, lieu d'attribution (lien vers `/lieu/<uuid>/`), et qui a attribué.
+- **Si pas de structure** (badge assigné par un utilisateur directement) : la carte affiche "attribué par [nom]" sans mention de lieu.
+- **Égalité de traitement** : un badge attribué par un utilisateur a la même importance qu'un badge attribué via une structure.
+- **Clic sur une carte badge → déplie le détail de l'assignment** (`<details>` natif), avec : notes, lien "Voir le badge" → `/badge/<uuid>/`, lien "Voir le lieu" → `/lieu/<uuid>/`. Pas de redirection, tout sur place.
+- **Carte du parcours** en bas : MapLibre montrant les lieux mentionnés dans la timeline.
 - Boutons conditionnels en pied :
   - "Éditer mon profil" (si `request.user == person`) → modale HTMX réutilisant `user_profile_edit.html`.
   - "Se déconnecter" (si self) en haut à droite.
@@ -366,8 +374,8 @@ Direction esthétique : sobre, éditorial, personnel. Même famille visuelle que
 | Infos personnelles (nom, prénom, adresse) | 70-82 | Oui — en sous-titre de l'en-tête |
 | Bouton "Éditer" profil (HTMX) | 60-67 | Oui — en bas de page si self |
 | Dropdown CV (4 templates) | 39-49 | **Non** — le passeport remplace les CV |
-| Badges (groupés par badge) | 88-97 | **Remplacé** — groupés par lieu |
-| Structures | 99-131 | **Remplacé** — intégré dans le parcours |
+| Badges (groupés par badge) | 88-97 | **Remplacé** — timeline chronologique |
+| Structures | 99-131 | **Remplacé** — chaque structure apparaît dans les cartes de la timeline |
 | Désactiver compte | 133-151 | Oui — tout en bas si self, discret |
 
 #### B.3 — Contenu récupéré de `assignments/detail.html`
@@ -388,72 +396,39 @@ Le détail d'un assignment (badge assigné à une personne) s'affiche **en dépl
 def passeport(self, request, person_pk=None):
     person = get_object_or_404(User, uuid=person_pk)
 
-    # Tous les assignments avec badge et structure
-    # All assignments with badge and structure
+    # Tous les assignments, triés du plus récent au plus ancien (timeline)
+    # All assignments, sorted most recent first (timeline)
     assignments = BadgeAssignment.objects.filter(
         user=person
     ).select_related(
-        'badge', 'badge__issuing_structure', 'badge__issuing_structure__marker',
+        'badge', 'badge__issuing_structure',
         'assigned_by', 'assigned_structure', 'assigned_structure__marker',
     ).order_by('-assigned_date')
 
-    # Grouper par le lieu qui a attribué le badge (assigned_structure).
-    # Si assigned_structure est null, on tombe sur issuing_structure (fallback).
-    # Group by the place that assigned the badge (assigned_structure).
-    # If assigned_structure is null, fall back to issuing_structure.
-    places_dict = {}
-    orphan_assignments = []  # Assignments sans lieu associé / Without associated place
-
+    # Collecter les structures uniques qui ont un marker (pour la carte)
+    # Collect unique structures that have a marker (for the map)
+    structures_seen = set()
     for assignment in assignments:
-        # Le lieu d'attribution prime sur la structure émettrice
-        # The assigning place takes priority over the issuing structure
-        structure = assignment.assigned_structure or assignment.badge.issuing_structure
+        structure = assignment.assigned_structure
+        if structure and structure.marker_id:
+            structures_seen.add(structure.pk)
 
-        if structure is None:
-            # Cas rare : ni assigned_structure ni issuing_structure
-            # Rare case: no assigned_structure nor issuing_structure
-            orphan_assignments.append(assignment)
-            continue
+    structures_pks_csv = ','.join(str(pk) for pk in structures_seen)
 
-        if structure.pk not in places_dict:
-            places_dict[structure.pk] = {
-                'structure': structure,
-                'assignments': [],
-                'latest_date': assignment.assigned_date,
-            }
-        places_dict[structure.pk]['assignments'].append(assignment)
-
-    # Trier par date du badge le plus récent
-    # Sort by most recent badge date
-    places_list = sorted(
-        places_dict.values(),
-        key=lambda p: p['latest_date'],
-        reverse=True,
-    )
-
-    # Ajouter les orphelins à la fin sous "Parcours libre"
-    # Append orphans at the end under "Free path"
-    if orphan_assignments:
-        places_list.append({
-            'structure': None,  # Sera affiché comme "Parcours libre" dans le template
-            'assignments': orphan_assignments,
-            'latest_date': orphan_assignments[0].assigned_date,
-        })
-
-    # Structures avec marker pour la carte (exclure les orphelins sans structure)
-    # Structures with marker for the map (exclude orphans without structure)
-    structures_pks_csv = ','.join(
-        str(p['structure'].pk) for p in places_list
-        if p['structure'] and p['structure'].marker_id
-    )
+    # Nombre de lieux distincts (structures ayant attribué au moins un badge)
+    # Number of distinct places (structures that assigned at least one badge)
+    total_places = len(set(
+        a.assigned_structure_id for a in assignments
+        if a.assigned_structure_id
+    ))
 
     is_self = request.user.is_authenticated and request.user.pk == person.pk
 
     return render(request, 'core/passeport/index.html', {
         'person': person,
-        'places_list': places_list,
+        'assignments': assignments,  # Timeline plate, pas de groupement
         'total_badges': assignments.count(),
-        'total_places': len(places_list),
+        'total_places': total_places,
         'structures_pks_csv': structures_pks_csv,
         'is_self': is_self,
     })
@@ -675,20 +650,20 @@ Tout ce qui existe dans les templates Bootstrap classiques, à intégrer progres
 | Feature | Templates actuels | Intégration prévue |
 |---------|------------------|--------------------|
 | **Détail assignment** | `assignments/detail.html` | Modale HTMX depuis le passeport (clic sur un badge) |
-| **Liste assignments par badge** | `assignments/list_user_assignment.html` | Intégré dans le passeport (badges groupés par lieu) |
+| **Liste assignments par badge** | `assignments/list_user_assignment.html` | Intégré dans le passeport (timeline chronologique) |
 
 #### C.5 Ordre de priorité d'intégration
 
 **Phase 1 — Pages d'exploration**
 1. Vue Lieu (`/lieu/<uuid>/`) — affiche badges, personnes, carte. Réutilise le contenu de `structures/detail.html`.
-2. Vue Passeport (`/passeport/<uuid>/`) — parcours groupé par lieu, dépliable assignment. Réutilise `users/detail.html` + `assignments/detail.html`.
+2. Vue Passeport (`/passeport/<uuid>/`) — timeline chronologique des badges, dépliable assignment. Réutilise `users/detail.html` + `assignments/detail.html`.
 3. Vue Badge (`/badge/<uuid>/`) — détail badge, structures, détenteurs, carte, boutons action. Remplace `badges/detail.html`.
 4. Ajouter bouton "Ouvrir le détail" dans chaque focus : structure_focus → `/lieu/`, person_focus → `/passeport/`, badge_focus → `/badge/`. Les focus eux-mêmes restent inchangés.
 5. Bouton "Forger un badge" dans la recherche et dans la vue lieu.
 6. Bloc récit dans le multi-focus : description/critères (badge+structure) + histoire (badge+structure+personne). Utilise les champs existants (`notes`, `assigned_by`).
 
-**Phase 1.5 — Migration `criteria`** (dès que les pages de base fonctionnent)
-7. Ajouter `criteria` (TextField, blank=True) sur `Badge`. Migration simple. Le champ décrit ce qu'il faut faire pour obtenir le badge (distinct de `description` qui décrit le badge). Afficher `badge.criteria` (si renseigné) à la place de `badge.description` dans les blocs récit du multi-focus et les dépliables.
+**Phase 1.5 — Migration `BadgeCriteria`** (dès que les pages de base fonctionnent)
+7. Créer le modèle `BadgeCriteria` (badge FK, structure FK, criteria TextField, unique_together badge+structure). Chaque structure définit ses propres critères pour chaque badge qu'elle émet ou endosse. Afficher les critères dans les blocs récit du multi-focus, les dépliables lieu/passeport, et la page badge.
 
 **Phase 2 — Boutons d'action**
 8. Vue Lieu : boutons Éditer/Supprimer (si admin), Inviter (modale HTMX).
@@ -842,27 +817,41 @@ Endosser (structure reconnaît un badge)
 
 Pas de carte surélevée ni de fond spécial. Un simple `<details>` HTML natif, stylisé pour s'intégrer au flux.
 
+**Dans le passeport (timeline)** — chaque carte badge est un `<details>`. Le `<summary>` affiche le résumé (icône, nom, date, lieu, assigné par). Le contenu déplié montre les notes et les liens.
+
+```
+┌────────────────────────────────────────────────────┐
+│  [icon]  Tissage artisanal — Expert                │
+│          15 mars 2024 · via Maison des Canuts      │
+│          par Jean Martin                           │
+│                                                    │
+│  [v] (clic pour déplier)                           │
+│  ┌──────────────────────────────────────────────┐  │
+│  │  Notes : "Marie a réalisé un projet          │  │
+│  │  remarquable de tissage Jacquard."           │  │
+│  │                                              │  │
+│  │  Voir le badge · Voir le lieu                │  │
+│  │                                              │  │
+│  │  [▶ Audio 0:45]  [▶ Vidéo 2:12]  (futur)    │  │
+│  └──────────────────────────────────────────────┘  │
+└────────────────────────────────────────────────────┘
+```
+
+**Dans la vue lieu** — les badges sont en grille. Clic sur un badge → déplie dessous :
+
 ```
 ┌─ Maison des Canuts ────────────────────────────────┐
-│  [logo] Maison des Canuts · Lyon 4e                │
-│                                                    │
 │  ┌──────────┐  ┌──────────┐  ┌──────────┐         │
 │  │ Tissage  │  │ Teinture │  │ Design   │         │
 │  │ Expert   │  │ Inter.   │  │ Débutant │         │
-│  │ mars 24  │  │ jan 24   │  │ nov 23   │         │
 │  └─────┬────┘  └──────────┘  └──────────┘         │
 │        │                                           │
 │  ┌─────▼───────────────────────────────────────┐   │
 │  │  Tissage artisanal — Expert                 │   │
-│  │  Attribué le 15 mars 2024                   │   │
-│  │  par Jean Martin (Maison des Canuts)        │   │
+│  │  3 détenteurs · Émis par ce lieu            │   │
 │  │                                             │   │
-│  │  Notes : "Marie a réalisé un projet         │   │
-│  │  remarquable de tissage Jacquard."          │   │
-│  │                                             │   │
-│  │  [▶ Audio 0:45]  [▶ Vidéo 2:12]  (futur)   │   │
+│  │  [Attribuer]  [Endosser]                    │   │
 │  └─────────────────────────────────────────────┘   │
-│                                                    │
 └────────────────────────────────────────────────────┘
 ```
 
@@ -882,7 +871,7 @@ Deux cas dans le multi-focus :
 → En plus, un bloc "À propos de ce badge ici" apparaît sous les colonnes.
 
 **Données affichées (phase 1)** : `badge.description` + `endorsement.notes` (si l'endorsement existe). Ces deux champs existent déjà, pas de migration.
-**Données affichées (après migration `criteria`)** : `badge.criteria` remplace `badge.description` dans ce bloc. Le champ `criteria` décrit spécifiquement ce qu'il faut faire pour obtenir le badge, alors que `description` décrit le badge lui-même.
+**Données affichées (après migration `BadgeCriteria`)** : `BadgeCriteria` de cette structure pour ce badge (si existant). Le champ `criteria` décrit ce qu'il faut faire pour obtenir le badge selon cette structure. `badge.description` reste affiché comme description générale du badge.
 
 ```
 ┌──────────────────┬──────────────────┬──────────────────┐
@@ -895,10 +884,13 @@ Deux cas dans le multi-focus :
 │  ── À propos de ce badge ici ────────────────────────  │
 │                                                        │
 │  Description : "Maîtrise des techniques de tissage…"   │
-│  (badge.description, puis badge.criteria quand dispo)  │
+│  (badge.description — toujours affiché)                │
 │                                                        │
-│  Notes d'endossement : "La Maison des Canuts reconnaît │
-│  ce badge et l'attribue aux artisans…"                 │
+│  Critères de la Maison des Canuts :                    │
+│  "La personne doit démontrer une maîtrise complète…"   │
+│  (BadgeCriteria de cette structure, si existant)       │
+│                                                        │
+│  Notes d'endossement : "Reconnu par la Maison…"        │
 │  (endorsement.notes, si l'endorsement existe)          │
 │                                                        │
 └────────────────────────────────────────────────────────┘
@@ -906,7 +898,7 @@ Deux cas dans le multi-focus :
 
 **Cas 2 : Badge + Structure + Personne sélectionnés (3 items)**
 → Les 3 colonnes montrent les détails.
-→ Le bloc sous les colonnes montre l'**histoire complète** : description/critères + détail de l'assignment (date, assigné par, notes) + médias (futur).
+→ Le bloc sous les colonnes montre l'**histoire complète** : description + critères de la structure + détail de l'assignment (date, assigné par, notes) + médias (futur).
 
 ```
 ┌──────────────────┬──────────────────┬──────────────────┐
@@ -918,7 +910,11 @@ Deux cas dans le multi-focus :
 │  ── Histoire de cet endossement ───────────────────    │
 │                                                        │
 │  Description : "Maîtrise des techniques de tissage…"   │
-│  (badge.criteria si dispo, sinon badge.description)    │
+│  (badge.description)                                   │
+│                                                        │
+│  Critères de la Maison des Canuts :                    │
+│  "La personne doit démontrer…"                         │
+│  (BadgeCriteria si existant)                           │
 │                                                        │
 │  Attribué le 15 mars 2024                              │
 │  par Jean Martin (Maison des Canuts)                   │
@@ -940,24 +936,45 @@ Deux cas dans le multi-focus :
 Dans `multi_focus()` du `HomeViewSet` :
 
 ```python
-# Si badge + structure sélectionnés, chercher les critères et l'endorsement
-# If badge + structure selected, look for criteria and endorsement
+# Si badge + structure sélectionnés, chercher l'endorsement et les critères
+# If badge + structure selected, look for endorsement and criteria
 if selected_badge and selected_structure:
-    endorsement_info = BadgeEndorsement.objects.filter(
-        badge=selected_badge,
-        structure=selected_structure,
-    ).first()
+    # unique_together (badge, structure) — .get() est correct
+    # Mais l'endorsement peut ne pas exister (sélection libre dans le multi-focus)
+    try:
+        endorsement_info = BadgeEndorsement.objects.get(
+            badge=selected_badge,
+            structure=selected_structure,
+        )
+    except BadgeEndorsement.DoesNotExist:
+        endorsement_info = None
     context['endorsement_info'] = endorsement_info
-    # criteria sera sur selected_badge.criteria (après migration)
+
+    # Critères de cette structure pour ce badge (après migration BadgeCriteria)
+    # This structure's criteria for this badge (after BadgeCriteria migration)
+    try:
+        badge_criteria = BadgeCriteria.objects.get(
+            badge=selected_badge,
+            structure=selected_structure,
+        )
+    except BadgeCriteria.DoesNotExist:
+        badge_criteria = None
+    context['badge_criteria'] = badge_criteria
 
 # Si les 3 sont sélectionnés, chercher aussi l'assignment
 # If all 3 are selected, also look for the assignment
 if selected_badge and selected_structure and selected_person:
-    endorsement_assignment = BadgeAssignment.objects.filter(
-        badge=selected_badge,
-        assigned_structure=selected_structure,
-        user=selected_person,
-    ).select_related('assigned_by').first()
+    # unique_together (badge, assigned_structure, user)
+    try:
+        endorsement_assignment = BadgeAssignment.objects.select_related(
+            'assigned_by'
+        ).get(
+            badge=selected_badge,
+            assigned_structure=selected_structure,
+            user=selected_person,
+        )
+    except BadgeAssignment.DoesNotExist:
+        endorsement_assignment = None
     context['endorsement_assignment'] = endorsement_assignment
 ```
 
@@ -969,13 +986,40 @@ if selected_badge and selected_structure and selected_person:
 - `BadgeAssignment.notes` : le champ actuel suffit pour afficher le texte.
 - `BadgeAssignment.assigned_by` : qui a assigné.
 - `BadgeAssignment.assigned_date` : quand.
-- `BadgeEndorsement.notes` : notes de l'endorsement (critères informels).
-- `Badge.description` : affiché dans le bloc "À propos" en attendant `criteria`.
-- Pas besoin de migration.
+- `BadgeEndorsement.notes` : notes de l'endorsement.
+- `Badge.description` : description générale du badge, toujours affichée.
+- Pas besoin de migration. Le bloc "À propos" affiche `badge.description` + `endorsement.notes`.
 
 **Phase 1.5** — migration prioritaire, dès que lieu + passeport fonctionnent :
 
-1. **Ajouter `criteria` sur `Badge`** : `TextField(blank=True)`. Critères d'attribution publics. Distinct de `description` (qui décrit le badge) — `criteria` décrit ce qu'il faut faire pour l'obtenir. Dans les templates, afficher `badge.criteria or badge.description` pour rétrocompatibilité.
+1. **Modèle `BadgeCriteria`** — les critères d'attribution d'un badge par une structure.
+
+   Chaque structure qui émet ou endosse un badge peut définir **ses propres critères** pour l'obtenir. Ce n'est pas un champ sur Badge (qui serait global), c'est un objet lié à un couple (badge, structure).
+
+   ```python
+   class BadgeCriteria(models.Model):
+       uuid = models.UUIDField(primary_key=True, default=uuid4)
+       badge = models.ForeignKey(Badge, on_delete=models.CASCADE, related_name='criteria_set')
+       structure = models.ForeignKey(Structure, on_delete=models.CASCADE, related_name='badge_criteria')
+       criteria = models.TextField(verbose_name="Critères d'attribution")
+
+       class Meta:
+           unique_together = [['badge', 'structure']]
+           verbose_name = "Critères d'attribution"
+           verbose_name_plural = "Critères d'attribution"
+   ```
+
+   **Comportement** :
+   - Quand une structure **endosse** un badge, on lui propose de définir ses critères ou de **copier** ceux d'une autre structure (copie simple, pas de FK entre critères — si l'original change, la copie reste inchangée).
+   - Quand une structure **émet** un badge, elle peut aussi définir des critères (c'est la structure émettrice qui donne le "standard").
+   - Unique `(badge, structure)` : une structure a un seul jeu de critères par badge.
+
+   **Affichage** :
+   - Multi-focus badge+structure → `BadgeCriteria.objects.filter(badge=X, structure=Y).first()`.
+   - Passeport (dépliable assignment) → on connaît badge + `assigned_structure` → même lookup.
+   - Vue badge `/badge/<uuid>/` → tous les `BadgeCriteria` de ce badge, groupés par structure.
+   - Vue lieu → dépliable badge → critères de ce lieu pour ce badge.
+   - **Quand `assigned_structure` est null** (un utilisateur assigne sans structure) → pas de critères à afficher. On montre seulement les notes de l'assignment.
 
 **Phase 3** — enrichir les récits :
 
@@ -1000,7 +1044,7 @@ Le `level` (débutant / intermédiaire / expert) est un champ du modèle **Badge
 
 **Conséquences sur l'affichage** :
 
-1. **Passeport** : dans le bloc d'un lieu, une personne peut avoir "Tissage Débutant" (jan 2024) et "Tissage Expert" (mars 2025). Les deux apparaissent comme des badges distincts, triés par date. C'est naturel — ça raconte une progression.
+1. **Passeport** : dans la timeline, une personne peut avoir "Tissage Débutant" (jan 2024) et "Tissage Expert" (mars 2025). Les deux apparaissent comme des cartes distinctes, triées par date. C'est naturel — ça raconte une progression.
 
 2. **Vue Badge** : la page `/badge/<uuid>/` ne montre qu'un seul niveau. Mais dans la section détenteurs, on pourrait montrer que certains détenteurs ont aussi le niveau supérieur/inférieur. C'est du futur — pour l'instant, chaque badge est indépendant.
 
@@ -1038,7 +1082,7 @@ Ce regroupement n'est pas prioritaire — phase 3 ou plus tard. En phase 1, chaq
 | `core/users/detail.html` | **Remplacé** par `core/passeport/index.html` | Contenu migré (voir B.2) |
 | `core/users/cv*.html` (4 fichiers) | **Remplacé** par le passeport | Le passeport EST le CV |
 | `core/assignments/detail.html` | **Remplacé** | Dépliable dans le passeport |
-| `core/assignments/list_user_assignment.html` | **Remplacé** | Intégré dans le passeport (groupé par lieu) |
+| `core/assignments/list_user_assignment.html` | **Remplacé** | Intégré dans le passeport (timeline chronologique) |
 | `core/badges/detail.html` | **Remplacé** par `core/badge_page/index.html` | Contenu migré vers `/badge/<uuid>/` (section B.6) |
 | `core/badges/create.html` | **Conservé** | Lié depuis "Forger un badge" |
 | `core/badges/partials/badge_assignment.html` | **Conservé** | Réutilisé en modale HTMX (phase 2) |
@@ -1099,7 +1143,8 @@ Les anciennes URLs (`/structures/<pk>/`, `/users/<pk>/`, `/users/<pk>/cv/`, `/as
 
 **Le passeport remplace le CV** :
 - Les 4 templates CV (`cv.html`, `cv_bootstrap.html`, `cv_material.html`, `cv_liquid_glass.html`) disparaissent.
-- Le passeport est le seul format. Il est imprimable via `@media print` en CSS.
+- Le passeport est le seul format : une **timeline chronologique** des badges reçus, du plus récent au plus ancien. Chaque carte badge raconte un moment — qui a attribué, quel lieu, quelles notes.
+- Il est imprimable via `@media print` en CSS.
 - Le dropdown "Voir mon CV" dans l'ancien profil disparaît.
 
 **Pas de sur-ingénierie audio/vidéo** :

@@ -6,7 +6,7 @@ from django.core.signing import SignatureExpired
 from django.core.validators import validate_email
 from django.http import HttpResponse, JsonResponse
 from django.shortcuts import render, get_object_or_404, redirect
-from django.db.models import Q
+from django.db.models import Q, Exists, OuterRef, Count
 from django.urls import reverse
 from django_htmx.http import HttpResponseClientRedirect
 from rest_framework import viewsets
@@ -512,6 +512,77 @@ class HomeViewSet(viewsets.ViewSet):
             })
 
         return JsonResponse({'type': 'FeatureCollection', 'features': features})
+
+    @action(detail=False, methods=["GET"], url_path="lieu/(?P<structure_pk>[^/.]+)")
+    def lieu(self, request, structure_pk=None):
+        """
+        Page dédiée d'un lieu (structure).
+        Affiche toutes les informations d'une structure sur une seule page :
+        en-tête, badges émis et endossés, membres, référent.
+        Ce n'est plus de la recherche, c'est de l'exploration.
+        / Dedicated structure page — shows all info on a single scrollable page.
+
+        LOCALISATION : core/views.py → HomeViewSet.lieu()
+
+        FLUX :
+        1. Reçoit GET depuis un lien /lieu/<uuid>/ (home, focus, ou URL directe)
+        2. Charge la structure avec son marker (select_related)
+        3. Récupère les badges émis et endossés (sans doublons)
+        4. Récupère les membres avec leur rôle annoté (admin/éditeur) et leur nombre de badges
+        5. Calcule les permissions (is_admin, is_editor) pour les boutons conditionnels
+        6. Rend la page complète core/lieu/index.html
+        """
+        structure = get_object_or_404(
+            Structure.objects.select_related('marker'), uuid=structure_pk
+        )
+
+        # Badges émis par cette structure
+        # Badges issued by this structure
+        issued_badges = Badge.objects.filter(
+            issuing_structure=structure
+        ).select_related('issuing_structure')
+
+        # Badges endossés par cette structure (on exclut ceux déjà émis pour éviter les doublons)
+        # Badges endorsed by this structure (exclude already issued to avoid duplicates)
+        endorsed_badges = Badge.objects.filter(
+            endorsements__structure=structure
+        ).exclude(
+            issuing_structure=structure
+        ).select_related('issuing_structure')
+
+        # Nombre total de badges liés (pour l'affichage)
+        # Total badge count (for display)
+        badges_total_count = issued_badges.count() + endorsed_badges.count()
+
+        # Membres avec annotation du rôle et du nombre de badges
+        # Members with role annotation and badge count
+        members_list = User.objects.filter(
+            Q(structures_admins=structure)
+            | Q(structures_editors=structure)
+            | Q(structures_users=structure)
+        ).annotate(
+            is_structure_admin=Exists(
+                structure.admins.filter(pk=OuterRef('pk'))
+            ),
+            is_structure_editor=Exists(
+                structure.editors.filter(pk=OuterRef('pk'))
+            ),
+            badge_count_for_member=Count('badge_assignments', distinct=True),
+        ).distinct()
+
+        # Permissions
+        is_admin = structure.is_admin(request.user) if request.user.is_authenticated else False
+        is_editor = structure.is_editor(request.user) if request.user.is_authenticated else False
+
+        return render(request, 'core/lieu/index.html', {
+            'structure': structure,
+            'issued_badges': issued_badges,
+            'endorsed_badges': endorsed_badges,
+            'badges_total_count': badges_total_count,
+            'members_list': members_list,
+            'is_admin': is_admin,
+            'is_editor': is_editor,
+        })
 
 class BadgeViewSet(viewsets.ViewSet):
     """

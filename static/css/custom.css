@@ -1180,3 +1180,212 @@ picture.text-center img.badge-icon {
         height: 36px;
     }
 }
+
+/* ============================================================
+   LIEU — Page dédiée d'une structure
+   LIEU — Dedicated structure page
+   ============================================================ */
+
+/* Conteneur de la page lieu — largeur éditoriale sobre
+   Lieu page container — editorial sober width */
+.lieu-page-container {
+    max-width: 900px;
+}
+
+/* En-tête horizontal : logo à gauche, infos à droite
+   Horizontal header: logo on the left, info on the right */
+.lieu-header {
+    display: flex;
+    align-items: flex-start;
+    gap: 1.25rem;
+}
+
+.lieu-header-logo {
+    width: 80px;
+    height: 80px;
+    flex-shrink: 0;
+    border-radius: 12px;
+    overflow: hidden;
+    background-color: #f8f9fa;
+}
+
+.lieu-header-logo picture,
+.lieu-header-logo picture img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.lieu-header-logo-placeholder {
+    width: 80px;
+    height: 80px;
+    font-size: 2rem;
+}
+
+.lieu-header-info {
+    flex: 1;
+    min-width: 0;
+}
+
+.lieu-header-name {
+    font-size: 1.6rem;
+    font-weight: 600;
+    color: #202124;
+    margin-bottom: 0.15rem;
+    line-height: 1.2;
+}
+
+.lieu-header-meta {
+    font-size: 0.9rem;
+}
+
+.lieu-header-description {
+    font-size: 0.88rem;
+    line-height: 1.5;
+}
+
+/* Boutons admin discrets / Discreet admin buttons */
+.lieu-admin-actions {
+    display: flex;
+    gap: 0.4rem;
+}
+
+.lieu-admin-actions .btn {
+    padding: 0.25rem 0.6rem;
+    font-size: 0.78rem;
+    margin: 0;
+}
+
+/* Mini carte MapLibre / Mini MapLibre map */
+.lieu-mini-map {
+    height: 180px;
+    border-radius: 12px;
+    overflow: hidden;
+    border: 1px solid #e8eaed;
+}
+
+#lieu-map {
+    width: 100%;
+    height: 100%;
+}
+
+/* Grille de badges / Badge grid */
+.lieu-badges-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: 0.25rem;
+}
+
+/* Nom de badge + tag sur une ligne : le nom tronque, le tag reste visible
+   Badge name + tag on one line: name truncates, tag stays visible */
+.lieu-badge-name-row {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+    max-width: 100%;
+    white-space: normal;
+    overflow: visible;
+    text-overflow: initial;
+}
+
+.lieu-badge-name-text {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    min-width: 0;
+}
+
+.lieu-badge-name-row .home-relation-tag {
+    flex-shrink: 0;
+}
+
+/* Carte badge dépliable / Expandable badge card */
+.lieu-badge-card {
+    border-radius: 12px;
+    transition: background-color 0.15s ease;
+}
+
+.lieu-badge-card[open] {
+    background-color: #f8f9fa;
+}
+
+.lieu-badge-card summary {
+    cursor: pointer;
+    list-style: none;
+}
+
+.lieu-badge-card summary::-webkit-details-marker {
+    display: none;
+}
+
+.lieu-badge-card summary::marker {
+    display: none;
+    content: '';
+}
+
+/* Contenu déplié du badge / Expanded badge content */
+.lieu-badge-details {
+    padding: 0.5rem 0.75rem 0.75rem 3.5rem;
+    font-size: 0.85rem;
+    color: #5f6368;
+    line-height: 1.5;
+    animation: homeResultFadeIn 0.15s ease both;
+}
+
+.lieu-badge-link {
+    font-size: 0.82rem;
+    font-weight: 500;
+    color: var(--home-color-badges);
+    text-decoration: none;
+}
+
+.lieu-badge-link:hover {
+    text-decoration: underline;
+}
+
+/* Note émetteur dans les badges endossés / Issuer note in endorsed badges */
+.lieu-badge-issuer-note {
+    font-size: 0.82rem;
+}
+
+/* Section référent / Referent section */
+.lieu-referent {
+    padding: 0.75rem 0;
+}
+
+/* SIRET discret / Discreet SIRET */
+.lieu-siret {
+    font-size: 0.78rem;
+    opacity: 0.7;
+}
+
+/* ---- Responsive lieu / Responsive lieu ---- */
+@media (max-width: 768px) {
+    .lieu-header {
+        gap: 0.75rem;
+    }
+
+    .lieu-header-logo {
+        width: 60px;
+        height: 60px;
+    }
+
+    .lieu-header-logo-placeholder {
+        width: 60px;
+        height: 60px;
+        font-size: 1.5rem;
+    }
+
+    .lieu-header-name {
+        font-size: 1.3rem;
+    }
+
+    .lieu-mini-map {
+        height: 140px;
+    }
+
+    .lieu-badges-grid {
+        grid-template-columns: 1fr;
+    }
+}

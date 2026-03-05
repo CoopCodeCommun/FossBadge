@@ -15,7 +15,7 @@ from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.decorators import action,authentication_classes, permission_classes
 from .helpers import TokenHelper
 from .helpers.utils import get_or_create_user, invite_user_to_structure
-from .models import Structure, Badge, User, BadgeAssignment, BadgeEndorsement
+from .models import Structure, Badge, User, BadgeAssignment, BadgeEndorsement, BadgeCriteria
 from .forms import BadgeForm, StructureForm, UserForm, PartialUserForm
 import sweetify
 
@@ -80,10 +80,18 @@ class HomeViewSet(viewsets.ViewSet):
     """
 
     def list(self, request):
-        # Page d'accueil — champ de recherche centré, pas de données
-        # Home page — centered search field, no data
+        # Page d'accueil — champ de recherche centré + nuage de mots des badges
+        # Home page — centered search field + badge word cloud
+
+        # Tous les noms de badges pour le nuage de mots
+        # / All badge names for the word cloud
+        all_badge_names_for_cloud = list(
+            Badge.objects.values_list('name', flat=True).order_by('?')
+        )
+
         return render(request, 'core/home/index.html', {
             'title': 'FossBadge',
+            'badge_names_for_cloud': all_badge_names_for_cloud,
         })
 
     @action(detail=False, methods=["GET"])
@@ -373,6 +381,41 @@ class HomeViewSet(viewsets.ViewSet):
                     | Q(endorsements__structure=selected_structure)
                 ).distinct()
 
+        # Si badge + structure sélectionnés, chercher les critères d'attribution
+        # If badge + structure selected, look for attribution criteria
+        badge_criteria_for_story = None
+        if selected_badge and selected_structure:
+            badge_criteria_for_story = BadgeCriteria.objects.filter(
+                badge=selected_badge, structure=selected_structure
+            ).first()
+
+        # Si badge + structure sélectionnés, chercher l'endorsement entre les deux
+        # If badge + structure selected, look for endorsement between them
+        endorsement_info = None
+        if selected_badge and selected_structure:
+            try:
+                endorsement_info = BadgeEndorsement.objects.get(
+                    badge=selected_badge,
+                    structure=selected_structure,
+                )
+            except BadgeEndorsement.DoesNotExist:
+                endorsement_info = None
+
+        # Si badge + structure + personne, chercher aussi l'assignment
+        # If badge + structure + person, also look for the assignment
+        endorsement_assignment = None
+        if selected_badge and selected_structure and selected_person:
+            try:
+                endorsement_assignment = BadgeAssignment.objects.select_related(
+                    'assigned_by'
+                ).get(
+                    badge=selected_badge,
+                    assigned_structure=selected_structure,
+                    user=selected_person,
+                )
+            except BadgeAssignment.DoesNotExist:
+                endorsement_assignment = None
+
         search_query_for_back = request.GET.get('q', '')
         category_filters = read_category_filters(request)
 
@@ -391,6 +434,9 @@ class HomeViewSet(viewsets.ViewSet):
             'items_count': provided_params_count,
             'search_query': search_query_for_back,
             'multi_structures_pks': multi_structures_pks,
+            'endorsement_info': endorsement_info,
+            'endorsement_assignment': endorsement_assignment,
+            'badge_criteria_for_story': badge_criteria_for_story,
             **category_filters,
         }
 
@@ -582,15 +628,24 @@ class HomeViewSet(viewsets.ViewSet):
         # / Annotate each badge with action permissions for the current user.
         user_can_manage_badges = is_admin or is_editor
 
+        # Charger tous les critères de cette structure en un seul appel
+        # Load all criteria for this structure in a single query
+        all_criteria_for_structure = {
+            c.badge_id: c
+            for c in BadgeCriteria.objects.filter(structure=structure)
+        }
+
         issued_badges_list = list(issued_badges)
         for badge_item in issued_badges_list:
             badge_item.can_assign = user_can_manage_badges
             badge_item.can_endorse = False  # Badge émis par cette structure / Issued by this structure
+            badge_item.criteria_for_lieu = all_criteria_for_structure.get(badge_item.pk)
 
         endorsed_badges_list = list(endorsed_badges)
         for badge_item in endorsed_badges_list:
             badge_item.can_assign = user_can_manage_badges
             badge_item.can_endorse = False  # Déjà endossé par cette structure / Already endorsed
+            badge_item.criteria_for_lieu = all_criteria_for_structure.get(badge_item.pk)
 
         return render(request, 'core/lieu/index.html', {
             'structure': structure,
@@ -649,6 +704,26 @@ class HomeViewSet(viewsets.ViewSet):
             if a.assigned_structure_id
         ))
 
+        # Charger les critères pour chaque assignment (badge + structure d'attribution)
+        # Load criteria for each assignment (badge + assigning structure)
+        criteria_lookup_keys = set()
+        for assignment in all_assignments_for_person:
+            if assignment.assigned_structure_id:
+                criteria_lookup_keys.add((assignment.badge_id, assignment.assigned_structure_id))
+
+        all_criteria_for_passeport = {}
+        if criteria_lookup_keys:
+            all_criteria_qs = BadgeCriteria.objects.filter(
+                Q(*[Q(badge_id=b, structure_id=s) for b, s in criteria_lookup_keys])
+            )
+            for c in all_criteria_qs:
+                all_criteria_for_passeport[(c.badge_id, c.structure_id)] = c
+
+        for assignment in all_assignments_for_person:
+            assignment.criteria_for_passeport = all_criteria_for_passeport.get(
+                (assignment.badge_id, assignment.assigned_structure_id)
+            )
+
         # Est-ce que l'utilisateur regarde son propre passeport ?
         # Is the user viewing their own passport?
         is_self = request.user.is_authenticated and request.user.pk == person.pk
@@ -704,6 +779,12 @@ class HomeViewSet(viewsets.ViewSet):
             badge=badge
         ).select_related('user', 'assigned_structure').order_by('-assigned_date')
 
+        # Critères d'attribution par structure pour ce badge
+        # Attribution criteria by structure for this badge
+        all_criteria_for_badge = BadgeCriteria.objects.filter(
+            badge=badge
+        ).select_related('structure')
+
         # Permissions
         # / Permissions
         is_badge_editor = False
@@ -745,6 +826,7 @@ class HomeViewSet(viewsets.ViewSet):
             'can_assign': can_assign,
             'can_endorse': can_endorse,
             'structures_pks_csv': structures_pks_csv,
+            'all_criteria_for_badge': all_criteria_for_badge,
         })
 
 class BadgeViewSet(viewsets.ViewSet):

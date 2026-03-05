@@ -1,93 +1,246 @@
-<div id="customPopup">
-    <div id="customPopup-content">
-        <button onclick="hidepopup()">CLose</button>
-        HIIIIII
-    </div>
+{# LOCALISATION : templates/includes/popup.html #}
+{# Système de popup/modale réutilisable pour les formulaires HTMX. #}
+{# Le contenu est injecté par hx-target="#customPopup-content". #}
+{# / Reusable popup/modal system for HTMX forms. #}
+{# Content is injected via hx-target="#customPopup-content". #}
+
+<div id="customPopup" aria-modal="true" role="dialog">
     <div id="customPopup-bg"></div>
+    <div id="customPopup-content">
+    </div>
 </div>
 
 <style>
-    {# Animation partially from https://codepen.io/fxm90/pen/KMMBNw #}
-    #customPopup{
+    /* ---- Popup/Modale sobre et accessible ---- */
+    /* ---- Sober and accessible popup/modal ---- */
+
+    #customPopup {
         visibility: hidden;
-        transition: visibility 0ms linear 0.3s;
+        position: fixed;
+        inset: 0;
+        z-index: 1050;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: visibility 0ms linear 0.25s;
     }
 
-    #customPopup.showed{
+    #customPopup.showed {
         visibility: visible;
         transition: visibility 0ms;
     }
 
-    #customPopup #customPopup-content{
-        width:40%;
-        min-height:10%;
-        min-width:400px;
-
-        /* Position */
-        position : fixed;
-        left : 50%;
-        top : 50%;
-        z-index : 20;
-        padding : 40px;
-
-
-        border : solid black 1px;
-        border-radius : 10px;
-        background-color : white;
-        animation: hide-popup 0.3s forwards;
-    }
-
-    #customPopup.showed #customPopup-content{
-        animation: show-popup 0.3s forwards;
-    }
-
-    #customPopup #customPopup-bg{
-        width:100%;
-        height : 100%;
+    /* Fond semi-transparent / Semi-transparent backdrop */
+    #customPopup-bg {
         position: absolute;
-        left:0;
-        top:0;
-        background-color : rgba(0,0,0,0.5);
-        z-index : 0;
-        opacity:0;
-        transition: opacity 0.3s ease-in-out;
+        inset: 0;
+        background-color: rgba(0, 0, 0, 0.4);
+        opacity: 0;
+        transition: opacity 0.25s ease;
     }
 
-    #customPopup.showed #customPopup-bg{
+    #customPopup.showed #customPopup-bg {
         opacity: 1;
     }
 
-    @keyframes show-popup {
-        0% {
-            transform: translate(-50%, -50%) scale(0.7);
-            opacity: 0;
-        }
-        100% {
-            transform: translate(-50%, -50%) scale(1);
-        }
+    /* Contenu de la modale / Modal content */
+    #customPopup-content {
+        position: relative;
+        z-index: 1;
+        width: 92%;
+        max-width: 480px;
+        max-height: 85vh;
+        overflow-y: auto;
+        padding: 2rem 1.75rem 1.5rem;
+        background-color: #fff;
+        border-radius: 16px;
+        box-shadow: 0 8px 40px rgba(0, 0, 0, 0.12);
+        transform: translateY(12px) scale(0.97);
+        opacity: 0;
+        transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1),
+                    opacity 0.25s ease;
     }
 
-    @keyframes hide-popup {
-        0% {
-            transform: translate(-50%, -50%) scale(1);
-            opacity: 1;
-        }
-        100% {
-            transform: translate(-50%, -50%) scale(0.5);
-            opacity: 0;
-        }
+    #customPopup.showed #customPopup-content {
+        transform: translateY(0) scale(1);
+        opacity: 1;
     }
 
+    /* ---- Style des formulaires dans la modale ---- */
+    /* ---- Form styles inside the modal ---- */
+
+    /* Titre du formulaire / Form title */
+    #customPopup-content h2 {
+        font-size: 1.15rem;
+        font-weight: 600;
+        color: #202124;
+        margin-bottom: 1.25rem;
+        padding-bottom: 0.75rem;
+        border-bottom: 1px solid #e8eaed;
+    }
+
+    /* Labels / Labels */
+    #customPopup-content label {
+        display: block;
+        font-size: 0.85rem;
+        font-weight: 500;
+        color: #5f6368;
+        margin-bottom: 0.3rem;
+    }
+
+    /* Selects et inputs / Selects and inputs */
+    #customPopup-content .form-select,
+    #customPopup-content .form-control {
+        font-size: 0.9rem;
+        border-radius: 10px;
+        border: 1px solid #dfe1e5;
+        padding: 0.6rem 0.85rem;
+        transition: border-color 0.15s ease, box-shadow 0.15s ease;
+    }
+
+    #customPopup-content .form-select:focus,
+    #customPopup-content .form-control:focus {
+        border-color: #a8c7fa;
+        box-shadow: 0 0 0 3px rgba(66, 133, 244, 0.12);
+        outline: none;
+    }
+
+    /* Textarea limité en hauteur / Textarea height-limited */
+    #customPopup-content textarea.form-control {
+        min-height: 80px;
+        max-height: 150px;
+        resize: vertical;
+    }
+
+    /* Messages d'erreur / Error messages */
+    #customPopup-content .error {
+        font-size: 0.78rem;
+        color: #dc3545;
+        margin-top: 0.25rem;
+        margin-bottom: 0.5rem;
+    }
+
+    /* ---- Barre de boutons en bas du formulaire ---- */
+    /* ---- Button bar at the bottom of the form ---- */
+
+    /* Bouton principal (Envoyer) / Primary button (Submit) */
+    #customPopup-content .btn-primary {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        padding: 0.5rem 1.2rem;
+        font-size: 0.88rem;
+        font-weight: 500;
+        border-radius: 10px;
+        border: none;
+        background-color: #202124;
+        color: #fff;
+        cursor: pointer;
+        transition: background-color 0.15s ease;
+        margin: 0.75rem 0.4rem 0 0;
+    }
+
+    #customPopup-content .btn-primary:hover {
+        background-color: #3c4043;
+    }
+
+    /* Bouton annuler — discret, pas rouge / Cancel button — discreet, not red */
+    #customPopup-content .popup-cancel-btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        padding: 0.5rem 1rem;
+        font-size: 0.85rem;
+        font-weight: 500;
+        border-radius: 10px;
+        border: 1px solid #dfe1e5;
+        background: transparent;
+        color: #5f6368;
+        cursor: pointer;
+        transition: background-color 0.15s ease, color 0.15s ease;
+        margin: 0.75rem 0 0 0;
+    }
+
+    #customPopup-content .popup-cancel-btn:hover {
+        background-color: #f1f3f4;
+        color: #202124;
+    }
+
+    /* Ancien btn-danger utilisé comme annuler — on le neutralise
+       / Old btn-danger used as cancel — neutralize it */
+    #customPopup-content .btn-danger {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        padding: 0.5rem 1rem;
+        font-size: 0.85rem;
+        font-weight: 500;
+        border-radius: 10px;
+        border: 1px solid #dfe1e5;
+        background: transparent;
+        color: #5f6368;
+        cursor: pointer;
+        transition: background-color 0.15s ease, color 0.15s ease;
+        margin: 0.75rem 0 0 0;
+    }
+
+    #customPopup-content .btn-danger:hover {
+        background-color: #f1f3f4;
+        color: #202124;
+    }
+
+    /* Responsive mobile / Mobile responsive */
+    @media (max-width: 768px) {
+        #customPopup-content {
+            width: 96%;
+            max-width: none;
+            padding: 1.5rem 1.25rem 1.25rem;
+            border-radius: 14px;
+            max-height: 90vh;
+        }
+    }
 </style>
 
 <script>
-    function showpopup(){
-        let popup = document.querySelector("#customPopup")
-        popup.classList.add("showed")
+    /**
+     * Ouvre la modale popup.
+     * / Opens the popup modal.
+     * LOCALISATION : templates/includes/popup.html
+     */
+    function showpopup() {
+        var popup = document.getElementById('customPopup');
+        popup.classList.add('showed');
+        document.body.style.overflow = 'hidden';
     }
 
-    function hidepopup(){
-        let popup = document.querySelector("#customPopup")
-        popup.classList.remove("showed")
+    /**
+     * Ferme la modale popup et restore le scroll.
+     * / Closes the popup modal and restores scroll.
+     * LOCALISATION : templates/includes/popup.html
+     */
+    function hidepopup() {
+        var popup = document.getElementById('customPopup');
+        popup.classList.remove('showed');
+        document.body.style.overflow = '';
     }
+
+    /* Fermer la modale au clic sur le fond / Close modal on backdrop click */
+    document.addEventListener('DOMContentLoaded', function () {
+        var backdrop = document.getElementById('customPopup-bg');
+        if (backdrop) {
+            backdrop.addEventListener('click', function () {
+                hidepopup();
+            });
+        }
+    });
+
+    /* Fermer avec Escape / Close with Escape key */
+    document.addEventListener('keydown', function (event) {
+        if (event.key === 'Escape') {
+            var popup = document.getElementById('customPopup');
+            if (popup && popup.classList.contains('showed')) {
+                hidepopup();
+            }
+        }
+    });
 </script>

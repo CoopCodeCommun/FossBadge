@@ -433,3 +433,24 @@ class BadgeEndorsement(models.Model):
 
     def __str__(self):
         return f"{self.badge.name} approuvé par {self.structure.name} le {self.endorsed_date.strftime('%d/%m/%Y')}"
+
+
+class BadgeCriteria(models.Model):
+    """
+    Critères d'attribution d'un badge par une structure.
+    Chaque structure peut définir ses propres critères pour un badge donné.
+    / Attribution criteria for a badge by a structure.
+    Each structure can define its own criteria for a given badge.
+    """
+    uuid = models.UUIDField(primary_key=True, default=uuid.uuid7)
+    badge = models.ForeignKey(Badge, on_delete=models.CASCADE, related_name='criteria_set')
+    structure = models.ForeignKey(Structure, on_delete=models.CASCADE, related_name='badge_criteria')
+    criteria = models.TextField(verbose_name="Critères d'attribution")
+
+    class Meta:
+        unique_together = [['badge', 'structure']]
+        verbose_name = "Critères d'attribution"
+        verbose_name_plural = "Critères d'attribution"
+
+    def __str__(self):
+        return f"Critères de {self.structure.name} pour {self.badge.name}"

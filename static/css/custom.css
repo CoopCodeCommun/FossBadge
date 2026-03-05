@@ -1853,6 +1853,19 @@ picture.text-center img.badge-icon {
     height: 100%;
 }
 
+/* Critères par structure sur la page badge / Criteria by structure on badge page */
+.badge-page-criteria-item {
+    padding: 0.75rem 1rem;
+    background-color: #f8f9fa;
+    border-radius: 10px;
+    font-size: 0.88rem;
+    line-height: 1.5;
+}
+
+.badge-page-criteria-item p:last-child {
+    margin-bottom: 0;
+}
+
 /* ---- Responsive badge page / Responsive badge page ---- */
 @media (max-width: 768px) {
     .badge-page-header {
@@ -1877,4 +1890,127 @@ picture.text-center img.badge-icon {
     .badge-page-map-container {
         height: 220px;
     }
+
+    .badge-page-actions {
+        flex-direction: column;
+    }
+
+    .badge-page-actions .btn {
+        width: 100%;
+        justify-content: center;
+    }
+}
+
+/* ============================================================
+   ENDORSEMENT STORY — Bloc récit dans le multi-focus
+   ENDORSEMENT STORY — Story block in multi-focus
+   ============================================================ */
+
+/* Titre sobre / Sober title */
+.endorsement-story-title {
+    font-size: 1rem;
+    font-weight: 600;
+    color: #202124;
+    letter-spacing: -0.01em;
+}
+
+/* Description et notes — texte aéré, derniers paragraphes sans marge
+   Description and notes — airy text, last paragraphs without margin */
+.endorsement-story-description p:last-child,
+.endorsement-story-criteria p:last-child,
+.endorsement-story-endorsement-notes p:last-child,
+.endorsement-story-assignment p:last-child {
+    margin-bottom: 0;
+}
+
+/* Séparateurs légers / Light separators */
+.endorsement-story hr {
+    border: none;
+    border-top: 1px solid rgba(0, 0, 0, 0.08);
+}
+
+/* Responsive mobile / Mobile responsive */
+@media (max-width: 768px) {
+    .endorsement-story {
+        padding: 1rem 1rem !important;
+        border-radius: 10px !important;
+    }
+
+    .endorsement-story-title {
+        font-size: 0.95rem;
+    }
+}
+
+
+/* ═══════════════════════════════════════════════════════════════
+   NUAGE DE MOTS — page d'accueil
+   / WORD CLOUD — home page
+   ═══════════════════════════════════════════════════════════════ */
+
+/* Conteneur du nuage : centré, espacement naturel entre les mots */
+/* / Cloud container: centered, natural spacing between words */
+.home-word-cloud {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    align-items: baseline;
+    gap: 0.3rem 0.6rem;
+    max-width: 680px;
+    margin: 1.5rem auto 0;
+    padding: 0 1rem;
+    transition: opacity 0.3s ease, max-height 0.3s ease;
+    opacity: 1;
+    max-height: 400px;
+    overflow: hidden;
+}
+
+/* Masquer le nuage quand les résultats sont affichés */
+/* / Hide cloud when results are shown */
+.home-search-wrapper.has-results .home-word-cloud {
+    opacity: 0;
+    max-height: 0;
+    margin: 0;
+    padding: 0;
+    pointer-events: none;
+}
+
+/* Chaque mot du nuage — taille et opacité variées via nth-child */
+/* / Each cloud word — varied size and opacity via nth-child */
+.home-word-cloud-item {
+    display: inline-block;
+    font-weight: 500;
+    color: #5f6368;
+    white-space: nowrap;
+    cursor: default;
+    transition: color 0.15s ease;
+    line-height: 1.4;
+}
+
+.home-word-cloud-item:hover {
+    color: #202124;
+}
+
+/* Tailles variées pour donner un effet de nuage organique */
+/* / Varied sizes for an organic cloud feel */
+.home-word-cloud-item:nth-child(5n+1) { font-size: 1.15rem; opacity: 0.85; }
+.home-word-cloud-item:nth-child(5n+2) { font-size: 0.82rem; opacity: 0.55; }
+.home-word-cloud-item:nth-child(5n+3) { font-size: 0.95rem; opacity: 0.7; }
+.home-word-cloud-item:nth-child(5n+4) { font-size: 1.3rem;  opacity: 0.9; }
+.home-word-cloud-item:nth-child(5n)   { font-size: 0.75rem; opacity: 0.45; }
+
+/* Quelques mots en couleurs des catégories — subtil */
+/* / Some words in category colors — subtle */
+.home-word-cloud-item:nth-child(7n+1) { color: var(--home-color-badges); }
+.home-word-cloud-item:nth-child(11n+3) { color: var(--home-color-structures); }
+.home-word-cloud-item:nth-child(13n+5) { color: var(--home-color-personnes); }
+
+/* Responsive mobile */
+@media (max-width: 768px) {
+    .home-word-cloud {
+        gap: 0.2rem 0.4rem;
+        margin-top: 1rem;
+        max-width: 100%;
+    }
+    .home-word-cloud-item:nth-child(5n+1) { font-size: 1rem; }
+    .home-word-cloud-item:nth-child(5n+4) { font-size: 1.1rem; }
 }

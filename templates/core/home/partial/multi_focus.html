@@ -123,6 +123,13 @@
                 <div class="home-badge-focus-description">
                     {{ selected_badge.description|linebreaks }}
                 </div>
+
+                {# Lien vers la page dédiée du badge / Link to dedicated badge page #}
+                <a href="/badge/{{ selected_badge.pk }}/"
+                   class="home-detail-link home-detail-link-badges"
+                   data-testid="multi-focus-badge-detail-link">
+                    {% translate "Voir le badge" %} <span aria-hidden="true">&rarr;</span>
+                </a>
             </div>
 
         {% elif intersection_type == 'badges' %}
@@ -266,6 +273,13 @@
                 <div class="home-badge-focus-description">
                     {{ selected_structure.description|linebreaks }}
                 </div>
+
+                {# Lien vers la page dédiée de la structure / Link to dedicated structure page #}
+                <a href="/lieu/{{ selected_structure.pk }}/"
+                   class="home-detail-link home-detail-link-structures"
+                   data-testid="multi-focus-structure-detail-link">
+                    {% translate "Voir la structure" %} <span aria-hidden="true">&rarr;</span>
+                </a>
             </div>
 
         {% elif intersection_type == 'structures' %}
@@ -398,6 +412,13 @@
                         {{ selected_person.get_badges.count }} badge{{ selected_person.get_badges.count|pluralize }}
                     </span>
                 </div>
+
+                {# Lien vers le passeport de la personne / Link to person's passport #}
+                <a href="/passeport/{{ selected_person.pk }}/"
+                   class="home-detail-link home-detail-link-personnes"
+                   data-testid="multi-focus-person-detail-link">
+                    {% translate "Voir le passeport" %} <span aria-hidden="true">&rarr;</span>
+                </a>
             </div>
 
         {% elif intersection_type == 'personnes' %}
@@ -440,3 +461,7 @@
     {% endif %}
 
 </div>
+
+{# Bloc récit d'endossement (sous les colonnes) #}
+{# Endorsement story block (below columns) #}
+{% include "core/home/partial/endorsement_story.html" %}

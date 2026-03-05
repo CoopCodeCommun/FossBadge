@@ -28,11 +28,15 @@
 
         {% if is_badge_editor %}
         <div class="badge-page-admin-actions" data-testid="badge-page-admin-actions">
-            <a href="{% url 'core:badge-edit' pk=badge.pk %}"
+            <button type="button"
                class="btn btn-sm btn-outline-secondary"
+               hx-get="{% url 'core:badge-edit' pk=badge.pk %}"
+               hx-target="#customPopup-content"
+               hx-swap="innerHTML"
+               hx-on:htmx:after-request="showpopup()"
                data-testid="badge-page-edit-btn">
                 {% translate "Éditer" %}
-            </a>
+            </button>
             <a href="{% url 'core:badge-delete' pk=badge.pk %}"
                class="btn btn-sm btn-outline-danger"
                data-testid="badge-page-delete-btn">
@@ -259,7 +263,7 @@
         // Charge les markers des structures liées à ce badge via l'API map_data
         // Loads markers for structures linked to this badge via map_data API
         var structures_pks = "{{ structures_pks_csv }}";
-        fetch("{% url 'core:home-map-data' %}?structures=" + structures_pks)
+        fetch("{% url 'core:home-map-data' %}?pks=" + structures_pks)
             .then(function (response) { return response.json(); })
             .then(function (data) {
                 if (!data.features || data.features.length === 0) return;

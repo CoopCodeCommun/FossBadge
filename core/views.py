@@ -931,13 +931,21 @@ class BadgeViewSet(viewsets.ViewSet):
     @action(detail=True, methods=["get","post"])
     def edit(self, request, pk=None):
         """
-        Edit an existing badge.
+        Modifie un badge existant.
+        Si requete HTMX, retourne le formulaire en partiel pour la modale.
+        / Edit an existing badge. Returns partial for HTMX modal.
+
+        LOCALISATION : core/views.py
         """
         badge = get_object_or_404(Badge, pk=pk)
         if request.method == 'POST':
             form = BadgeForm(request.POST, request.FILES, instance=badge, request=request)
             if form.is_valid():
                 form.save()
+                if request.htmx:
+                    return HttpResponseClientRedirect(
+                        reverse('core:badge-detail', kwargs={'pk': badge.pk})
+                    )
                 return redirect(reverse('core:badge-detail', kwargs={'pk': badge.pk}))
         else:
             form = BadgeForm(instance=badge, request=request)
@@ -946,14 +954,27 @@ class BadgeViewSet(viewsets.ViewSet):
         if badge.icon:
             icon = badge.icon.url
 
+        # Partiel HTMX pour la modale / HTMX partial for modal
+        if request.htmx:
+            return render(request, "core/badges/partial/edit_form.html", {
+                "form": form, "icon": icon, "badge_pk": badge.pk,
+            })
+
         return render(request,"core/badges/edit.html",{"form":form,"icon":icon, "badge_pk":badge.pk})
 
     @action(detail=True, methods=["get", "post"])
     def delete(self, request, pk=None):
         """
-        Delete an existing badge.
+        Supprime un badge existant. Seul un admin de la structure emettrice peut supprimer.
+        / Delete an existing badge. Only admin of the issuing structure can delete.
         """
         badge = get_object_or_404(Badge, pk=pk)
+
+        # Seul un admin de la structure emettrice peut supprimer un badge
+        # / Only admin of the issuing structure can delete a badge
+        if not badge.issuing_structure.is_admin(request.user):
+            return raise403(request)
+
         if request.method == 'POST':
             badge.delete()
             return redirect(reverse('core:badge-list'))
@@ -964,10 +985,14 @@ class BadgeViewSet(viewsets.ViewSet):
     @action(detail=False, methods=['get', 'post'])
     def create_badge(self, request):
         """
-        Create a new badge.
+        Cree un nouveau badge.
+        Si requete HTMX, retourne le formulaire en partiel pour la modale.
+        / Create a new badge. Returns partial for HTMX modal.
+
+        LOCALISATION : core/views.py
         """
 
-        # Pré-remplir le formulaire depuis les query params (recherche ou page lieu)
+        # Pre-remplir le formulaire depuis les query params (recherche ou page lieu)
         # / Pre-fill form from query params (search or structure page)
         default_structure = request.GET.get('structure', '')
         default_name = request.GET.get('name', '')
@@ -976,13 +1001,20 @@ class BadgeViewSet(viewsets.ViewSet):
             form = BadgeForm(request.POST, request.FILES, request=request)
             if form.is_valid():
                 badge = form.save()
-                # Create a history entry for badge creation
+                # Cree une entree historique pour la creation du badge
+                # / Create a history entry for badge creation
                 from .models import BadgeHistory
                 BadgeHistory.objects.create(
                     badge=badge,
                     action="creation",
-                    details="Badge créé"
+                    details="Badge cree"
                 )
+                # Redirige vers la page badge (HTMX ou classique)
+                # / Redirect to badge page (HTMX or classic)
+                if request.htmx:
+                    return HttpResponseClientRedirect(
+                        reverse('core:badge-detail', kwargs={'pk': badge.pk})
+                    )
                 return redirect(reverse('core:badge-detail', kwargs={'pk': badge.pk}))
         else:
             initial_data = {}
@@ -992,11 +1024,17 @@ class BadgeViewSet(viewsets.ViewSet):
                 initial_data['name'] = default_name
             form = BadgeForm(initial=initial_data, request=request)
 
-        # Get all structures for the dropdown
+        # Toutes les structures pour le dropdown / All structures for dropdown
         structures = Structure.objects.all()
 
+        # Partiel HTMX pour la modale / HTMX partial for modal
+        if request.htmx:
+            return render(request, 'core/badges/partial/create_form.html', {
+                'form': form,
+            })
+
         return render(request, 'core/badges/create.html', {
-            'title': 'FossBadge - Forger un Badge',
+            'title': 'O2Badge - Forger un Badge',
             'structures': structures,
             'form': form
         })
@@ -1012,28 +1050,35 @@ class BadgeViewSet(viewsets.ViewSet):
 
         badge = get_object_or_404(Badge, pk=pk)
 
-        # Get only user structure that DO NOT endorse the badge
+        # Structures ou l'user est admin, qui n'endossent PAS encore ce badge
+        # / Structures where user is admin, that do NOT already endorse this badge
         valid_structures = badge.valid_structures
-        user_structures = request.user.structures
-        user_structure_not_endorsing = user_structures.difference(valid_structures)
+        user_admin_structures = Structure.objects.filter(admins=request.user)
+        user_admin_not_endorsing = user_admin_structures.difference(valid_structures)
 
-        # If the user structures already endorse the badge, return an error template
-        if user_structure_not_endorsing.count() == 0:
-            return render(request, "errors/popup_errors.html",context={
-                "error":'Toutes les structures dont vous faites parti ont déjà endosser ce badge'
+        # Si toutes les structures admin endossent deja, erreur
+        # / If all admin structures already endorse, error
+        if user_admin_not_endorsing.count() == 0:
+            return render(request, "errors/popup_errors.html", context={
+                "error": 'Toutes vos structures ont déjà endossé ce badge'
             })
 
         if request.method == "GET":
-            # Pré-remplissage optionnel de la structure (utilisé par la page lieu)
+            # Pre-remplissage optionnel de la structure (utilise par la page lieu)
             # / Optional structure pre-fill (used by the lieu page)
             defaults = {}
             default_structure_pk = request.GET.get('default_structure', '')
             if default_structure_pk:
                 defaults['structure'] = default_structure_pk
 
-            return render(request, 'core/badges/partials/badge_endorsement.html',context={
+            # Si une seule structure, la pre-selectionner
+            # / If only one structure, pre-select it
+            if user_admin_not_endorsing.count() == 1 and 'structure' not in defaults:
+                defaults['structure'] = str(user_admin_not_endorsing.first().pk)
+
+            return render(request, 'core/badges/partials/badge_endorsement.html', context={
                 "badge_pk": pk,
-                "structures": user_structure_not_endorsing,
+                "structures": user_admin_not_endorsing,
                 "defaults": defaults,
             })
 
@@ -1044,7 +1089,7 @@ class BadgeViewSet(viewsets.ViewSet):
                 "errors": validator.errors,
                 "defaults": validator.data,
                 "badge_pk": validator.data['badge'],
-                "structures": user_structure_not_endorsing,
+                "structures": user_admin_not_endorsing,
             })
 
         # Get all objects
@@ -1072,19 +1117,27 @@ class BadgeViewSet(viewsets.ViewSet):
             return raise403(request)
 
         badge = get_object_or_404(Badge, pk=pk)
-        users = User.objects.all()
-        structures = request.user.get_structures_endorsing_badge(badge)
+
+        # Structures ou l'utilisateur est admin ET qui reconnaissent ce badge
+        # / Structures where user is admin AND that recognize this badge
+        user_admin_structures = Structure.objects.filter(admins=request.user)
+        structures_endorsing_badge = request.user.get_structures_endorsing_badge(badge)
+        structures = structures_endorsing_badge.filter(pk__in=user_admin_structures)
 
         if request.method == "GET":
-            # Pré-remplissage optionnel de la structure (utilisé par la page lieu)
+            # Pre-remplissage optionnel de la structure (utilise par la page lieu)
             # / Optional structure pre-fill (used by the lieu page)
             defaults = {}
             default_structure_pk = request.GET.get('default_structure', '')
             if default_structure_pk:
                 defaults['assigned_by_structure'] = default_structure_pk
 
-            return render(request, 'core/badges/partials/badge_assignment.html',context={
-                "users": users,
+            # Si une seule structure, la pre-selectionner
+            # / If only one structure, pre-select it
+            if structures.count() == 1 and 'assigned_by_structure' not in defaults:
+                defaults['assigned_by_structure'] = str(structures.first().pk)
+
+            return render(request, 'core/badges/partials/badge_assignment.html', context={
                 "badge_pk": pk,
                 "structures": structures,
                 "defaults": defaults,
@@ -1094,36 +1147,38 @@ class BadgeViewSet(viewsets.ViewSet):
 
         is_valid = validator.is_valid()
         context = {
-            "users": users,
             "errors": validator.errors,
             "defaults": validator.data,
             "badge_pk": pk,
-            "structures": structures
+            "structures": structures,
         }
 
-        if not is_valid :
-            return render(request, 'core/badges/partials/badge_assignment.html',context=context)
+        if not is_valid:
+            return render(request, 'core/badges/partials/badge_assignment.html', context=context)
 
-        # Get all objects
-        assigned_user = get_object_or_404(User, pk=validator.validated_data["assigned_user"])
+        # Recupere ou cree l'utilisateur a partir de l'email
+        # / Get or create user from email
+        assigned_email = validator.validated_data["assigned_email"]
+        assigned_user = get_or_create_user(assigned_email)
+
         assigned_by_structure = get_object_or_404(Structure, pk=validator.validated_data["assigned_by_structure"])
         assigned_by_user = get_object_or_404(User, pk=validator.validated_data["assigned_by_user"])
 
         notes = request.POST['notes']
 
-        # Check if the assigned structure is in the badge's valid structures (structure that have endorsed the badge)
-        # Because only structures that have endorsed a badge can assign it
+        # Verifie que la structure est dans les structures qui reconnaissent le badge
+        # / Check that the structure recognizes this badge
         if not badge.valid_structures.contains(assigned_by_structure):
             messages.add_message(request, messages.ERROR, "Veuillez sélectionner une structure valide")
-            return render(request, 'core/badges/partials/badge_assignment.html',context=context)
+            return render(request, 'core/badges/partials/badge_assignment.html', context=context)
 
-        # Assign the badge to the user
-        assignment, created = badge.add_holder(assigned_user,assigned_by_user,assigned_by_structure,notes)
+        # Assigne le badge a l'utilisateur
+        # / Assign the badge to the user
+        assignment, created = badge.add_holder(assigned_user, assigned_by_user, assigned_by_structure, notes)
 
-        #
-        if not created :
+        if not created:
             messages.add_message(request, messages.INFO, "L'utilisateur possède déjà ce badge assigné par cette structure")
-            return render(request, 'core/badges/partials/badge_assignment.html',context=context)
+            return render(request, 'core/badges/partials/badge_assignment.html', context=context)
 
         messages.add_message(request, messages.SUCCESS, 'Badge assigné !')
         return reload(request)
@@ -1262,7 +1317,11 @@ class StructureViewSet(viewsets.ViewSet):
     @action(detail=True, methods=["get","post"])
     def edit(self, request, pk=None):
         """
-        Edit an existing structure.
+        Modifie une structure existante.
+        Si requete HTMX, retourne le formulaire en partiel pour la modale.
+        / Edit an existing structure. Returns partial for HTMX modal.
+
+        LOCALISATION : core/views.py
         """
         structure = get_object_or_404(Structure, pk=pk)
         if not structure.is_admin(request.user):
@@ -1272,6 +1331,12 @@ class StructureViewSet(viewsets.ViewSet):
             form = StructureForm(request.POST, request.FILES, instance=structure)
             if form.is_valid():
                 form.save()
+                # Redirige vers la page structure (HTMX ou classique)
+                # / Redirect to structure page (HTMX or classic)
+                if request.htmx:
+                    return HttpResponseClientRedirect(
+                        reverse('core:home-lieu', kwargs={'pk': structure.pk})
+                    )
                 return redirect(reverse('core:structure-detail', kwargs={'pk': structure.pk}))
         else:
             form = StructureForm(instance=structure)
@@ -1279,6 +1344,12 @@ class StructureViewSet(viewsets.ViewSet):
         logo = None
         if structure.logo:
             logo = structure.logo.url
+
+        # Partiel HTMX pour la modale / HTMX partial for modal
+        if request.htmx:
+            return render(request, "core/structures/partial/edit_form.html", {
+                "form": form, "logo": logo, "structure": structure,
+            })
 
         return render(request,"core/structures/edit.html",{"form":form,"logo":logo})
 
@@ -1360,7 +1431,7 @@ class UserViewSet(viewsets.ViewSet):
         elif self.action in ['logout']:
             permissions_list += [IsAuthenticated]
         elif self.action in ["edit", "delete"]:
-            permissions_list += [CanEditUser]
+            permissions_list += [IsAuthenticated, CanEditUser]
 
         return [permission() for permission in permissions_list]
 

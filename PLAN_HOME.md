@@ -148,6 +148,61 @@ Quand on bascule en mode carte, le JS lit ces PKs et appelle `updateHomeMap(pks)
 
 ---
 
+## Réalisations — Phases 1 et 2
+
+### Phase 1a — Vue Lieu ✅
+- `HomeViewSet.lieu()` dans `core/views.py`
+- `templates/core/lieu/index.html` (hérite `base_home.html`)
+- En-tête horizontal, mini carte MapLibre, grille badges avec tags Émis/Endossé
+- Dépliables `<details>`, section Personnes, Référent, SIRET
+- Boutons Éditer/Supprimer (is_admin), Forger un badge (is_admin/is_editor)
+- CSS `.lieu-*` dans `custom.css`
+
+### Phase 1b — Vue Passeport ✅
+- `HomeViewSet.passeport()` dans `core/views.py`
+- `templates/core/passeport/index.html`
+- Timeline chronologique `<ol>` avec `<details>` par badge
+- Carte du parcours MapLibre, compteurs badges/lieux
+- Boutons Se déconnecter, Éditer profil, Désactiver compte (is_self)
+- CSS `.passeport-*` dans `custom.css`
+
+### Phase 1c — Vue Badge ✅
+- `HomeViewSet.badge_detail()` dans `core/views.py`
+- `templates/core/badge_page/index.html`
+- En-tête avec niveau, émetteur, description
+- Section structures (émettrice + endosseuses avec tags)
+- Section détenteurs triés par date
+- Boutons Attribuer/Endosser (modales HTMX), Éditer/Supprimer (liens)
+- Carte MapLibre des structures
+- CSS `.badge-page-*` dans `custom.css`
+
+### Phase 1d — Liens focus ✅
+- Boutons "Voir le badge/lieu/passeport" dans les 3 focus templates
+- CSS `.home-detail-link` avec couleur par catégorie
+
+### Phase 2a — Forger un badge ✅
+- Bouton `.home-forge-btn` dans `search_results.html` (0 résultats badges, user connecté)
+- Bouton dans `lieu/index.html` (is_admin/is_editor)
+- Pré-remplissage `?name=` et `?structure=` dans le formulaire de création
+
+### Phase 2b — Actions lieu ✅
+- Boutons Attribuer dans les dépliables badges (modales HTMX via `#customPopup`)
+- Pré-remplissage structure via `?default_structure=` dans les vues assign/endorse
+- Annotation `can_assign`/`can_endorse` côté serveur sur chaque badge
+- CSS `.lieu-action-btn`, `.lieu-badge-actions`
+
+### Phase 2c — Actions passeport ✅
+- Bouton "Éditer mon profil" en modal HTMX (charge `user_profile_edit.html` dans `#customPopup`)
+- Rechargement page après édition via listener `htmx:afterSwap` sur `#user-info`
+- Bouton "Désactiver mon compte" avec confirmation SweetAlert2
+- CSS `.passeport-deactivate-link`
+
+### Phase 2d — Actions badge ✅
+- Boutons Attribuer/Endosser transformés en modales HTMX (même pattern que lieu)
+- Boutons Éditer/Supprimer en liens classiques
+
+---
+
 ## Idées futures / TODO
 
 ### A. Vue Lieu — Page dédiée d'une structure

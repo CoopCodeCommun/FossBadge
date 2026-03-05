@@ -76,6 +76,15 @@
             <div class="home-badge-focus-description">
                 {{ focused_badge.description|linebreaks }}
             </div>
+
+            {# Lien vers la page dédiée du badge / Link to dedicated badge page #}
+            <a
+                href="{% url 'core:home-badge-detail' badge_pk=focused_badge.pk %}"
+                class="home-detail-link home-detail-link-badges"
+                data-testid="home-badge-focus-detail-link"
+            >
+                {% translate "Voir le badge" %} <span aria-hidden="true">&rarr;</span>
+            </a>
         </div>
     </div>
     {% endif %}

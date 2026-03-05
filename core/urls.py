@@ -12,16 +12,19 @@ router.register(r'structures', views.StructureViewSet, basename='structure')
 router.register(r'users', views.UserViewSet, basename='user')
 router.register(r'assignments', views.AssignmentViewSet, basename='assignment')
 
-# The API URLs are now determined automatically by the router
+# Les routes custom doivent être AVANT le router.
+# Le router HomeViewSet a un pattern "badge/<pk>/" qui capturerait "badge/create/".
+# / Custom routes must come BEFORE the router to avoid being caught by "badge/<pk>/".
 urlpatterns = [
-    path('', include(router.urls)),
-
-    # Custom action URLs that don't fit the standard pattern
     # Creation routes
     path('badge/create/', views.BadgeViewSet.as_view({'get': 'create_badge', 'post': 'create_badge'}), name='create_badge'),
     path('structure/create/', views.StructureViewSet.as_view({'get': 'create_association', 'post': 'create_association'}), name='create_association'),
-    path('user/create/',views.UserViewSet.as_view({'get': 'create_user', 'post': 'create_user'}),name='create_user'),
+    path('user/create/', views.UserViewSet.as_view({'get': 'create_user', 'post': 'create_user'}), name='create_user'),
 
     # Edition routes
-    path('users/<uuid:pk>/edit', views.UserViewSet.as_view({'get': 'edit', 'post': 'edit'}), name='edit-profile')
+    path('users/<uuid:pk>/edit', views.UserViewSet.as_view({'get': 'edit', 'post': 'edit'}), name='edit-profile'),
+
+    # Router URLs (après les routes custom)
+    # / Router URLs (after custom routes)
+    path('', include(router.urls)),
 ]

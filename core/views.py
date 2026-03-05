@@ -15,7 +15,7 @@ from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.decorators import action,authentication_classes, permission_classes
 from .helpers import TokenHelper
 from .helpers.utils import get_or_create_user, invite_user_to_structure
-from .models import Structure, Badge, User, BadgeAssignment
+from .models import Structure, Badge, User, BadgeAssignment, BadgeEndorsement
 from .forms import BadgeForm, StructureForm, UserForm, PartialUserForm
 import sweetify
 
@@ -101,10 +101,13 @@ class HomeViewSet(viewsets.ViewSet):
         """
         search_query = request.GET.get('q', '').strip()
 
-        # Si la requête est trop courte, retourner un partiel vide
-        # If query is too short, return empty partial
-        query_is_too_short = len(search_query) < 4
-        if query_is_too_short:
+        # Si la requête est vide, retourner un partiel vide.
+        # La limite de 4 caractères est gérée côté client (saisie auto uniquement).
+        # Entrée et bouton loupe peuvent envoyer des requêtes plus courtes.
+        # / If query is empty, return empty partial.
+        # The 4-char limit is enforced client-side (auto-search only).
+        query_is_empty = len(search_query) < 1
+        if query_is_empty:
             return HttpResponse('')
 
         # Lire les filtres de catégorie / Read category filters
@@ -574,14 +577,174 @@ class HomeViewSet(viewsets.ViewSet):
         is_admin = structure.is_admin(request.user) if request.user.is_authenticated else False
         is_editor = structure.is_editor(request.user) if request.user.is_authenticated else False
 
+        # Annoter chaque badge avec les permissions d'action pour l'utilisateur courant.
+        # On convertit en liste pour pouvoir ajouter des attributs dynamiques.
+        # / Annotate each badge with action permissions for the current user.
+        user_can_manage_badges = is_admin or is_editor
+
+        issued_badges_list = list(issued_badges)
+        for badge_item in issued_badges_list:
+            badge_item.can_assign = user_can_manage_badges
+            badge_item.can_endorse = False  # Badge émis par cette structure / Issued by this structure
+
+        endorsed_badges_list = list(endorsed_badges)
+        for badge_item in endorsed_badges_list:
+            badge_item.can_assign = user_can_manage_badges
+            badge_item.can_endorse = False  # Déjà endossé par cette structure / Already endorsed
+
         return render(request, 'core/lieu/index.html', {
             'structure': structure,
-            'issued_badges': issued_badges,
-            'endorsed_badges': endorsed_badges,
+            'issued_badges': issued_badges_list,
+            'endorsed_badges': endorsed_badges_list,
             'badges_total_count': badges_total_count,
             'members_list': members_list,
             'is_admin': is_admin,
             'is_editor': is_editor,
+        })
+
+    @action(detail=False, methods=["GET"], url_path="passeport/(?P<person_pk>[^/.]+)")
+    def passeport(self, request, person_pk=None):
+        """
+        Page dédiée du passeport (profil open badge) d'une personne.
+        Affiche le parcours complet en timeline chronologique :
+        chaque badge est une carte individuelle, triée du plus récent au plus ancien.
+        La page est autonome, partageable, et sert de "carnet de route".
+        / Dedicated passport page — shows a person's full badge journey as a chronological timeline.
+
+        LOCALISATION : core/views.py → HomeViewSet.passeport()
+
+        FLUX :
+        1. Reçoit GET depuis un lien /passeport/<uuid>/ (home, focus, lieu, ou URL directe)
+        2. Charge la personne par UUID
+        3. Récupère tous les assignments triés du plus récent au plus ancien
+        4. Collecte les structures uniques avec marker (pour la carte du parcours)
+        5. Calcule les compteurs (badges, lieux)
+        6. Rend la page complète core/passeport/index.html
+        """
+        person = get_object_or_404(User, uuid=person_pk)
+
+        # Tous les assignments, triés du plus récent au plus ancien (timeline)
+        # All assignments, sorted most recent first (timeline)
+        all_assignments_for_person = BadgeAssignment.objects.filter(
+            user=person
+        ).select_related(
+            'badge', 'badge__issuing_structure',
+            'assigned_by', 'assigned_structure', 'assigned_structure__marker',
+        ).order_by('-assigned_date')
+
+        # Collecter les structures uniques qui ont un marker (pour la carte)
+        # Collect unique structures that have a marker (for the map)
+        structures_with_marker = set()
+        for assignment in all_assignments_for_person:
+            structure = assignment.assigned_structure
+            if structure and structure.marker_id:
+                structures_with_marker.add(structure.pk)
+
+        structures_pks_csv = ','.join(str(pk) for pk in structures_with_marker)
+
+        # Nombre de lieux distincts (structures ayant attribué au moins un badge)
+        # Number of distinct places (structures that assigned at least one badge)
+        total_places = len(set(
+            a.assigned_structure_id for a in all_assignments_for_person
+            if a.assigned_structure_id
+        ))
+
+        # Est-ce que l'utilisateur regarde son propre passeport ?
+        # Is the user viewing their own passport?
+        is_self = request.user.is_authenticated and request.user.pk == person.pk
+
+        return render(request, 'core/passeport/index.html', {
+            'person': person,
+            'assignments': all_assignments_for_person,
+            'total_badges': all_assignments_for_person.count(),
+            'total_places': total_places,
+            'structures_pks_csv': structures_pks_csv,
+            'is_self': is_self,
+        })
+
+    @action(detail=False, methods=["GET"], url_path="badge/(?P<badge_pk>[^/.]+)")
+    def badge_detail(self, request, badge_pk=None):
+        """
+        Page dédiée d'un badge.
+        Affiche toutes les informations d'un badge sur une seule page :
+        en-tête, structures qui le reconnaissent, détenteurs, actions, carte.
+        C'est la version complète du badge_focus (home).
+        / Dedicated badge page — shows all badge info on a single scrollable page.
+
+        LOCALISATION : core/views.py → HomeViewSet.badge_detail()
+
+        FLUX :
+        1. Reçoit GET depuis un lien /badge/<uuid>/ (home, focus, lieu, ou URL directe)
+        2. Charge le badge avec sa structure émettrice et son marker (select_related)
+        3. Récupère les structures qui endossent ce badge
+        4. Récupère les détenteurs avec leur structure d'attribution
+        5. Calcule les permissions (is_badge_editor, can_assign, can_endorse)
+        6. Rend la page complète core/badge_page/index.html
+        """
+        badge = get_object_or_404(
+            Badge.objects.select_related('issuing_structure', 'issuing_structure__marker'),
+            uuid=badge_pk
+        )
+
+        # Structures qui endossent ce badge (sans la structure émettrice)
+        # Structures that endorse this badge (excluding issuer)
+        endorsing_structures = Structure.objects.filter(
+            endorsements__badge=badge
+        ).exclude(
+            pk=badge.issuing_structure.pk
+        ).select_related('marker')
+
+        # Toutes les structures (émettrice + endosseuses) pour la carte et la liste
+        # All structures (issuer + endorsers) for the map and the list
+        all_structures_list = [badge.issuing_structure] + list(endorsing_structures)
+
+        # Détenteurs avec leur structure d'attribution, triés du plus récent au plus ancien
+        # Holders with their assigning structure, sorted most recent first
+        holders_assignments = BadgeAssignment.objects.filter(
+            badge=badge
+        ).select_related('user', 'assigned_structure').order_by('-assigned_date')
+
+        # Permissions
+        # / Permissions
+        is_badge_editor = False
+        can_assign = False
+        can_endorse = False
+        if request.user.is_authenticated:
+            # L'utilisateur peut éditer s'il est admin ou éditeur de la structure émettrice
+            # User can edit if admin/editor of the issuing structure
+            is_badge_editor = (
+                badge.issuing_structure.is_admin(request.user)
+                or badge.issuing_structure.is_editor(request.user)
+            )
+
+            # L'utilisateur peut assigner s'il est admin/éditeur d'une structure liée (émettrice ou endosseuse)
+            # User can assign if admin/editor of a related structure (issuer or endorser)
+            can_assign = Structure.objects.filter(
+                Q(endorsements__badge=badge) | Q(issued_badges=badge),
+                Q(admins=request.user) | Q(editors=request.user),
+            ).exists()
+
+            # L'utilisateur peut endosser s'il a au moins une structure
+            # User can endorse if they have at least one structure
+            can_endorse = Structure.objects.filter(
+                Q(admins=request.user) | Q(editors=request.user)
+            ).exists()
+
+        # PKs des structures avec marker (pour la carte MapLibre)
+        # PKs of structures with a marker (for the MapLibre map)
+        structures_pks_csv = ','.join(
+            str(s.pk) for s in all_structures_list if s.marker_id
+        )
+
+        return render(request, 'core/badge_page/index.html', {
+            'badge': badge,
+            'all_structures_list': all_structures_list,
+            'endorsing_structures': endorsing_structures,
+            'holders_assignments': holders_assignments,
+            'is_badge_editor': is_badge_editor,
+            'can_assign': can_assign,
+            'can_endorse': can_endorse,
+            'structures_pks_csv': structures_pks_csv,
         })
 
 class BadgeViewSet(viewsets.ViewSet):
@@ -722,8 +885,10 @@ class BadgeViewSet(viewsets.ViewSet):
         Create a new badge.
         """
 
-        # If badge is created from a structure page, get the structure
+        # Pré-remplir le formulaire depuis les query params (recherche ou page lieu)
+        # / Pre-fill form from query params (search or structure page)
         default_structure = request.GET.get('structure', '')
+        default_name = request.GET.get('name', '')
 
         if request.method == 'POST':
             form = BadgeForm(request.POST, request.FILES, request=request)
@@ -738,7 +903,12 @@ class BadgeViewSet(viewsets.ViewSet):
                 )
                 return redirect(reverse('core:badge-detail', kwargs={'pk': badge.pk}))
         else:
-            form = BadgeForm(initial={'issuing_structure':default_structure}, request=request)
+            initial_data = {}
+            if default_structure:
+                initial_data['issuing_structure'] = default_structure
+            if default_name:
+                initial_data['name'] = default_name
+            form = BadgeForm(initial=initial_data, request=request)
 
         # Get all structures for the dropdown
         structures = Structure.objects.all()
@@ -772,10 +942,17 @@ class BadgeViewSet(viewsets.ViewSet):
             })
 
         if request.method == "GET":
+            # Pré-remplissage optionnel de la structure (utilisé par la page lieu)
+            # / Optional structure pre-fill (used by the lieu page)
+            defaults = {}
+            default_structure_pk = request.GET.get('default_structure', '')
+            if default_structure_pk:
+                defaults['structure'] = default_structure_pk
 
             return render(request, 'core/badges/partials/badge_endorsement.html',context={
                 "badge_pk": pk,
                 "structures": user_structure_not_endorsing,
+                "defaults": defaults,
             })
 
         validator = BadgeEndorsementValidator(data=request.POST)
@@ -817,10 +994,18 @@ class BadgeViewSet(viewsets.ViewSet):
         structures = request.user.get_structures_endorsing_badge(badge)
 
         if request.method == "GET":
+            # Pré-remplissage optionnel de la structure (utilisé par la page lieu)
+            # / Optional structure pre-fill (used by the lieu page)
+            defaults = {}
+            default_structure_pk = request.GET.get('default_structure', '')
+            if default_structure_pk:
+                defaults['assigned_by_structure'] = default_structure_pk
+
             return render(request, 'core/badges/partials/badge_assignment.html',context={
                 "users": users,
                 "badge_pk": pk,
                 "structures": structures,
+                "defaults": defaults,
             })
 
         validator = BadgeAssignmentValidator(data=request.POST)

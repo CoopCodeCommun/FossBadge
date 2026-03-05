@@ -54,6 +54,17 @@
             {% endfor %}
         {% else %}
             <p class="home-empty-message text-muted">{% translate "Aucun badge trouvé." %}</p>
+            {# Proposer de créer un badge si l'utilisateur est connecté. #}
+            {# Le terme recherché est passé en query param pour pré-remplir le nom. #}
+            {# / Offer badge creation to authenticated users. Pre-fills name from search. #}
+            {% if user.is_authenticated %}
+            <a href="{% url 'core:create_badge' %}?name={{ search_query|urlencode }}"
+               class="home-forge-btn mt-2"
+               data-testid="btn-forge-badge">
+                <span aria-hidden="true">&#9874;</span>
+                {% translate "Forger un badge" %}
+            </a>
+            {% endif %}
         {% endif %}
     </div>
     {% endif %}

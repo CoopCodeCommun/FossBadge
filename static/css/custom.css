@@ -311,7 +311,7 @@ picture.text-center img.badge-icon {
    Rounded search input with soft shadow */
 .home-search-input {
     width: 100%;
-    padding: 0.9rem 1.6rem;
+    padding: 0.9rem 1.6rem 0.9rem 3rem;
     font-size: 1.1rem;
     border: 1px solid #dfe1e5;
     border-radius: 50px;
@@ -333,6 +333,32 @@ picture.text-center img.badge-icon {
     box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
     outline: 2px solid #4a90d9;
     outline-offset: 2px;
+}
+
+/* Bouton loupe dans l'input / Search button inside input */
+.home-search-btn {
+    position: absolute;
+    left: 0.6rem;
+    top: 50%;
+    transform: translateY(-50%);
+    border: none;
+    background: transparent;
+    color: #9aa0a6;
+    padding: 0.4rem;
+    cursor: pointer;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: color 0.15s ease, background-color 0.15s ease;
+    font-size: 1rem;
+    line-height: 1;
+    margin: 0;
+}
+
+.home-search-btn:hover {
+    color: #202124;
+    background-color: #f1f3f4;
 }
 
 /* Spinner à droite de l'input / Spinner on the right of input */
@@ -640,7 +666,7 @@ picture.text-center img.badge-icon {
 
     .home-search-input {
         font-size: 1rem;
-        padding: 0.75rem 1.2rem;
+        padding: 0.75rem 1.2rem 0.75rem 2.8rem;
     }
 
     .home-title {
@@ -779,6 +805,29 @@ picture.text-center img.badge-icon {
     color: #5f6368;
     line-height: 1.6;
 }
+
+/* Lien discret vers la page dédiée (badge, lieu, passeport)
+   Discreet link to the dedicated page (badge, lieu, passport) */
+.home-detail-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+    font-size: 0.82rem;
+    font-weight: 500;
+    text-decoration: none;
+    margin-top: 0.75rem;
+    padding: 0.2rem 0;
+    transition: opacity 0.2s ease;
+}
+
+.home-detail-link:hover {
+    text-decoration: underline;
+}
+
+/* Couleur par catégorie / Color per category */
+.home-detail-link-badges { color: var(--home-color-badges); }
+.home-detail-link-structures { color: var(--home-color-structures); }
+.home-detail-link-personnes { color: var(--home-color-personnes); }
 
 /* Tags de relation (Émetteur / Endosse) / Relation tags (Issuer / Endorses) */
 .home-relation-tag {
@@ -1349,6 +1398,53 @@ picture.text-center img.badge-icon {
     font-size: 0.82rem;
 }
 
+/* Conteneur des actions du badge déplié (voir, attribuer, endosser)
+   / Expanded badge action container (view, assign, endorse) */
+.lieu-badge-actions {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    flex-wrap: wrap;
+    margin-top: 0.4rem;
+}
+
+/* Boutons d'action Attribuer / Endosser dans le dépliable badge
+   / Assign / Endorse action buttons inside badge expandable */
+.lieu-action-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+    padding: 0.2rem 0.6rem;
+    font-size: 0.78rem;
+    font-weight: 500;
+    border-radius: 6px;
+    border: 1px solid;
+    background: transparent;
+    cursor: pointer;
+    text-decoration: none;
+    transition: background-color 0.15s ease, color 0.15s ease;
+}
+
+.lieu-action-btn-assign {
+    color: var(--home-color-personnes);
+    border-color: var(--home-color-personnes);
+}
+.lieu-action-btn-assign:hover,
+.lieu-action-btn-assign:focus {
+    background-color: var(--home-color-personnes);
+    color: #fff;
+}
+
+.lieu-action-btn-endorse {
+    color: var(--home-color-structures);
+    border-color: var(--home-color-structures);
+}
+.lieu-action-btn-endorse:hover,
+.lieu-action-btn-endorse:focus {
+    background-color: var(--home-color-structures);
+    color: #fff;
+}
+
 /* Section référent / Referent section */
 .lieu-referent {
     padding: 0.75rem 0;
@@ -1358,6 +1454,31 @@ picture.text-center img.badge-icon {
 .lieu-siret {
     font-size: 0.78rem;
     opacity: 0.7;
+}
+
+/* Bouton "Forger un badge" — discret, style outline orange
+   "Forge a badge" button — discreet, outline orange style */
+.home-forge-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.3rem 0.75rem;
+    font-size: 0.82rem;
+    font-weight: 500;
+    color: var(--home-color-badges);
+    border: 1px solid var(--home-color-badges);
+    border-radius: 8px;
+    background: transparent;
+    text-decoration: none;
+    transition: background-color 0.15s ease, color 0.15s ease;
+    margin: 0;
+}
+
+.home-forge-btn:hover,
+.home-forge-btn:focus {
+    background-color: var(--home-color-badges);
+    color: #fff;
+    text-decoration: none;
 }
 
 /* ---- Responsive lieu / Responsive lieu ---- */
@@ -1387,5 +1508,373 @@ picture.text-center img.badge-icon {
 
     .lieu-badges-grid {
         grid-template-columns: 1fr;
+    }
+}
+
+/* ============================================================
+   PASSEPORT — Page dédiée d'une personne
+   PASSEPORT — Dedicated person page
+   ============================================================ */
+
+/* Conteneur de la page passeport — largeur éditoriale sobre
+   Passport page container — editorial sober width */
+.passeport-page-container {
+    max-width: 900px;
+}
+
+/* En-tête horizontal : avatar à gauche, infos à droite
+   Horizontal header: avatar on the left, info on the right */
+.passeport-header {
+    display: flex;
+    align-items: flex-start;
+    gap: 1.25rem;
+}
+
+.passeport-header-avatar {
+    width: 80px;
+    height: 80px;
+    flex-shrink: 0;
+    border-radius: 50%;
+    overflow: hidden;
+    background-color: #f8f9fa;
+}
+
+.passeport-header-avatar picture,
+.passeport-header-avatar picture img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.passeport-header-avatar-placeholder {
+    width: 80px;
+    height: 80px;
+    font-size: 2rem;
+    border-radius: 50%;
+}
+
+.passeport-header-info {
+    flex: 1;
+    min-width: 0;
+}
+
+.passeport-header-name {
+    font-size: 1.6rem;
+    font-weight: 600;
+    color: #202124;
+    margin-bottom: 0.15rem;
+    line-height: 1.2;
+}
+
+.passeport-header-meta {
+    font-size: 0.9rem;
+}
+
+/* ---- Timeline du parcours / Journey timeline ---- */
+
+.passeport-timeline {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.passeport-timeline-item {
+    margin-bottom: 0.25rem;
+}
+
+/* Carte badge dépliable / Expandable badge card */
+.passeport-badge-card {
+    border-radius: 12px;
+    transition: background-color 0.15s ease;
+}
+
+.passeport-badge-card[open] {
+    background-color: #f8f9fa;
+}
+
+.passeport-badge-card summary {
+    cursor: pointer;
+    list-style: none;
+}
+
+.passeport-badge-card summary::-webkit-details-marker {
+    display: none;
+}
+
+.passeport-badge-card summary::marker {
+    display: none;
+    content: '';
+}
+
+/* Le summary réutilise le style de home-result-item mais avec flexbox dédié
+   Summary reuses home-result-item style but with dedicated flexbox */
+.passeport-badge-summary {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.6rem 0.75rem;
+    border-radius: 12px;
+    text-decoration: none;
+    color: inherit;
+    transition: background-color 0.15s ease;
+}
+
+.passeport-badge-summary:hover {
+    background-color: #f1f3f4;
+}
+
+/* Infos du badge dans le summary / Badge info in summary */
+.passeport-badge-info {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    flex: 1;
+}
+
+.passeport-badge-name {
+    font-size: 0.95rem;
+    font-weight: 500;
+    color: #202124;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    flex-wrap: wrap;
+}
+
+.passeport-badge-meta {
+    font-size: 0.82rem;
+    line-height: 1.4;
+}
+
+/* Lien vers la structure dans la timeline / Structure link in timeline */
+.passeport-structure-link {
+    color: var(--home-color-structures);
+    text-decoration: none;
+    font-weight: 500;
+}
+
+.passeport-structure-link:hover {
+    text-decoration: underline;
+}
+
+/* Contenu déplié du badge / Expanded badge content */
+.passeport-badge-details {
+    padding: 0.5rem 0.75rem 0.75rem 3.5rem;
+    font-size: 0.85rem;
+    color: #5f6368;
+    line-height: 1.5;
+    animation: homeResultFadeIn 0.15s ease both;
+}
+
+.passeport-badge-notes {
+    font-style: italic;
+}
+
+.passeport-badge-links {
+    display: flex;
+    gap: 1rem;
+    flex-wrap: wrap;
+}
+
+/* Carte MapLibre du parcours / Journey MapLibre map */
+.passeport-map-container {
+    height: 300px;
+    border-radius: 12px;
+    overflow: hidden;
+    border: 1px solid #e8eaed;
+}
+
+#passeport-map {
+    width: 100%;
+    height: 100%;
+}
+
+/* Lien discret "Désactiver mon compte" en bas de page
+   / Discreet "Deactivate my account" link at page bottom */
+.passeport-deactivate-link {
+    font-size: 0.78rem;
+    color: #9aa0a6;
+    background: none;
+    border: none;
+    padding: 0;
+    cursor: pointer;
+    text-decoration: none;
+}
+.passeport-deactivate-link:hover {
+    color: #dc3545;
+    text-decoration: underline;
+}
+
+/* ---- Responsive passeport / Responsive passport ---- */
+@media (max-width: 768px) {
+    .passeport-header {
+        gap: 0.75rem;
+    }
+
+    .passeport-header-avatar {
+        width: 60px;
+        height: 60px;
+    }
+
+    .passeport-header-avatar-placeholder {
+        width: 60px;
+        height: 60px;
+        font-size: 1.5rem;
+    }
+
+    .passeport-header-name {
+        font-size: 1.3rem;
+    }
+
+    .passeport-map-container {
+        height: 220px;
+    }
+
+    .passeport-badge-details {
+        padding-left: 0.75rem;
+    }
+}
+
+/* ============================================================
+   BADGE PAGE — Page dédiée d'un badge
+   BADGE PAGE — Dedicated badge page
+   ============================================================ */
+
+/* Conteneur de la page badge — largeur éditoriale sobre
+   Badge page container — editorial sober width */
+.badge-page-container {
+    max-width: 900px;
+}
+
+/* En-tête horizontal : icône à gauche, infos à droite
+   Horizontal header: icon on the left, info on the right */
+.badge-page-header {
+    display: flex;
+    align-items: flex-start;
+    gap: 1.25rem;
+}
+
+.badge-page-header-icon {
+    width: 80px;
+    height: 80px;
+    flex-shrink: 0;
+    border-radius: 16px;
+    overflow: hidden;
+    background-color: #f8f9fa;
+}
+
+.badge-page-header-icon picture,
+.badge-page-header-icon picture img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.badge-page-header-icon-placeholder {
+    width: 80px;
+    height: 80px;
+    font-size: 2rem;
+}
+
+.badge-page-header-info {
+    flex: 1;
+    min-width: 0;
+}
+
+.badge-page-header-name {
+    font-size: 1.6rem;
+    font-weight: 600;
+    color: #202124;
+    margin-bottom: 0.15rem;
+    line-height: 1.2;
+}
+
+.badge-page-header-meta {
+    font-size: 0.9rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+}
+
+.badge-page-header-description {
+    font-size: 0.88rem;
+    line-height: 1.5;
+}
+
+/* Lien vers la structure émettrice / Link to issuing structure */
+.badge-page-issuer-link {
+    color: var(--home-color-structures);
+    text-decoration: none;
+    font-weight: 500;
+}
+
+.badge-page-issuer-link:hover {
+    text-decoration: underline;
+}
+
+/* Boutons admin discrets / Discreet admin buttons */
+.badge-page-admin-actions {
+    display: flex;
+    gap: 0.4rem;
+}
+
+.badge-page-admin-actions .btn {
+    padding: 0.25rem 0.6rem;
+    font-size: 0.78rem;
+    margin: 0;
+}
+
+/* Boutons d'action / Action buttons */
+.badge-page-actions {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+}
+
+.badge-page-actions .btn {
+    padding: 0.35rem 0.9rem;
+    font-size: 0.85rem;
+    margin: 0;
+}
+
+/* Carte MapLibre / MapLibre map */
+.badge-page-map-container {
+    height: 300px;
+    border-radius: 12px;
+    overflow: hidden;
+    border: 1px solid #e8eaed;
+}
+
+#badge-page-map {
+    width: 100%;
+    height: 100%;
+}
+
+/* ---- Responsive badge page / Responsive badge page ---- */
+@media (max-width: 768px) {
+    .badge-page-header {
+        gap: 0.75rem;
+    }
+
+    .badge-page-header-icon {
+        width: 60px;
+        height: 60px;
+    }
+
+    .badge-page-header-icon-placeholder {
+        width: 60px;
+        height: 60px;
+        font-size: 1.5rem;
+    }
+
+    .badge-page-header-name {
+        font-size: 1.3rem;
+    }
+
+    .badge-page-map-container {
+        height: 220px;
     }
 }

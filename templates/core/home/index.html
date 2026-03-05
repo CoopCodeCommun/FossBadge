@@ -5,7 +5,7 @@
 {% block title %}FossBadge — {% translate "Recherche" %}{% endblock %}
 
 {% block content %}
-<div id="home-search-wrapper" class="home-search-wrapper{% if focus_partial or badges_found_list or structures_found_list or people_found_list %} has-results{% endif %}" data-testid="home-search-wrapper">
+<div id="home-search-wrapper" class="home-search-wrapper{% if focus_partial or search_query or badges_found_list or structures_found_list or people_found_list %} has-results{% endif %}" data-testid="home-search-wrapper">
 
     <!-- Bloc de recherche centré / Centered search block -->
     <div class="home-search-box" data-testid="home-search-box">
@@ -24,6 +24,20 @@
             data-testid="home-search-form"
         >
             <div class="position-relative">
+                {# Bouton loupe à gauche de l'input (comme Google) #}
+                {# / Search button on the left of the input (Google style) #}
+                <button
+                    id="home-search-btn"
+                    type="button"
+                    class="home-search-btn"
+                    aria-label="{% translate 'Rechercher' %}"
+                    data-testid="home-search-btn"
+                >
+                    <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true">
+                        <path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85zm-5.242.156a5 5 0 1 1 0-10 5 5 0 0 1 0 10z"/>
+                    </svg>
+                </button>
+
                 <input
                     id="home-search-input"
                     class="home-search-input"
@@ -43,7 +57,9 @@
                     hx-indicator="#search-spinner"
                     data-testid="home-search-input"
                 >
-                <!-- Spinner discret à droite de l'input / Subtle spinner on the right -->
+
+                {# Spinner discret à droite de l'input #}
+                {# / Subtle spinner on the right of the input #}
                 <div id="search-spinner" class="htmx-indicator home-search-spinner">
                     <div class="spinner-border spinner-border-sm text-muted" role="status">
                         <span class="visually-hidden">{% translate "Chargement..." %}</span>
@@ -126,7 +142,7 @@
         {# Pre-filled if no-JS fallback, otherwise empty (filled by HTMX) #}
         {% if focus_partial %}
             {% include focus_partial %}
-        {% elif badges_found_list or structures_found_list or people_found_list %}
+        {% elif search_query or badges_found_list or structures_found_list or people_found_list %}
             {% include "core/home/partial/search_results.html" %}
         {% endif %}
     </div>
@@ -159,12 +175,43 @@
     var view_radios = document.querySelectorAll("input[name='view_mode']");
     var map_initialized = false;
 
-    // --- Bloquer HTMX si < 4 caractères / Block HTMX if < 4 chars ---
+    var search_btn = document.getElementById("home-search-btn");
+    var search_form = document.getElementById("home-search-form");
+
+    // Drapeau pour distinguer recherche manuelle (Entrée / loupe) de la saisie auto.
+    // La saisie auto est bloquée sous 4 caractères. La recherche manuelle passe toujours.
+    // / Flag to distinguish manual search (Enter/button) from auto-search.
+    var manual_search = false;
+
+    // --- Bloquer HTMX auto si < 4 caractères, sauf recherche manuelle ---
+    // --- Block auto HTMX if < 4 chars, unless manual search ---
     search_input.addEventListener("htmx:configRequest", function(event) {
+        if (manual_search) {
+            manual_search = false;
+            return;
+        }
         var q = search_input.value.trim();
         if (q.length > 0 && q.length < 4) {
             event.preventDefault();
         }
+    });
+
+    // --- Entrée et bouton loupe : recherche manuelle sans limite de 4 caractères ---
+    // --- Enter and search button: manual search without the 4-char limit ---
+    search_form.addEventListener("submit", function(event) {
+        event.preventDefault();
+        if (search_input.value.trim().length >= 1) {
+            manual_search = true;
+            htmx.trigger(search_input, "search");
+        }
+    });
+
+    search_btn.addEventListener("click", function() {
+        if (search_input.value.trim().length >= 1) {
+            manual_search = true;
+            htmx.trigger(search_input, "search");
+        }
+        search_input.focus();
     });
 
     // --- Relancer la recherche quand un filtre change ---
@@ -185,8 +232,8 @@
         }
     });
 
-    // --- Après un swap HTMX : classes + animation + carte ---
-    // --- After HTMX swap: classes + animation + map ---
+    // --- Après un swap HTMX : classes + animation + carte + URL ---
+    // --- After HTMX swap: classes + animation + map + URL ---
     document.body.addEventListener("htmx:afterSwap", function(event) {
         if (event.detail.target.id !== "search-results") return;
         results_spinner.style.display = "none";
@@ -201,6 +248,20 @@
         } else {
             search_wrapper.classList.remove("has-results");
         }
+
+        // Mettre à jour l'URL pour refléter la recherche en cours.
+        // On utilise replaceState pour ne pas polluer l'historique à chaque frappe.
+        // / Update URL to reflect current search. Uses replaceState to avoid history spam.
+        var current_query = search_input.value.trim();
+        var url = new URL(window.location);
+        if (current_query.length >= 1) {
+            url.pathname = "{% url 'core:home-search' %}";
+            url.searchParams.set("q", current_query);
+        } else {
+            url.pathname = "/";
+            url.searchParams.delete("q");
+        }
+        history.replaceState(null, "", url);
 
         // Si on est en mode carte, mettre à jour la carte
         // If in map mode, update the map

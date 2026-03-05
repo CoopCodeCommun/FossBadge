@@ -1,0 +1,294 @@
+{# LOCALISATION : templates/core/badge_page/index.html #}
+{# Page dédiée d'un badge. Affiche en-tête, structures, détenteurs, actions, carte. #}
+{# / Dedicated badge page. Shows header, structures, holders, actions, map. #}
+{% extends 'core/home/base_home.html' %}
+{% load i18n %}
+{% load pictures %}
+{% load static %}
+{% load l10n %}
+
+{% block title %}{{ badge.name }} — FossBadge{% endblock %}
+
+{% block extra_css %}
+{% if structures_pks_csv %}
+<link rel="stylesheet" href="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.css">
+{% endif %}
+{% endblock %}
+
+{% block content %}
+<div class="container py-4 badge-page-container">
+
+    {# Barre supérieure : retour + actions admin #}
+    {# Top bar: back link + admin actions #}
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <a href="/" class="home-back-link" data-testid="badge-page-back-link"
+           onclick="event.preventDefault(); history.back();">
+            <span aria-hidden="true">&larr;</span> FossBadge
+        </a>
+
+        {% if is_badge_editor %}
+        <div class="badge-page-admin-actions" data-testid="badge-page-admin-actions">
+            <a href="{% url 'core:badge-edit' pk=badge.pk %}"
+               class="btn btn-sm btn-outline-secondary"
+               data-testid="badge-page-edit-btn">
+                {% translate "Éditer" %}
+            </a>
+            <a href="{% url 'core:badge-delete' pk=badge.pk %}"
+               class="btn btn-sm btn-outline-danger"
+               data-testid="badge-page-delete-btn">
+                {% translate "Supprimer" %}
+            </a>
+        </div>
+        {% endif %}
+    </div>
+
+    {# ── En-tête horizontal : icône + infos ── #}
+    {# ── Horizontal header: icon + info ── #}
+    <div class="badge-page-header" data-testid="badge-page-header">
+        <div class="badge-page-header-icon">
+            {% if badge.icon %}
+                {% picture badge.icon img_alt=badge.name ratio="1/1" %}
+            {% else %}
+                <div class="home-result-icon-placeholder home-result-icon-placeholder-badges badge-page-header-icon-placeholder">
+                    <span aria-hidden="true">&#9733;</span>
+                </div>
+            {% endif %}
+        </div>
+        <div class="badge-page-header-info">
+            <h1 class="badge-page-header-name">{{ badge.name }}</h1>
+
+            {# Niveau (pastille colorée) #}
+            {# Level (colored pill) #}
+            <p class="badge-page-header-meta text-muted mb-1">
+                {% if badge.level %}
+                    {% if badge.level == 'beginner' %}
+                        <span class="home-level-tag home-level-beginner">{{ badge.get_level_display }}</span>
+                    {% elif badge.level == 'intermediate' %}
+                        <span class="home-level-tag home-level-intermediate">{{ badge.get_level_display }}</span>
+                    {% elif badge.level == 'expert' %}
+                        <span class="home-level-tag home-level-expert">{{ badge.get_level_display }}</span>
+                    {% endif %}
+                {% endif %}
+                <span class="text-muted">
+                    {% translate "Émis par" %}
+                    <a href="/lieu/{{ badge.issuing_structure.pk }}/"
+                       class="badge-page-issuer-link"
+                       data-testid="badge-page-issuer-link">
+                        {{ badge.issuing_structure.name }}
+                    </a>
+                </span>
+            </p>
+
+            {# Description #}
+            {% if badge.description %}
+                <div class="badge-page-header-description text-muted mb-0">
+                    {{ badge.description|linebreaks }}
+                </div>
+            {% endif %}
+        </div>
+    </div>
+
+    {# ── Section Structures qui reconnaissent ce badge ── #}
+    {# ── Structures that recognize this badge ── #}
+    <section aria-label="{% translate 'Structures' %}" class="mt-4">
+        <h2 class="home-column-title">
+            {% translate "Structures qui reconnaissent ce badge" %}
+            {% if all_structures_list %}
+                <span class="home-count-badge">{{ all_structures_list|length }}</span>
+            {% endif %}
+        </h2>
+
+        {% if all_structures_list %}
+            {% for structure in all_structures_list %}
+            <a href="/lieu/{{ structure.pk }}/"
+               class="home-result-item"
+               data-testid="badge-page-structure-{{ structure.pk }}">
+                <div class="home-result-icon">
+                    {% if structure.logo %}
+                        {% picture structure.logo img_alt=structure.name ratio="1/1" %}
+                    {% else %}
+                        <div class="home-result-icon-placeholder home-result-icon-placeholder-structures">
+                            <span aria-hidden="true">&#9737;</span>
+                        </div>
+                    {% endif %}
+                </div>
+                <div class="home-result-text">
+                    <span class="home-result-name">
+                        {{ structure.name }}
+                        {% if structure.pk == badge.issuing_structure.pk %}
+                            <span class="home-relation-tag home-relation-tag-issuer">{% translate "Émetteur" %}</span>
+                        {% else %}
+                            <span class="home-relation-tag home-relation-tag-endorser">{% translate "Endosse" %}</span>
+                        {% endif %}
+                    </span>
+                    {% if structure.description %}
+                        <span class="home-result-desc text-muted">{{ structure.description|truncatewords:12 }}</span>
+                    {% endif %}
+                </div>
+            </a>
+            {% endfor %}
+        {% else %}
+            <p class="home-empty-message text-muted">{% translate "Aucune structure liée." %}</p>
+        {% endif %}
+    </section>
+
+    {# ── Section Détenteurs ── #}
+    {# ── Holders section ── #}
+    <section aria-label="{% translate 'Détenteurs' %}" class="mt-4">
+        <h2 class="home-column-title">
+            {% translate "Détenteurs" %}
+            {% if holders_assignments %}
+                <span class="home-count-badge">{{ holders_assignments|length }}</span>
+            {% endif %}
+        </h2>
+
+        {% if holders_assignments %}
+            {% for assignment in holders_assignments %}
+            <a href="/passeport/{{ assignment.user.pk }}/"
+               class="home-result-item"
+               data-testid="badge-page-holder-{{ assignment.user.pk }}">
+                <div class="home-result-icon home-result-icon-round">
+                    {% if assignment.user.avatar %}
+                        {% picture assignment.user.avatar img_alt=assignment.user.get_full_name|default:assignment.user.username ratio="1/1" %}
+                    {% else %}
+                        <div class="home-result-icon-placeholder home-result-icon-placeholder-personnes home-result-icon-round">
+                            <span aria-hidden="true">&#9679;</span>
+                        </div>
+                    {% endif %}
+                </div>
+                <div class="home-result-text">
+                    <span class="home-result-name">{{ assignment.user.get_full_name|default:assignment.user.username }}</span>
+                    <span class="home-result-desc text-muted">
+                        {% if assignment.assigned_structure %}
+                            {% blocktranslate with structure_name=assignment.assigned_structure.name %}via {{ structure_name }}{% endblocktranslate %}
+                        {% endif %}
+                        {% if assignment.assigned_date %}
+                            &middot;
+                            <time datetime="{{ assignment.assigned_date|date:'Y-m-d' }}">
+                                {{ assignment.assigned_date|date:"d/m/Y" }}
+                            </time>
+                        {% endif %}
+                    </span>
+                </div>
+            </a>
+            {% endfor %}
+        {% else %}
+            <p class="home-empty-message text-muted">{% translate "Aucun détenteur." %}</p>
+        {% endif %}
+    </section>
+
+    {# ── Section Critères par structure ── #}
+    {# ── Criteria by structure section ── #}
+    {% if all_criteria_for_badge %}
+    <section aria-label="{% translate 'Critères d\'attribution' %}" class="mt-4" data-testid="badge-page-criteria-section">
+        <h2 class="home-column-title">{% translate "Critères d'attribution" %}</h2>
+        {% for criteria in all_criteria_for_badge %}
+        <div class="badge-page-criteria-item mb-3" data-testid="badge-page-criteria-{{ criteria.structure.pk }}">
+            <p class="mb-1">
+                <strong>
+                    <a href="/lieu/{{ criteria.structure.pk }}/" class="badge-page-issuer-link">
+                        {{ criteria.structure.name }}
+                    </a>
+                </strong>
+            </p>
+            <div class="text-muted mb-0">{{ criteria.criteria|linebreaks }}</div>
+        </div>
+        {% endfor %}
+    </section>
+    {% endif %}
+
+    {# ── Boutons d'action (selon permissions) ── #}
+    {# ── Action buttons (based on permissions) ── #}
+    {% if can_assign or can_endorse %}
+    <section aria-label="{% translate 'Actions' %}" class="mt-4" data-testid="badge-page-actions">
+        <div class="badge-page-actions" role="group" aria-label="{% translate 'Actions' %}">
+            {# Bouton Attribuer : ouvre le formulaire existant dans le popup #}
+            {# / Assign button: opens existing form in popup #}
+            {% if can_assign %}
+            <button
+                type="button"
+                class="btn btn-sm btn-outline-primary"
+                hx-get="{% url 'core:badge-assign' pk=badge.pk %}"
+                hx-on:htmx:after-request="showpopup()"
+                hx-target="#customPopup-content"
+                hx-swap="innerHTML"
+                data-testid="badge-page-assign-btn">
+                <span aria-hidden="true">&#9998;</span>
+                {% translate "Attribuer" %}
+            </button>
+            {% endif %}
+
+            {# Bouton Endosser : ouvre le formulaire existant dans le popup #}
+            {# / Endorse button: opens existing form in popup #}
+            {% if can_endorse %}
+            <button
+                type="button"
+                class="btn btn-sm btn-outline-primary"
+                hx-get="{% url 'core:badge-endorse' pk=badge.pk %}"
+                hx-on:htmx:after-request="showpopup()"
+                hx-target="#customPopup-content"
+                hx-swap="innerHTML"
+                data-testid="badge-page-endorse-btn">
+                <span aria-hidden="true">&#9733;</span>
+                {% translate "Endosser" %}
+            </button>
+            {% endif %}
+        </div>
+    </section>
+    {% endif %}
+
+    {# ── Carte MapLibre (si au moins une structure a un marker) ── #}
+    {# ── MapLibre map (if at least one structure has a marker) ── #}
+    {% if structures_pks_csv %}
+    <section aria-label="{% translate 'Carte' %}" class="mt-4" data-testid="badge-page-map-section">
+        <h2 class="home-column-title">{% translate "Carte" %}</h2>
+        <div class="badge-page-map-container">
+            <div id="badge-page-map"></div>
+        </div>
+    </section>
+    {% endif %}
+
+</div>
+{% endblock %}
+
+{% block extra_js %}
+{% if structures_pks_csv %}
+<script src="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        // Charge les markers des structures liées à ce badge via l'API map_data
+        // Loads markers for structures linked to this badge via map_data API
+        var structures_pks = "{{ structures_pks_csv }}";
+        fetch("{% url 'core:home-map-data' %}?structures=" + structures_pks)
+            .then(function (response) { return response.json(); })
+            .then(function (data) {
+                if (!data.features || data.features.length === 0) return;
+
+                var map = new maplibregl.Map({
+                    container: 'badge-page-map',
+                    style: 'https://basemaps.cartocdn.com/gl/voyager-gl-style/style.json',
+                    center: [data.features[0].geometry.coordinates[0], data.features[0].geometry.coordinates[1]],
+                    zoom: 12,
+                    attributionControl: false,
+                });
+
+                // Ajouter chaque marker sur la carte
+                // Add each marker to the map
+                var bounds = new maplibregl.LngLatBounds();
+                for (var i = 0; i < data.features.length; i++) {
+                    var feature = data.features[i];
+                    var coords = feature.geometry.coordinates;
+                    new maplibregl.Marker().setLngLat(coords).addTo(map);
+                    bounds.extend(coords);
+                }
+
+                // Ajuster le cadrage si plusieurs markers
+                // Fit bounds if multiple markers
+                if (data.features.length > 1) {
+                    map.fitBounds(bounds, { padding: 60, maxZoom: 14 });
+                }
+            });
+    });
+</script>
+{% endif %}
+{% endblock %}

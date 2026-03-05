@@ -4,8 +4,6 @@ services:
     restart: always
     container_name: fossbadge_postgres
     hostname: fossbadge_postgres
-#    ports:
-#      - "5432:5432"
     volumes:
       - o2badge_dev_db:/var/lib/postgresql
     env_file:

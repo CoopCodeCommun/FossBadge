@@ -70,6 +70,11 @@ class Command(BaseCommand):
         self.stdout.write('Creating badge criteria...')
         self.create_badge_criteria(badges, structures)
 
+        # Creer le compte admin de demonstration (thomas / labrique)
+        # / Create the demo admin account (thomas / labrique)
+        self.stdout.write('Creating demo admin user...')
+        self.create_demo_admin(structures)
+
         self.stdout.write(self.style.SUCCESS('Database population completed!'))
         self.stdout.write(self.style.SUCCESS(f'Created {len(users)} users'))
         self.stdout.write(self.style.SUCCESS(f'Created {len(structures)} structures'))
@@ -122,10 +127,10 @@ class Command(BaseCommand):
                 'address': '202 Avenue Montaigne, 75008 Paris'
             },
             {
-                'username': 'thomas.petit',
+                'username': 'thomas.doug',
                 'first_name': 'Thomas',
-                'last_name': 'Petit',
-                'email': 'thomas.petit@example.com',
+                'last_name': 'Doug',
+                'email': 'thomas.doug@example.com',
                 'password': 'password123',
                 'address': '12 Rue des Lilas, 69100 Villeurbanne'
             },
@@ -1140,6 +1145,39 @@ class Command(BaseCommand):
                             criteria_created_count += 1
 
         self.stdout.write(self.style.SUCCESS(f'Created {criteria_created_count} badge criteria'))
+
+    def create_demo_admin(self, structures):
+        """
+        Creer un compte admin de demonstration pour tester les fonctionnalites.
+        Ce compte est admin de toutes les structures.
+        / Create a demo admin account for testing features.
+        This account is admin of all structures.
+        """
+        thomas, created = User.objects.get_or_create(
+            username='thomas',
+            defaults={
+                'first_name': 'Thomas',
+                'last_name': 'Admin',
+                'email': 'thomas@codecommun.coop',
+                'is_staff': True,
+                'is_superuser': True,
+            }
+        )
+        if created:
+            thomas.set_password('labrique')
+            thomas.save()
+            self.stdout.write(self.style.SUCCESS('Created demo admin: thomas / labrique'))
+        else:
+            self.stdout.write('Demo admin "thomas" already exists')
+
+        # Ajouter thomas comme admin de toutes les structures
+        # / Add thomas as admin of all structures
+        for structure in structures:
+            structure.admins.add(thomas)
+
+        self.stdout.write(self.style.SUCCESS(
+            f'thomas is admin of {len(structures)} structures'
+        ))
 
     def connect_users_to_structures(self, users, structures):
         """

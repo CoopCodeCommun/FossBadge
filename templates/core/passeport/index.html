@@ -8,7 +8,7 @@
 {% load l10n %}
 
 {% block title %}
-    {% blocktranslate with name=person.get_full_name|default:person.username %}Passeport de {{ name }}{% endblocktranslate %} — FossBadge
+    {% blocktranslate with name=person.get_full_name|default:person.username %}Passeport de {{ name }}{% endblocktranslate %} — O2Badge
 {% endblock %}
 
 {% block extra_css %}
@@ -25,7 +25,7 @@
     <div class="d-flex justify-content-between align-items-center mb-3">
         <a href="/" class="home-back-link" data-testid="passeport-back-link"
            onclick="event.preventDefault(); history.back();">
-            <span aria-hidden="true">&larr;</span> FossBadge
+            <span aria-hidden="true">&larr;</span> O2Badge
         </a>
 
         {% if is_self %}
@@ -64,7 +64,7 @@
                 {% blocktranslate count counter=total_badges %}{{ counter }} badge{% plural %}{{ counter }} badges{% endblocktranslate %}
                 {% if total_places %}
                     &middot;
-                    {% blocktranslate count counter=total_places %}{{ counter }} lieu{% plural %}{{ counter }} lieux{% endblocktranslate %}
+                    {% blocktranslate count counter=total_places %}{{ counter }} structure{% plural %}{{ counter }} structures{% endblocktranslate %}
                 {% endif %}
             </p>
         </div>
@@ -111,7 +111,7 @@
                                 {% if assignment.assigned_structure %}
                                     &middot;
                                     {% translate "via" %}
-                                    <a href="/lieu/{{ assignment.assigned_structure.pk }}/"
+                                    <a href="/structure/{{ assignment.assigned_structure.pk }}/"
                                        class="passeport-structure-link"
                                        data-testid="passeport-lieu-link-{{ assignment.assigned_structure.pk }}">
                                         {{ assignment.assigned_structure.name }}
@@ -145,10 +145,10 @@
                                 {% translate "Voir le badge" %} &rarr;
                             </a>
                             {% if assignment.assigned_structure %}
-                                <a href="/lieu/{{ assignment.assigned_structure.pk }}/"
+                                <a href="/structure/{{ assignment.assigned_structure.pk }}/"
                                    class="lieu-badge-link"
                                    data-testid="passeport-lieu-detail-link-{{ assignment.assigned_structure.pk }}">
-                                    {% translate "Voir le lieu" %} &rarr;
+                                    {% translate "Voir la structure" %} &rarr;
                                 </a>
                             {% endif %}
                         </div>

@@ -90,7 +90,7 @@ class HomeViewSet(viewsets.ViewSet):
         )
 
         return render(request, 'core/home/index.html', {
-            'title': 'FossBadge',
+            'title': 'O2Badge',
             'badge_names_for_cloud': all_badge_names_for_cloud,
         })
 
@@ -562,7 +562,7 @@ class HomeViewSet(viewsets.ViewSet):
 
         return JsonResponse({'type': 'FeatureCollection', 'features': features})
 
-    @action(detail=False, methods=["GET"], url_path="lieu/(?P<structure_pk>[^/.]+)")
+    @action(detail=False, methods=["GET"], url_path="structure/(?P<structure_pk>[^/.]+)")
     def lieu(self, request, structure_pk=None):
         """
         Page dédiée d'un lieu (structure).

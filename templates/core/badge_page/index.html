@@ -7,7 +7,7 @@
 {% load static %}
 {% load l10n %}
 
-{% block title %}{{ badge.name }} — FossBadge{% endblock %}
+{% block title %}{{ badge.name }} — O2Badge{% endblock %}
 
 {% block extra_css %}
 {% if structures_pks_csv %}
@@ -23,7 +23,7 @@
     <div class="d-flex justify-content-between align-items-center mb-3">
         <a href="/" class="home-back-link" data-testid="badge-page-back-link"
            onclick="event.preventDefault(); history.back();">
-            <span aria-hidden="true">&larr;</span> FossBadge
+            <span aria-hidden="true">&larr;</span> O2Badge
         </a>
 
         {% if is_badge_editor %}
@@ -71,7 +71,7 @@
                 {% endif %}
                 <span class="text-muted">
                     {% translate "Émis par" %}
-                    <a href="/lieu/{{ badge.issuing_structure.pk }}/"
+                    <a href="/structure/{{ badge.issuing_structure.pk }}/"
                        class="badge-page-issuer-link"
                        data-testid="badge-page-issuer-link">
                         {{ badge.issuing_structure.name }}
@@ -100,7 +100,7 @@
 
         {% if all_structures_list %}
             {% for structure in all_structures_list %}
-            <a href="/lieu/{{ structure.pk }}/"
+            <a href="/structure/{{ structure.pk }}/"
                class="home-result-item"
                data-testid="badge-page-structure-{{ structure.pk }}">
                 <div class="home-result-icon">
@@ -186,7 +186,7 @@
         <div class="badge-page-criteria-item mb-3" data-testid="badge-page-criteria-{{ criteria.structure.pk }}">
             <p class="mb-1">
                 <strong>
-                    <a href="/lieu/{{ criteria.structure.pk }}/" class="badge-page-issuer-link">
+                    <a href="/structure/{{ criteria.structure.pk }}/" class="badge-page-issuer-link">
                         {{ criteria.structure.name }}
                     </a>
                 </strong>

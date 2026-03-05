@@ -982,11 +982,9 @@ class Command(BaseCommand):
                 else:
                     assigning_structure = random.choice(valid_structures)
 
-                # Notes realistes (pas toujours presentes)
-                # / Realistic notes (not always present)
-                note = None
-                if random.random() < 0.6 and structure_notes:
-                    note = random.choice(structure_notes)
+                # Notes realistes (toujours presentes)
+                # / Realistic notes (always present)
+                note = random.choice(structure_notes) if structure_notes else "Compétence validée lors d'un atelier pratique."
 
                 assignment, was_created = badge.add_holder(
                     user,

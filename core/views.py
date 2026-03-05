@@ -45,6 +45,10 @@ def raise404(request, msg=None):
 def reload(request):
     return HttpResponseClientRedirect(request.headers['Referer'])
 
+def redirect_reload(url):
+    return HttpResponseClientRedirect(url)
+
+
 
 class HomeViewSet(viewsets.ViewSet):
     """
@@ -369,8 +373,6 @@ class BadgeViewSet(viewsets.ViewSet):
 
         messages.success(request, "Votre badge de rêve a bien été créé")
         return reload(request)
-
-
 
 class AssignmentViewSet(viewsets.ViewSet):
     """
@@ -788,12 +790,16 @@ class UserViewSet(viewsets.ViewSet):
         # TODO when authentication will be added :
         # Send a mail containing a link to delete the account
 
+        if not request.htmx:
+            return raise403(request)
+
         messages.success(request, "L'utilisateur a bien été désactivé")
 
         user = get_object_or_404(User, pk=pk)
         user.is_active = False
         user.save()
-        return redirect('core:user-list')
+
+        return redirect_reload(reverse('core:user-list'))
 
     @action(detail=False, methods=['get','post'], url_name="login")
     def login_request(self, request):

@@ -89,4 +89,17 @@
         let popup = document.querySelector("#customPopup")
         popup.classList.remove("showed")
     }
+
+    {% if outside_click_close %}
+        document.querySelector("#customPopup-bg").addEventListener("click",{{ close_func_name }})
+    {% endif %}
+
+    {% if esc_key_close %}
+        document.addEventListener("keydown",(e)=>{
+            if (e.key==="Escape"){
+                {{ close_func_name }}()
+            }
+        })
+    {% endif %}
+
 </script>

@@ -779,11 +779,22 @@ class HomeViewSet(viewsets.ViewSet):
             badge=badge
         ).select_related('user', 'assigned_structure').order_by('-assigned_date')
 
-        # Critères d'attribution par structure pour ce badge
-        # Attribution criteria by structure for this badge
+        # Criteres d'attribution par structure pour ce badge
+        # On les indexe par PK de structure pour les attacher a chaque structure
+        # / Attribution criteria by structure for this badge
+        # Indexed by structure PK to attach to each structure
         all_criteria_for_badge = BadgeCriteria.objects.filter(
             badge=badge
         ).select_related('structure')
+
+        criteria_by_structure_pk = {}
+        for criteria in all_criteria_for_badge:
+            criteria_by_structure_pk[criteria.structure_id] = criteria
+
+        # Attache le critere a chaque structure de la liste
+        # / Attach criteria to each structure in the list
+        for structure_item in all_structures_list:
+            structure_item.criteria_for_badge = criteria_by_structure_pk.get(structure_item.pk)
 
         # Permissions
         # / Permissions

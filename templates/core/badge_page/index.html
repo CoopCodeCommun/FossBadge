@@ -104,32 +104,41 @@
 
         {% if all_structures_list %}
             {% for structure in all_structures_list %}
-            <a href="/structure/{{ structure.pk }}/"
-               class="home-result-item"
-               data-testid="badge-page-structure-{{ structure.pk }}">
-                <div class="home-result-icon">
-                    {% if structure.logo %}
-                        {% picture structure.logo img_alt=structure.name ratio="1/1" %}
-                    {% else %}
-                        <div class="home-result-icon-placeholder home-result-icon-placeholder-structures">
-                            <span aria-hidden="true">&#9737;</span>
-                        </div>
-                    {% endif %}
-                </div>
-                <div class="home-result-text">
-                    <span class="home-result-name">
-                        {{ structure.name }}
-                        {% if structure.pk == badge.issuing_structure.pk %}
-                            <span class="home-relation-tag home-relation-tag-issuer">{% translate "Émetteur" %}</span>
+            <div class="badge-page-structure-block" data-testid="badge-page-structure-{{ structure.pk }}">
+                <a href="/structure/{{ structure.pk }}/"
+                   class="home-result-item">
+                    <div class="home-result-icon">
+                        {% if structure.logo %}
+                            {% picture structure.logo img_alt=structure.name ratio="1/1" %}
                         {% else %}
-                            <span class="home-relation-tag home-relation-tag-endorser">{% translate "Endosse" %}</span>
+                            <div class="home-result-icon-placeholder home-result-icon-placeholder-structures">
+                                <span aria-hidden="true">&#9737;</span>
+                            </div>
                         {% endif %}
-                    </span>
-                    {% if structure.description %}
-                        <span class="home-result-desc text-muted">{{ structure.description|truncatewords:12 }}</span>
-                    {% endif %}
+                    </div>
+                    <div class="home-result-text">
+                        <span class="home-result-name">
+                            {{ structure.name }}
+                            {% if structure.pk == badge.issuing_structure.pk %}
+                                <span class="home-relation-tag home-relation-tag-issuer">{% translate "Émetteur" %}</span>
+                            {% else %}
+                                <span class="home-relation-tag home-relation-tag-endorser">{% translate "Endosse" %}</span>
+                            {% endif %}
+                        </span>
+                        {% if structure.description %}
+                            <span class="home-result-desc text-muted">{{ structure.description|truncatewords:12 }}</span>
+                        {% endif %}
+                    </div>
+                </a>
+                {# Critere d'attribution pour cette structure (si present) #}
+                {# / Attribution criteria for this structure (if any) #}
+                {% if structure.criteria_for_badge %}
+                <div class="badge-page-criteria-inline" data-testid="badge-page-criteria-{{ structure.pk }}">
+                    <span class="badge-page-criteria-label" aria-hidden="true">&#9670;</span>
+                    <span class="text-muted">{{ structure.criteria_for_badge.criteria }}</span>
                 </div>
-            </a>
+                {% endif %}
+            </div>
             {% endfor %}
         {% else %}
             <p class="home-empty-message text-muted">{% translate "Aucune structure liée." %}</p>
@@ -180,26 +189,6 @@
             <p class="home-empty-message text-muted">{% translate "Aucun détenteur." %}</p>
         {% endif %}
     </section>
-
-    {# ── Section Critères par structure ── #}
-    {# ── Criteria by structure section ── #}
-    {% if all_criteria_for_badge %}
-    <section aria-label="{% translate 'Critères d\'attribution' %}" class="mt-4" data-testid="badge-page-criteria-section">
-        <h2 class="home-column-title">{% translate "Critères d'attribution" %}</h2>
-        {% for criteria in all_criteria_for_badge %}
-        <div class="badge-page-criteria-item mb-3" data-testid="badge-page-criteria-{{ criteria.structure.pk }}">
-            <p class="mb-1">
-                <strong>
-                    <a href="/structure/{{ criteria.structure.pk }}/" class="badge-page-issuer-link">
-                        {{ criteria.structure.name }}
-                    </a>
-                </strong>
-            </p>
-            <div class="text-muted mb-0">{{ criteria.criteria|linebreaks }}</div>
-        </div>
-        {% endfor %}
-    </section>
-    {% endif %}
 
     {# ── Boutons d'action (selon permissions) ── #}
     {# ── Action buttons (based on permissions) ── #}

@@ -6,7 +6,7 @@
 {% block content %}
 
     <h1>
-        Création de votre parcours de rêve : {{ course.name }}
+        Création de votre parcours : {{ course.name }}
     </h1>
 
     <div id="cy-container">
@@ -18,10 +18,10 @@
     </div>
 
     {% popup popup_width="80%" %}
-        <h2>Création de votre parcours de rêve : {{ course.name }}</h2>
+        <h2>Création de votre parcours : {{ course.name }}</h2>
         <hr>
         <h3>Badge similaire :</h3>
-        <p>Voici une liste de badge similaire à votre badge de rêve, veuillez en sélectionner un pour commencer à créer votre parcours.</p>
+        <p>Voici une liste de badge similaire à votre badge final, veuillez en sélectionner un pour commencer à créer votre parcours.</p>
         <hr>
 
         {% include "core/courses/partial/add_badge_popup.html" with badges=similar_badges %}
@@ -30,7 +30,7 @@
 {% endblock %}
 
 {% block extra_js %}
-    {% include "cytoscape/graph.html" with nodes=course.get_items_for_cytoscape edges=course.get_items_connections_for_cytoscape created=created editable=editable %}
+    {% include "cytoscape/graph.html" with nodes=course.get_items_for_cytoscape edges=course.get_items_connections_for_cytoscape editable=editable %}
     <script>
         {% if course.get_item_count == 0 %}
             {%  popup_open %};

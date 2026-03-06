@@ -8,6 +8,9 @@
     <h1>
         {{ course.name }}
     </h1>
+    {% if can_edit %}
+        <a class="btn btn-primary" href="{% url 'core:course-edit' course.pk %}">Modifier</a>
+    {% endif %}
     <div id="cy-container">
         <div id="cy"></div>
         <div class="top-right">

@@ -88,3 +88,10 @@ class InviteUserValidator(serializers.Serializer):
     """
     email = serializers.EmailField()
     role = serializers.ChoiceField(choices=Structure.ROLES)
+
+class CreateCourseValidator(serializers.Serializer):
+    """
+    Validator for creating a course
+    """
+    structure = serializers.UUIDField()
+    badge = serializers.UUIDField()

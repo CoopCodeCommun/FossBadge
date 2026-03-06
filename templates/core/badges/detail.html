@@ -20,6 +20,15 @@
                             hx-on:htmx:after-request="{%  popup_open %}"
                             hx-target="{% popup_content_id %}"
                             hx-swap="innerHTML"> Assigner</button>
+
+                    <button class="btn btn-primary"
+                            hx-get="{% url "core:course-create-course" %}?badge={{ badge.pk }}"
+                            hx-on:htmx:after-request="{%  popup_open %}"
+                            hx-target="{% popup_content_id %}"
+                            hx-swap="innerHTML">
+                        Créer un parcours
+                    </button>
+
                 {% endif %}
 
                 {% if can_endorse %}

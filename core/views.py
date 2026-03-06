@@ -6,7 +6,7 @@ from django.core.signing import SignatureExpired
 from django.core.validators import validate_email
 from django.http import HttpResponse
 from django.shortcuts import render, get_object_or_404, redirect
-from django.db.models import Q
+from django.db.models import Q, Count
 from django.urls import reverse
 from django_htmx.http import HttpResponseClientRedirect
 from rest_framework import viewsets
@@ -19,7 +19,8 @@ from .models import Structure, Badge, User, BadgeAssignment, Course, CourseItem
 from .forms import BadgeForm, StructureForm, UserForm, PartialUserForm
 
 from .permissions import IsBadgeEditor, IsStructureAdmin, CanEditUser, CanAssignBadge, CanEndorseBadge, CanEditCourse
-from .validators import BadgeAssignmentValidator, BadgeEndorsementValidator, DreamBadgeValidator, InviteUserValidator
+from .validators import BadgeAssignmentValidator, BadgeEndorsementValidator, DreamBadgeValidator, InviteUserValidator, \
+    CreateCourseValidator
 
 
 def raise403(request, msg=None):
@@ -369,7 +370,9 @@ class BadgeViewSet(viewsets.ViewSet):
         }
         data.update(validator.validated_data)
 
+        # Create the dream badge and its associated course
         badge = Badge.objects.create(**data)
+        course = Course.objects.create(badge=badge, user=request.user,is_dream=True)
 
         messages.success(request, "Votre badge de rêve a bien été créé")
         return reload(request)
@@ -888,10 +891,12 @@ class CourseViewSet(viewsets.ViewSet):
     def retrieve(self, request, pk=None):
 
         course = Course.objects.get(pk=pk)
+        can_edit = request.user.can_edit_course(course)
 
         return render(request, "core/courses/detail.html",context={
             "course":course,
             "editable":False,
+            "can_edit":can_edit
         })
 
     def list(self,request):
@@ -907,9 +912,11 @@ class CourseViewSet(viewsets.ViewSet):
         badge_filter = request.GET.get('badge', '')
 
         # Start with all courses
-        courses = Course.objects.all()
+        # courses = Course.objects.all()
+        courses = (Course.objects.annotate(num_items=Count("items")).filter(num_items__gt=0))
 
-        # Apply search filter if provided
+
+    # Apply search filter if provided
         if search_query:
             courses = courses.filter(
                 Q(name__icontains=search_query) |
@@ -941,47 +948,70 @@ class CourseViewSet(viewsets.ViewSet):
 
     @action(detail=False, methods=['get','post'])
     def create_course(self,request):
+        """
+        Create a new course
+        """
+
+        if not request.htmx:
+            return raise403(request)
+
+        context = {}
+
         if request.method == 'GET':
-            if not request.htmx:
-                return raise403(request)
+            structure = request.GET.get('structure', None)
+            badge = request.GET.get('badge', None)
 
-            structures = request.user.structures.all()
-            badges = request.user.get_all_endorsed_badge()
+            if not structure and not badge:
+                return raise404(request)
+
+            if structure:
+                structure = Structure.objects.get(pk=structure)
+                badges = structure.endorsed_badges
+                context.update({
+                    "structure":structure,
+                    "badges":badges,
+                })
+
+            if badge:
+                badge = Badge.objects.get(pk=badge)
+                structures = request.user.get_structures_endorsing_badge(badge)
+                context.update({
+                    "structures":structures,
+                    "badge":badge,
+                })
+
+            return render(request, "core/courses/partial/create_popup.html", context=context)
 
 
-            # TODO : what if the user select a structure that do not endorse the badge
-            # I think this route should always be given either :
-            # A badge -> We get structures that endorse this badge
-            # A structure -> We get badges endorsed by that structure
-            # Bye bye, have a nice day !!!
+        validator = CreateCourseValidator(data=request.data)
+        is_valid = validator.is_valid()
 
-            return render(request, "core/courses/partial/create_popup.html", context={
-                "structures":structures,
-                "badges" : badges,
+        if not is_valid:
+            context.update({
+                "errors" : validator.errors,
+                "defaults" : validator.data,
             })
+            return render(request,"core/courses/partial/create_popup.html",context=context)
 
+        structure = validator.validated_data['structure']
+        structure = Structure.objects.get(pk=structure)
 
+        badge = validator.validated_data['badge']
+        badge = Badge.objects.get(pk=badge)
 
-        return reload(request)
+        course = Course.objects.create(badge=badge,structure=structure)
 
-    @action(detail=False,methods=['get','post'],url_path="create")
-    def get_or_create_dream_course(self,request):
+        return redirect_reload(reverse('core:course-edit',kwargs={"pk":course.pk}))
 
+    @action(detail=True, methods=['get'])
+    def edit(self,request, pk=None):
+        course = Course.objects.get(pk=pk)
         similar_badges = Badge.objects.order_by('?')[:5]
 
-        # Get or create the DreamCourse linked to the user
-        course, created = Course.objects.get_or_create(
-            user=request.user,
-            name=request.user.dream_badge.name,
-            badge=request.user.dream_badge,
-            is_dream=True
-        )
-
-        return render(request, "core/courses/create.html", context={
-            "similar_badges":similar_badges,
+        return render(request, "core/courses/edit.html", context={
             "course":course,
-            "created":created,
             "editable":True,
+            "similar_badges":similar_badges
         })
 
     @action(detail=True, methods=['get','post'])

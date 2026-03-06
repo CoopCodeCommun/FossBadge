@@ -184,6 +184,15 @@ class User(AbstractUser):
         )
         return badges
 
+    def can_edit_course(self,course):
+        if course.is_dream and course.user==self:
+            return True
+
+        if course.structure in self.structures and course.structure.is_editor(self):
+            return True
+
+        return False
+
 
 class Structure(models.Model):
     """

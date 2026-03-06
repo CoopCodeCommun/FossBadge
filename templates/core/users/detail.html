@@ -96,12 +96,12 @@
                         <h2>
                             Mon badge de rêve
                             {% if request.user == user %}
-                                {% if user.has_dream_course %}
-                                    <a class="btn btn-primary" href="{% url "core:course-get-or-create-dream-course" %}">
+                                {% if user.has_dream_course and user.dream_course.items.count > 0 %}
+                                    <a class="btn btn-primary" href="{% url "core:course-edit" user.dream_course.pk %}">
                                         Voir/modifier votre parcours !
                                     </a>
                                 {% else %}
-                                    <a class="btn btn-primary" href="{% url "core:course-get-or-create-dream-course" %}">
+                                    <a class="btn btn-primary" href="{% url "core:course-edit" user.dream_course.pk %}">
                                         Créer votre parcours !
                                     </a>
                                 {% endif %}

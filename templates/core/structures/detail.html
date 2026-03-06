@@ -55,7 +55,7 @@
                             {% picture structure.logo img_alt="Logo de "|add:structure.name img_class="img-fluid" ratio="1/1" %}
                         </div>
                     {% else %}
-                        <img src="{{ placeholder_image }}" alt="Logo de {{ structure.name }}" class="img-fluid mb-3" style="max-width: 200px;">
+                        <img src="{{ placeholder_image }}" alt="Logo de {{ structure.name }}" class="img-fluid mb-3 m-auto" style="max-width: 200px;">
                     {% endif %}
                     <h2 class="mb-3">{{ structure.name }}</h2>
 

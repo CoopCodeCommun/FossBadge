@@ -5,19 +5,38 @@
     {% for course in courses %}
     <div class="card text-center">
         <div class="card-body">
-            <h5 class="card-title">{{ course.name }}</h5>
+            <h5 class="card-title relative">
+                {{ course.name }}
+                {% if course.is_dream %}
+                    <img class="w-6 h-6 absolute right-1 top-0" src="{{ placeholder_dream_badge }}" alt="Ce cours est lié à un badge de rêve" />
+                {% endif %}
+            </h5>
+
+            <small>{{ course.is_dream_course }}</small>
             <p> Contient {{course.get_item_count}} badges</p>
             <p class="card-text text-muted">{{ course.issuing_structure.name }}</p>
             <p> Créer par : </p>
-            <p>
-                {{ course.structure.name }}
-                {% if course.structure.logo %}
-                    {% picture course.structure.logo img_alt=course.structure.name img_class="badge-icon" ratio="1/1" %}
-                {% else %}
-                    <img src="{{ course.structure.logo }}" alt="Logo {{ course.structure.name }}" class="me-3" style="width: 80px; height: 80px;">
-                {% endif %}
+            {% if course.is_dream %}
+                <p>
+                    {{ course.user.username }}
+                    {% if course.user.avatar %}
+                        {% picture course.user.avatar img_alt=course.user.username img_class="badge-icon" ratio="1/1" %}
+                    {% else %}
+                        <img src="{{ placeholder_image }}" alt="Avatar de {{ course.user.username }}" class="badge-icon<" style="width: 80px; height: 80px;">
+                    {% endif %}
 
-            </p>
+                </p>
+            {% else %}
+                <p>
+                    {{ course.structure.name }}
+                    {% if course.structure.logo %}
+                        {% picture course.structure.logo img_alt=course.structure.name img_class="badge-icon" ratio="1/1" %}
+                    {% else %}
+                        <img src="{{ placeholder_image }}" alt="Logo {{ course.structure.name }}" class="badge-icon" style="width: 80px; height: 80px;">
+                    {% endif %}
+
+                </p>
+            {% endif %}
             <a href="{% url 'core:course-detail' pk=course.pk %}" class="btn btn-primary">Voir le parcours</a>
         </div>
     </div>

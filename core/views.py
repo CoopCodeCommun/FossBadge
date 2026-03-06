@@ -15,10 +15,10 @@ from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.decorators import action,authentication_classes, permission_classes
 from .helpers import TokenHelper
 from .helpers.utils import get_or_create_user, invite_user_to_structure
-from .models import Structure, Badge, User, BadgeAssignment, Course, DreamCourse, CourseItem
+from .models import Structure, Badge, User, BadgeAssignment, Course, CourseItem
 from .forms import BadgeForm, StructureForm, UserForm, PartialUserForm
 
-from .permissions import IsBadgeEditor, IsStructureAdmin, CanEditUser, CanAssignBadge, CanEndorseBadge
+from .permissions import IsBadgeEditor, IsStructureAdmin, CanEditUser, CanAssignBadge, CanEndorseBadge, CanEditCourse
 from .validators import BadgeAssignmentValidator, BadgeEndorsementValidator, DreamBadgeValidator, InviteUserValidator
 
 
@@ -872,6 +872,19 @@ class CourseViewSet(viewsets.ViewSet):
     ViewSet for course related routes
     """
 
+    def get_permissions(self):
+        permissions_list = []
+
+        if self.action in ['retrieve', 'list']:
+            permissions_list += [AllowAny]
+        elif self.action in ['get_or_create_dream_course']:
+            permissions_list += [IsAuthenticated]
+        elif self.action in ["add_badge", "remove_badge"]:
+            permissions_list += [CanEditCourse]
+
+        return [permission() for permission in permissions_list]
+
+
     def retrieve(self, request, pk=None):
 
         course = Course.objects.get(pk=pk)
@@ -926,14 +939,43 @@ class CourseViewSet(viewsets.ViewSet):
             "badges":badges,
         })
 
+    @action(detail=False, methods=['get','post'])
+    def create_course(self,request):
+        if request.method == 'GET':
+            if not request.htmx:
+                return raise403(request)
+
+            structures = request.user.structures.all()
+            badges = request.user.get_all_endorsed_badge()
+
+
+            # TODO : what if the user select a structure that do not endorse the badge
+            # I think this route should always be given either :
+            # A badge -> We get structures that endorse this badge
+            # A structure -> We get badges endorsed by that structure
+            # Bye bye, have a nice day !!!
+
+            return render(request, "core/courses/partial/create_popup.html", context={
+                "structures":structures,
+                "badges" : badges,
+            })
+
+
+
+        return reload(request)
+
     @action(detail=False,methods=['get','post'],url_path="create")
     def get_or_create_dream_course(self,request):
-
 
         similar_badges = Badge.objects.order_by('?')[:5]
 
         # Get or create the DreamCourse linked to the user
-        course, created = DreamCourse.objects.get_or_create(user=request.user, name=request.user.dream_badge.name)
+        course, created = Course.objects.get_or_create(
+            user=request.user,
+            name=request.user.dream_badge.name,
+            badge=request.user.dream_badge,
+            is_dream=True
+        )
 
         return render(request, "core/courses/create.html", context={
             "similar_badges":similar_badges,
@@ -941,7 +983,6 @@ class CourseViewSet(viewsets.ViewSet):
             "created":created,
             "editable":True,
         })
-
 
     @action(detail=True, methods=['get','post'])
     def add_badge(self, request, pk=None):

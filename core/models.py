@@ -3,7 +3,7 @@ from django.db import models
 from django.contrib.auth.models import AbstractUser
 from django.utils import timezone
 from pictures.models import PictureField
-from django.db.models import Q
+from django.db.models import Q, CheckConstraint
 
 # Create your models here.
 
@@ -174,6 +174,15 @@ class User(AbstractUser):
             ).distinct()
         return structures
 
+    def get_all_endorsed_badge(self):
+        """
+        Return all badge endorsed by the structures where the user is editor or admin
+        """
+
+        badges = Badge.objects.filter(
+            Q(endorsements__structure__in=self.structures)
+        )
+        return badges
 
 
 class Structure(models.Model):
@@ -474,8 +483,23 @@ class Course(models.Model):
     """
     uuid = models.UUIDField(default=uuid.uuid7, primary_key=True, db_index=True)
     # TODO : when course creation will be implemented, make sure that in the validator the `structure` field is required
+
     structure = models.ForeignKey(Structure, on_delete=models.CASCADE, related_name='courses', verbose_name="Structure", null=True, default=None)
+    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='dream_course', verbose_name="User", null=True, default=None)
+
+    is_dream = models.BooleanField(default=False)
+    badge = models.ForeignKey(Badge, on_delete=models.CASCADE, related_name='courses', verbose_name="Badge")
+
     name = models.TextField(blank=False, null=False, verbose_name="Nom")
+
+    class Meta:
+        constraints = [
+            # Check if the user or the structure is not null
+            CheckConstraint(
+                condition=Q(structure__isnull=False) | Q(user__isnull=False),
+                name="structure_or_user_not_null"
+            ),
+        ]
 
     def get_items_for_cytoscape(self):
         """
@@ -526,8 +550,6 @@ class Course(models.Model):
     def __str__(self):
         return f"{self.name}"
 
-class DreamCourse(Course):
-    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='dream_course', verbose_name="User")
 
 class CourseItem(models.Model):
     """

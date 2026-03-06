@@ -1,0 +1,44 @@
+{%include 'show_message.html'%}
+{% load custom_tags %}
+
+
+<div>
+    <form hx-post="{% url 'core:course-create-course' %}"
+          hx-target="#structure-invite-form"
+          hx-swap="innerHTML">
+
+        <h2>Créer un parcous</h2>
+
+        <label for="badge"> Badge final</label>
+        <select id="badge" class="form-select" name="badge">
+            <option selected>--- Sélectionnez un badge final ---</option>>
+            {%for badge in badge%}
+                <option value="{{badge.pk}}" {% if badge.pk == defaults.badge %}selected{% endif %}>{{badge.name}}</option>>
+            {%endfor%}
+        </select>
+        {% if errors.badge %}
+            <p class="error">{{errors.badge.0}}</p>
+        {% endif %}
+
+        <label for="structure"> Structure</label>
+        <select id="structure" class="form-select" name="structure">
+            <option selected>--- Sélectionnez une structure ---</option>>
+            {%for structure in structures%}
+                <option value="{{structure.pk}}" {% if role.pk == defaults.structure %}selected{% endif %}>{{structure.name}}</option>>
+            {%endfor%}
+        </select>
+        {% if errors.structure %}
+            <p class="error">{{errors.structure.0}}</p>
+        {% endif %}
+
+        <label for="email"> Email</label>
+        <input type="email" id="email" class="form-control mt-2" placeholder='Email' name="email" value="{{ defaults.email }}"/>
+        {% if errors.email %}
+            <p class="error">{{errors.email.0}}</p>
+        {% endif %}
+
+        <button class="btn btn-primary">Envoyer</button>
+
+        <button class="btn btn-danger" onclick="{% popup_close %}" type="button">Annuler</button>
+    </form>
+</div>

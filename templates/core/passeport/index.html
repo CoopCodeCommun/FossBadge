@@ -81,8 +81,31 @@
         </h2>
 
         {% if assignments %}
+        <!--
+           Grille à 2 colonnes pour afficher les badges
+           2-column grid to display badges
+           
+           Le style est défini dans custom.css avec display: grid
+           Style is defined in custom.css with display: grid
+           
+           Sur grand écran : 2 colonnes
+           On large screen: 2 columns
+           
+           Sur mobile : 1 colonne (plus lisible)
+           On mobile: 1 column (more readable)
+        -->
         <ol class="passeport-timeline" role="list" aria-label="{% translate 'Parcours' %}" data-testid="passeport-timeline">
             {% for assignment in assignments %}
+            <!--
+               Chaque badge est une cellule de la grille
+               Each badge is a grid cell
+               
+               Sur grand écran : 2 badges par ligne
+               On large screen: 2 badges per row
+               
+               Sur mobile : 1 badge par ligne
+               On mobile: 1 badge per row
+            -->
             <li class="passeport-timeline-item">
                 <details class="passeport-badge-card"
                          aria-label="{{ assignment.badge.name }}"

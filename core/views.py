@@ -1022,11 +1022,12 @@ class BadgeViewSet(viewsets.ViewSet):
                 )
                 # Redirige vers la page badge (HTMX ou classique)
                 # / Redirect to badge page (HTMX or classic)
+                messages.success(request,"Badge ajouté avec succès ! ")
                 if request.htmx:
                     return HttpResponseClientRedirect(
-                        reverse('core:badge-detail', kwargs={'pk': badge.pk})
+                        reverse('core:home-badge-detail', kwargs={'badge_pk': badge.pk})
                     )
-                return redirect(reverse('core:badge-detail', kwargs={'pk': badge.pk}))
+                return redirect(reverse('core:home-badge-detail', kwargs={'badge_pk': badge.pk}))
         else:
             initial_data = {}
             if default_structure:

@@ -1068,3 +1068,27 @@ class CourseViewSet(viewsets.ViewSet):
         course_item.delete()
 
         return HttpResponse()
+
+    @action(detail=True, methods=['post'])
+    def add_connection(self, request, pk=None):
+        if not request.htmx:
+            return raise403(request)
+
+        course = Course.objects.get(pk=pk)
+
+        parent_pk = request.POST.get('parent', '')
+        badge_parent = Badge.objects.get(pk=parent_pk)
+
+        child_pk = request.POST.get('child', '')
+        badge_child = Badge.objects.get(pk=child_pk)
+
+        course_parent = CourseItem.objects.get(badge=badge_parent, course=course)
+
+        course_child = CourseItem.objects.get(badge=badge_child, course=course)
+
+        course_parent.children.add(course_child)
+
+        return HttpResponse()
+
+
+

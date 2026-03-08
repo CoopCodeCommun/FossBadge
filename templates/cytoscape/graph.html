@@ -10,6 +10,9 @@
     var layout;
     var menu;
 
+    //
+    var addConnexionInfo = {}
+
     var nodes = {% autoescape off %}{{ nodes }}{% endautoescape %}
     var edges = {% autoescape off %}{{ edges }}{% endautoescape %}
 
@@ -73,15 +76,19 @@
                         let source = ele.id();
 
                         //htmx
-                        htmx.ajax('GET',`{% url 'core:course-add-badge' course.pk %}?parent_pk=${source}`,"{% popup_content_id %}").then((e)=>{
-                            {% popup_open %}
-                        })
+                        addBadgeAjaxCall(source)
                     }
                 },
                 {
                     content: 'Supprimer',
                     select: function(ele){
                         removeNode(ele.id())
+                    }
+                },
+                {
+                    content: 'Lier à un badge enfant',
+                    select: function(ele){
+                        startLink(ele.id())
                     }
                 },
                 /*{
@@ -137,6 +144,14 @@
     }
 
     {% if editable == True %}
+
+    // Make the ajax call and show the popup
+    function addBadgeAjaxCall(source){
+        htmx.ajax('GET',`{% url 'core:course-add-badge' course.pk %}?parent_pk=${source}`,"{% popup_content_id %}").then((e)=>{
+            {% popup_open %}
+        })
+    }
+
     // Add a badge as a node to cytoscape and as a courseItem to the database
     function addNode(name,id,img,parent){
         addNodeToCyto(name,id,img,parent);
@@ -152,6 +167,104 @@
             {values:dataAjax, target:'body', swap:'none'}
         )
 
+    }
+
+    function startLink(parent){
+        menu.destroy();
+        menu = cy.cxtmenu({
+            openMenuEvents:"cxttapstart taphold",
+            selector: 'node',
+
+            commands: [
+                {
+                    content: 'Ajouter',
+                    select: function(ele){
+                        let source = ele.id();
+
+                        //htmx
+                        addBadgeAjaxCall(source)
+                    }
+                },
+                {
+                    content: 'Supprimer',
+                    select: function(ele){
+                        removeNode(ele.id())
+                    }
+                },
+                {
+                    content: 'Lier au parent',
+                    select: function(ele){
+                        endLink(ele.id())
+                    }
+                },
+                /*{
+                    content: 'Text',
+                    select: function(ele){
+                        console.log( ele.position() );
+                    }
+                }*/
+            ]
+        });
+        addConnexionInfo["parent"] = parent;
+    }
+
+    function endLink(child){
+        if (addConnexionInfo["parent"]!==undefined){
+            addConnexionInfo["child"] = child
+        }
+
+        cy.add({
+            "group":"edges",
+            "data":{
+                "id":`${addConnexionInfo["parent"]}-${addConnexionInfo["child"]}`,
+                "source":`${addConnexionInfo["parent"]}`,
+                "target":`${addConnexionInfo["child"]}`,
+            }
+        })
+
+        htmx.ajax("POST",
+            "{% url 'core:course-add-connection' course.pk %} ",
+            {values:addConnexionInfo, target:'body', swap:'none'}
+        )
+
+        addConnexionInfo = {}
+
+        menu.destroy();
+        menu = cy.cxtmenu({
+            openMenuEvents:"cxttapstart taphold",
+            selector: 'node',
+
+            commands: [
+                {
+                    content: 'Ajouter',
+                    select: function(ele){
+                        let source = ele.id();
+
+                        //htmx
+                        addBadgeAjaxCall(source)
+                    }
+                },
+                {
+                    content: 'Supprimer',
+                    select: function(ele){
+                        removeNode(ele.id())
+                    }
+                },
+                {
+                    content: 'Lier à un badge enfant',
+                    select: function(ele){
+                        startLink(ele.id())
+                    }
+                },
+                /*{
+                    content: 'Text',
+                    select: function(ele){
+                        console.log( ele.position() );
+                    }
+                }*/
+            ]
+        });
+        reloadLayout()
     }
 
     // Add a node to cytoscape

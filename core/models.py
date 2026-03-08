@@ -188,7 +188,7 @@ class User(AbstractUser):
         if course.is_dream and course.user==self:
             return True
 
-        if course.structure in self.structures and course.structure.is_editor(self):
+        if course.structure in self.structures and (course.structure.is_editor(self) or course.structure.is_admin(self)):
             return True
 
         return False

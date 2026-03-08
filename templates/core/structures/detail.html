@@ -20,15 +20,6 @@
 
             </div>
         {% endif %}
-        {% if is_admin or is_editor %}
-            <button class="btn btn-primary"
-                    hx-get="{% url "core:course-create-course" %}?structure={{ structure.pk }}"
-                    hx-on:htmx:after-request="{%  popup_open %}"
-                    hx-target="{% popup_content_id %}"
-                    hx-swap="innerHTML">
-            Créer un parcours
-            </button>
-        {% endif %}
     </div>
 
     <ul class="nav nav-pills mb-3" id="pills-tab" role="tablist">
@@ -43,6 +34,12 @@
             <button class="nav-link" id="structure-badges-tab" data-bs-toggle="pill" data-bs-target="#structure-badges"
                     type="button" role="tab" aria-controls="structure-badges" aria-selected="false">
                 Badges
+            </button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" id="structure-course-tab" data-bs-toggle="pill" data-bs-target="#structure-course"
+                    type="button" role="tab" aria-controls="structure-course" aria-selected="false">
+                Parcours
             </button>
         </li>
         <li class="nav-item" role="presentation">
@@ -69,9 +66,16 @@
                     <h2 class="mb-3">{{ structure.name }}</h2>
 
                     {% if is_admin or is_editor %}
-                        <a href="{% url 'core:create_badge' %}?structure={{ structure.pk }}" class="btn btn-primary mb-4">
+                        <a href="{% url 'core:create_badge' %}?structure={{ structure.pk }}" class="btn btn-primary">
                             Forger un nouveau badge
                         </a>
+                        <button class="btn btn-primary"
+                                hx-get="{% url "core:course-create-course" %}?structure={{ structure.pk }}"
+                                hx-on:htmx:after-request="{%  popup_open %}"
+                                hx-target="{% popup_content_id %}"
+                                hx-swap="innerHTML">
+                            Créer un parcours
+                        </button>
                     {% endif %}
                 </div>
 
@@ -179,6 +183,21 @@
             </div>
 
         </div>
+        <div class="tab-pane fade" id="structure-course" role="tabpanel" aria-labelledby="structure-course-tab">
+            <div class="row">
+                <div class="col-md-12">
+                    <div class="card">
+                        <div class="card-body">
+                            <h3 class="card-title">Parcours</h3>
+                            {% with courses=structure.courses.all %}
+                                {% include 'core/courses/partial/list.html' %}
+                            {% endwith %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <div class="tab-pane fade" id="structure-users" role="tabpanel" aria-labelledby="structure-users-tab">
             <div class="row">
                 <div class="col-md-12">

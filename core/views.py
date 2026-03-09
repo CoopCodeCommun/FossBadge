@@ -1144,7 +1144,7 @@ class BadgeViewSet(viewsets.ViewSet):
             if default_structure_pk:
                 defaults['assigned_by_structure'] = default_structure_pk
 
-            # Si une seule structure, la pre-selectionner
+            # Si une seule structure, la pre-sélectionner
             # / If only one structure, pre-select it
             if structures.count() == 1 and 'assigned_by_structure' not in defaults:
                 defaults['assigned_by_structure'] = str(structures.first().pk)
@@ -1168,7 +1168,7 @@ class BadgeViewSet(viewsets.ViewSet):
         if not is_valid:
             return render(request, 'core/badges/partials/badge_assignment.html', context=context)
 
-        # Recupere ou cree l'utilisateur a partir de l'email
+        # Récupère ou crée l'utilisateur a partir de l'email
         # / Get or create user from email
         assigned_email = validator.validated_data["assigned_email"]
         assigned_user = get_or_create_user(assigned_email)
@@ -1178,7 +1178,7 @@ class BadgeViewSet(viewsets.ViewSet):
 
         notes = request.POST['notes']
 
-        # Verifie que la structure est dans les structures qui reconnaissent le badge
+        # Vérifie que la structure est dans les structures qui reconnaissent le badge
         # / Check that the structure recognizes this badge
         if not badge.valid_structures.contains(assigned_by_structure):
             messages.add_message(request, messages.ERROR, "Veuillez sélectionner une structure valide")

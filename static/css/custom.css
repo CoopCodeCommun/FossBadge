@@ -1573,10 +1573,25 @@ picture.text-center img.badge-icon {
 
 /* ---- Timeline du parcours / Journey timeline ---- */
 
+/*
+   Grille à 2 colonnes pour afficher les badges côte à côte
+   2-column grid to display badges side by side
+   
+   On utilise display: grid pour créer une grille CSS
+   We use display: grid to create a CSS grid
+   
+   grid-template-columns: 1fr 1fr crée 2 colonnes de même taille
+   grid-template-columns: 1fr 1fr creates 2 equal-width columns
+*/
 .passeport-timeline {
     list-style: none;
     padding: 0;
     margin: 0;
+    /* Grille CSS avec 2 colonnes égales / CSS grid with 2 equal columns */
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    /* Espacement entre les badges / Gap between badges */
+    gap: 0.5rem;
 }
 
 .passeport-timeline-item {
@@ -1733,6 +1748,14 @@ picture.text-center img.badge-icon {
 
     .passeport-badge-details {
         padding-left: 0.75rem;
+    }
+
+    /*
+       Sur mobile : une seule colonne pour une meilleure lisibilité
+       On mobile: single column for better readability
+    */
+    .passeport-timeline {
+        grid-template-columns: 1fr; /* Une seule colonne / Single column */
     }
 }
 

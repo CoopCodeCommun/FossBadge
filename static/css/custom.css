@@ -2044,3 +2044,9 @@ picture.text-center img.badge-icon {
     .home-word-cloud-item:nth-child(5n+1) { font-size: 1rem; }
     .home-word-cloud-item:nth-child(5n+4) { font-size: 1.1rem; }
 }
+
+/* Custom class a remplcer par tailwind */
+
+.flex{
+    display: flex;
+}

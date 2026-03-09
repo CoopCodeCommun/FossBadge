@@ -5,9 +5,10 @@
 {# Content is injected via hx-target="#customPopup-content". #}
 
 <div id="customPopup" aria-modal="true" role="dialog">
-    <div id="customPopup-bg"></div>
-    <div id="customPopup-content">
+    <div id="{{ popup_content_id }}">
+        {{ content }}
     </div>
+    <div id="customPopup-bg"></div>
 </div>
 
 <style>
@@ -30,6 +31,12 @@
         transition: visibility 0ms;
     }
 
+    #customPopup #customPopup-content{
+        width:{{ popup_width }};
+        min-height:10%;
+        min-width:400px;
+    }
+  
     /* Fond semi-transparent / Semi-transparent backdrop */
     #customPopup-bg {
         position: absolute;
@@ -202,45 +209,27 @@
 </style>
 
 <script>
-    /**
-     * Ouvre la modale popup.
-     * / Opens the popup modal.
-     * LOCALISATION : templates/includes/popup.html
-     */
-    function showpopup() {
-        var popup = document.getElementById('customPopup');
-        popup.classList.add('showed');
-        document.body.style.overflow = 'hidden';
+    function {{ open_func_name }}(){
+        let popup = document.querySelector("#customPopup")
+        popup.classList.add("showed")
     }
 
-    /**
-     * Ferme la modale popup et restore le scroll.
-     * / Closes the popup modal and restores scroll.
-     * LOCALISATION : templates/includes/popup.html
-     */
-    function hidepopup() {
-        var popup = document.getElementById('customPopup');
-        popup.classList.remove('showed');
-        document.body.style.overflow = '';
+    function {{ close_func_name }}(){
+        let popup = document.querySelector("#customPopup")
+        popup.classList.remove("showed")
     }
 
-    /* Fermer la modale au clic sur le fond / Close modal on backdrop click */
-    document.addEventListener('DOMContentLoaded', function () {
-        var backdrop = document.getElementById('customPopup-bg');
-        if (backdrop) {
-            backdrop.addEventListener('click', function () {
-                hidepopup();
-            });
-        }
-    });
+    {% if outside_click_close %}
+        document.querySelector("#customPopup-bg").addEventListener("click",{{ close_func_name }})
+    {% endif %}
 
-    /* Fermer avec Escape / Close with Escape key */
-    document.addEventListener('keydown', function (event) {
-        if (event.key === 'Escape') {
-            var popup = document.getElementById('customPopup');
-            if (popup && popup.classList.contains('showed')) {
-                hidepopup();
+    {% if esc_key_close %}
+        document.addEventListener("keydown",(e)=>{
+            if (e.key==="Escape"){
+                {{ close_func_name }}()
             }
-        }
-    });
+        })
+    {% endif %}
+
+
 </script>

@@ -1,0 +1,23 @@
+{% load pictures %}
+
+<div class="grid grid-cols-4 gap-8">
+    {% for badge in badges %}
+    <div class="border-1 text-center justify-center p-4">
+        {% if badge.icon %}
+            {% picture badge.icon img_alt=badge.name picture_class="ignore" img_class="w-16 h-16 m-auto" ratio="1/1" %}
+        {% else %}
+            <img src="{{ placeholder_image }}" alt="{{ badge.name }}" class="w-16 h-16 m-auto">
+        {% endif %}
+        <p>{{ badge.name }}</p>
+        <button class="btn btn-primary"
+                onclick="addNode(
+                    '{{ badge.name }}',
+                    '{{ badge.pk }}',
+                    '{% if badge.icon %}{{ badge.icon.url }}{% else %}{{ placeholder_image }}{% endif %}'
+                    {% if parent_pk %},'{{ parent_pk }}' {% endif %}
+                    )">
+            Sélectionner
+        </button>
+    </div>
+    {% endfor %}
+</div>

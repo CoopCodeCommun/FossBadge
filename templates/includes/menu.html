@@ -5,7 +5,7 @@
         <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
             <span class="navbar-toggler-icon"></span>
         </button>
-        <div class="collapse navbar-collapse" id="navbarNav">
+        <div class="visible collapse navbar-collapse" id="navbarNav">
             <ul class="navbar-nav ms-auto">
                 <li class="nav-item">
                     <a class="nav-link" href="{% url 'core:home-list' %}">Accueil</a>
@@ -26,6 +26,9 @@
                 </li>
                 <li class="nav-item">
                     <a class="nav-link" href="#">Carte 3D</a>
+                </li>
+                <li class="nav-item">
+                     <a class="nav-link" href="{% url 'core:course-list' %}">Parcours</a>
                 </li>
                 {% if request.user.is_authenticated == True %}
                     <li class="nav-item dropdown">

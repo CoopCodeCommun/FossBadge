@@ -1,11 +1,12 @@
-{% load static %}
-{% load django_htmx %}
+{% load static django_htmx %}
 <!DOCTYPE html>
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}{{ title|default:"O2Badge" }}{% endblock %}</title>
+
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
 
     <!-- Bootstrap 5 CSS -->
     <link href="{% static 'bootstrap/css/bootstrap.min.css' %}" rel="stylesheet">
@@ -32,17 +33,15 @@
     <!-- Bootstrap 5 JS Bundle with Popper -->
     <script src="{% static 'bootstrap/js/bootstrap.bundle.min.js' %}"></script>
 
-    <!-- Custom JS -->
-    {% block extra_js %}{% endblock %}
 
     <!-- Load sweetalert2 -->
     <script src="{% static 'js/sweetalert2.all.min.js' %}"></script>
 
     {%include 'show_message.html'%}
 
-    <!-- Load sweetify (for sweetalert2) -->
-    {% load sweetify %}
-    {% sweetify %}
-    {% include "includes/popup.html" %}
+
+    {# Must be last, to use other scrips things #}
+    <!-- Custom JS -->
+    {% block extra_js %}{% endblock %}
 </body>
 </html>

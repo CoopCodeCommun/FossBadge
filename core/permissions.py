@@ -1,7 +1,8 @@
 from rest_framework import permissions
 from django.shortcuts import get_object_or_404
 
-from core.models import Badge, Structure, User
+from core.models import Badge, Structure, User, Course
+
 
 #### Permissions class ####
 class IsBadgeEditor(permissions.BasePermission):
@@ -97,6 +98,15 @@ class CanEndorseBadge(permissions.BasePermission):
 
         return is_structure_admin(user, structure)
 
+
+class CanEditCourse(permissions.BasePermission):
+    def has_permission(self, request, view):
+        pk = view.kwargs.get("pk")
+        course = Course.objects.get(pk=pk)
+        if course.is_dream:
+            return course.user == request.user
+
+        return is_structure_editor(request.user, course.structure)
 
 #### Methods ####
 def is_structure_editor(user, structure):

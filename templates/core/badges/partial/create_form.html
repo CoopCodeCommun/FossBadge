@@ -10,7 +10,7 @@
       enctype="multipart/form-data"
       action="{% url 'core:create_badge' %}"
       hx-post="{% url 'core:create_badge' %}"
-      hx-target="#customPopup-content"
+      hx-target="{% popup_content_id %}"
       hx-swap="innerHTML"
       hx-encoding="multipart/form-data"
       data-testid="form-create-badge">

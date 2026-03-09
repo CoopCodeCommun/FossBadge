@@ -32,7 +32,7 @@
             <button type="button"
                class="btn btn-sm btn-outline-secondary"
                hx-get="{% url 'core:badge-edit' pk=badge.pk %}"
-               hx-target="#customPopup-content"
+               hx-target="{% popup_content_id %}"
                hx-swap="innerHTML"
                hx-on:htmx:after-request="{% popup_open %}"
                data-testid="badge-page-edit-btn">
@@ -106,7 +106,7 @@
                             class="btn btn-sm btn-outline-primary"
                             hx-get="{% url 'core:badge-assign' pk=badge.pk %}"
                             hx-on:htmx:after-request="{% popup_open %}"
-                            hx-target="#customPopup-content"
+                            hx-target="{% popup_content_id %}"
                             hx-swap="innerHTML"
                             data-testid="badge-page-assign-btn">
                         <span aria-hidden="true">&#9998;</span>
@@ -122,7 +122,7 @@
                             class="btn btn-sm btn-outline-primary"
                             hx-get="{% url 'core:badge-endorse' pk=badge.pk %}"
                             hx-on:htmx:after-request="{% popup_open %}"
-                            hx-target="#customPopup-content"
+                            hx-target="{% popup_content_id %}"
                             hx-swap="innerHTML"
                             data-testid="badge-page-endorse-btn">
                         <span aria-hidden="true">&#9733;</span>

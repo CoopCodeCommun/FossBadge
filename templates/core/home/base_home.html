@@ -1,5 +1,6 @@
 {% load static %}
 {% load django_htmx %}
+{% load i18n %}
 <!DOCTYPE html>
 <html lang="fr">
 <head>
@@ -20,9 +21,55 @@
 </head>
 <body hx-ext="response-targets" hx-headers='{"x-csrftoken": "{{ csrf_token }}"}'>
 
-    {# Pas de navbar ni footer sur la home — page épurée pour la recherche #}
-    {# No navbar or footer on home — clean page for search #}
+
+    <div class="login-button">
+        {% if request.user.is_authenticated %}
+            {# Utilisateur connecté : lien vers son passeport / Logged in user: link to their passport #}
+            <a href="{% url 'core:home-passeport' person_pk=request.user.pk %}" data-testid="navbar-passeport-link" class="home-invite-btn">
+                <i class="bi bi-person-badge" aria-hidden="true">&#x1F4D6;</i>
+                {% translate "Mon passeport" %}
+            </a>
+        {% else %}
+            {# Utilisateur non connecté : bouton ouvrant le panneau de connexion / Not logged in: button opening login panel #}
+            <button
+                    type="button"
+                    class="home-invite-btn"
+                    data-bs-toggle="offcanvas"
+                    data-bs-target="#loginPanel"
+                    aria-controls="loginPanel"
+                    data-testid="navbar-login-btn"
+            >
+                {% translate "Se connecter" %}
+            </button>
+        {% endif %}
+    </div>
+
     {% block content %}{% endblock %}
+
+    {% comment %}
+    PANNEAU OFFCANVAS - CONNEXION
+    / Offcanvas panel - Login
+
+    LOCALISATION : templates/core/home/base_home.html
+
+    Ce panneau s'ouvre depuis la droite lorsqu'on clique sur "Se connecter".
+    Il contient le formulaire d'authentification.
+    / This panel opens from the right when clicking "Se connecter".
+    It contains the authentication form.
+
+    COMMUNICATION :
+    - Déclenché par : bouton "Se connecter" (data-bs-target)
+    - Contenu : authentication/login.html
+    {% endcomment %}
+    <div class="offcanvas offcanvas-end" tabindex="-1" id="loginPanel" aria-labelledby="loginPanelLabel" data-testid="login-offcanvas">
+        <div class="offcanvas-header">
+            <h5 class="offcanvas-title" id="loginPanelLabel">{% translate "Connexion" %}</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="{% translate 'Fermer' %}"></button>
+        </div>
+        <div class="offcanvas-body" id="login-body">
+            {% include 'authentication/login.html' %}
+        </div>
+    </div>
 
     <!-- Bootstrap 5 JS Bundle -->
     <script src="{% static 'bootstrap/js/bootstrap.bundle.min.js' %}"></script>
@@ -32,6 +79,5 @@
     <!-- SweetAlert2 -->
     <script src="{% static 'js/sweetalert2.all.min.js' %}"></script>
     {%include 'show_message.html'%}
-    {% include "includes/popup.html" %}
 </body>
 </html>

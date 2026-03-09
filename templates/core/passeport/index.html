@@ -206,7 +206,7 @@
             class="btn btn-sm btn-outline-primary"
             hx-get="{% url 'core:edit-profile' pk=person.pk %}"
             hx-on:htmx:after-request="{% popup_open %}"
-            hx-target="#customPopup-content"
+            hx-target="{% popup_content_id %}"
             hx-swap="innerHTML"
             data-testid="passeport-edit-profile-btn">
             {% translate "Éditer mon profil" %}

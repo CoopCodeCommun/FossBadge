@@ -218,7 +218,7 @@ picture.text-center img.badge-icon {
     }
 
     .btn {
-        width: 100%;
+        /*width: 100%;*/
     }
 
     .badge-grid {
@@ -260,7 +260,7 @@ picture.text-center img.badge-icon {
 .home-search-wrapper.has-results {
     justify-content: flex-start;
     min-height: auto;
-    padding-top: 1.5rem;
+    padding-top: 2rem;
 }
 
 /* Bloc de recherche (titre + input + filtres) — centré, avec transition
@@ -2071,6 +2071,14 @@ picture.text-center img.badge-icon {
     }
     .home-word-cloud-item:nth-child(5n+1) { font-size: 1rem; }
     .home-word-cloud-item:nth-child(5n+4) { font-size: 1.1rem; }
+}
+
+.login-button{
+    position: relative;
+    right: 15px;
+    top:15px;
+    text-align: right;
+    outline: none;
 }
 
 /* Custom class a remplcer par tailwind */

@@ -32,7 +32,7 @@
             <button type="button"
                class="btn btn-sm btn-outline-secondary"
                hx-get="{% url 'core:structure-edit' pk=structure.pk %}"
-               hx-target="#customPopup-content"
+               hx-target="{% popup_content_id %}"
                hx-swap="innerHTML"
                hx-on:htmx:after-request="{% popup_open %}"
                data-testid="lieu-edit-btn">
@@ -112,7 +112,7 @@
                 <button type="button"
                         class="home-forge-btn"
                         hx-get="{% url 'core:create_badge' %}?structure={{ structure.pk }}"
-                        hx-target="#customPopup-content"
+                        hx-target="{% popup_content_id %}"
                         hx-swap="innerHTML"
                         hx-on:htmx:after-request="{% popup_open %}"
                         data-testid="btn-forge-badge">
@@ -165,7 +165,7 @@
                             class="lieu-action-btn lieu-action-btn-assign"
                             hx-get="{% url 'core:badge-assign' badge.pk %}?default_structure={{ structure.pk }}"
                             hx-on:htmx:after-request="{% popup_open %}"
-                            hx-target="#customPopup-content"
+                            hx-target="{% popup_content_id %}"
                             hx-swap="innerHTML"
                             data-testid="btn-assign-badge-{{ badge.pk }}"
                         >
@@ -181,7 +181,7 @@
                             class="lieu-action-btn lieu-action-btn-endorse"
                             hx-get="{% url 'core:badge-endorse' badge.pk %}?default_structure={{ structure.pk }}"
                             hx-on:htmx:after-request="{% popup_open %}"
-                            hx-target="#customPopup-content"
+                            hx-target="{% popup_content_id %}"
                             hx-swap="innerHTML"
                             data-testid="btn-endorse-badge-{{ badge.pk }}"
                         >
@@ -237,7 +237,7 @@
                             class="lieu-action-btn lieu-action-btn-assign"
                             hx-get="{% url 'core:badge-assign' badge.pk %}?default_structure={{ structure.pk }}"
                             hx-on:htmx:after-request="{% popup_open %}"
-                            hx-target="#customPopup-content"
+                            hx-target="{% popup_content_id %}"
                             hx-swap="innerHTML"
                             data-testid="btn-assign-badge-{{ badge.pk }}"
                         >
@@ -253,7 +253,7 @@
                             class="lieu-action-btn lieu-action-btn-endorse"
                             hx-get="{% url 'core:badge-endorse' badge.pk %}?default_structure={{ structure.pk }}"
                             hx-on:htmx:after-request="{% popup_open %}"
-                            hx-target="#customPopup-content"
+                            hx-target="{% popup_content_id %}"
                             hx-swap="innerHTML"
                             data-testid="btn-endorse-badge-{{ badge.pk }}"
                         >
@@ -342,7 +342,7 @@
 
 </div>
 
-{% popup %}{% endpopup %}
+{% popup popup_width="60%" %}{% endpopup %}
 
 {% endblock %}
 

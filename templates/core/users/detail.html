@@ -1,7 +1,5 @@
 {% extends 'base.html' %}
-{% load pictures %}
-{% load humanize %}
-{% load custom_filters %}
+{% load pictures humanize custom_filters custom_tags %}
 
 {% block title %}Profil de {{ user.get_full_name|default:user.username }}{% endblock %}
 
@@ -14,7 +12,7 @@
                     <span class="badge bg-secondary fs-4" style="vertical-align: middle">Inactif</span>
                 {% endif %}
 
-                {% if request.user.pk == user.pk %}
+                {% if request.user == user %}
                     <a class="btn btn-danger float-end" href="{% url 'core:user-logout' %}">
                         Se déconnecter
                     </a>
@@ -23,16 +21,29 @@
         </div>
     </div>
 
+    {% if request.user == user and not request.user.has_dream_badge %}
+        <div class="alert alert-info" style="display: flex;
+                                              justify-content: space-between;
+                                              align-items: center;">
+            Vous n'avez pas créé votre badge de rêve, n'hésitez pas le faire maintenant !
+            <button class="btn btn-primary"
+                    hx-get="{% url 'core:badge-create-dream' %}"
+                    hx-on:htmx:after-request="{%  popup_open %}"
+                    hx-target="{% popup_content_id %}"
+                    hx-swap="innerHTML"> Créer votre badge de rêve ! </button>
+        </div>
+    {% endif %}
+
     <!-- User Information Section -->
     <div class="row mb-5">
         <div class="col-md-4 text-center">
             <!-- User Avatar -->
             {% if user and user.avatar %}
                 <div class="mb-3" style="width: 150px; height: 150px; margin: 0 auto;">
-                    {% picture user.avatar img_alt="Avatar de "|add:user.get_full_name|default:user.username img_class="img-fluid rounded-circle" ratio="1/1" %}
+                    {% picture user.avatar img_alt="Avatar de "|add:user.get_full_name|default:user.username img_class="img-fluid rounded-circle m-auto" ratio="1/1" %}
                 </div>
             {% else %}
-                <img src="{{ placeholder_image }}" alt="Avatar utilisateur" class="img-fluid rounded-circle mb-3" style="width: 150px; height: 150px;">
+                <img src="{{ placeholder_image }}" alt="Avatar utilisateur" class="img-fluid rounded-circle mb-3 m-auto" style="width: 150px; height: 150px;">
             {% endif %}
 
             <!-- CV Buttons -->
@@ -79,6 +90,38 @@
                         <div class="col-md-4 fw-bold">Adresse:</div>
                         <div class="col-md-8">{{ user.address }}</div>
                     </div>
+                    {% if user.has_dream_badge %}
+                    <hr>
+                    <div class="row mb-2">
+                        <h2>
+                            Mon badge de rêve
+                            {% if request.user == user %}
+                                {% if user.has_dream_course and user.dream_course.items.count > 0 %}
+                                    <a class="btn btn-primary" href="{% url "core:course-edit" user.dream_course.pk %}">
+                                        Voir/modifier votre parcours !
+                                    </a>
+                                {% else %}
+                                    <a class="btn btn-primary" href="{% url "core:course-edit" user.dream_course.pk %}">
+                                        Créer votre parcours !
+                                    </a>
+                                {% endif %}
+                            {% elif user.has_dream_course %}
+                                <a class="btn btn-primary" href="{% url "core:course-detail" user.dream_course.pk %}">
+                                    Voir le parcours lié !
+                                </a>
+                            {% endif %}
+                        </h2>
+                        {% if user.dream_badge.icon %}
+                            {% picture user.dream_badge.icon img_alt=user.dream_badge.name img_class="badge-icon mb-3" ratio="1/1" picture_class="text-center" %}
+                        {% else %}
+                            <img src="{{ placeholder_dream_badge }}" alt="{{ user.dream_badge.name }}" class="badge-icon mb-3"
+                                 style="width: 150px; height: 150px;">
+                        {% endif %}
+                        <h2 class="card-title text-center">{{ user.dream_badge.name }}</h2>
+                        <p> {{ user.dream_badge.description }}</p>
+
+                    </div>
+                    {% endif %}
                 </div>
             </div>
         </div>
@@ -138,10 +181,9 @@
                         <h2 class="card-title">Mes actions</h2>
                         <div class="row">
                             {% if user.is_active %}
-                                <form method="post" action="{% url 'core:user-delete' pk=user.pk %}" id="delete-account-form">
-                                    {% csrf_token %}
-                                    <input type="submit" id="delete-account-button" class="btn btn-danger" value="Désactiver votre compte ?"/>
-                                </form>
+                                <div>
+                                    <button class="btn btn-danger" onclick="{% popup_open %}">Désactiver votre compte</button>
+                                </div>
                             {% endif %}
                         </div>
                     </div>
@@ -149,31 +191,7 @@
             </div>
         </div>
     {% endif %}
-
-{% endblock %}
-
-{% block extra_js %}
-    <script>
-        // Get deletion form and its submit button
-        delete_button = document.querySelector("#delete-account-button");
-        delete_form = document.querySelector("#delete-account-form");
-        // Prevent button from sending the form, show an alert asking for confirmation
-        delete_button.addEventListener("click", (event) => {
-            event.preventDefault();
-            Swal.fire({
-                title: "Désactiver votre compte ?",
-                text: "Etes vous sur de vouloir désactiver votre compte ? Cette action est irréversible",
-                icon: "error",
-                showDenyButton: true,
-                confirmButtonText: "Désactiver",
-                denyButtonText: "Annuler"
-            }).then((result) => {
-                if (result.isConfirmed) {
-                    delete_form.submit()
-                } else if (result.isDenied) {
-
-                }
-            });
-        });
-    </script>
+    {% popup %}
+         {% include "core/users/partials/disable_account_popup.html" %}
+    {% endpopup %}
 {% endblock %}

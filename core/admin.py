@@ -1,5 +1,6 @@
 from django.contrib import admin
-from .models import Structure, Badge, User, BadgeHistory, BadgeAssignment, BadgeEndorsement, BadgeCriteria
+
+from .models import Structure, Badge, User, BadgeHistory, BadgeAssignment, BadgeEndorsement, BadgeCriteria, Course, CourseItem
 
 # Register your models here.
 @admin.register(Structure)
@@ -41,6 +42,13 @@ class BadgeEndorsementAdmin(admin.ModelAdmin):
     search_fields = ('badge__name', 'structure__name')
     date_hierarchy = 'endorsed_date'
 
+@admin.register(Course)
+class CourseAdmin(admin.ModelAdmin):
+    pass
+
+@admin.register(CourseItem)
+class CourseItemAdmin(admin.ModelAdmin):
+    pass
 @admin.register(BadgeCriteria)
 class BadgeCriteriaAdmin(admin.ModelAdmin):
     list_display = ('badge', 'structure')

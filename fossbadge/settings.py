@@ -12,7 +12,6 @@ https://docs.djangoproject.com/en/5.2/ref/settings/
 import os
 from pathlib import Path
 
-import sweetify
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -46,7 +45,6 @@ INSTALLED_APPS = [
     'django_htmx',
     'rest_framework',
     'pictures',
-    'sweetify',
     'mapview',
 
     'django_cleanup.apps.CleanupConfig', # Toujours en dernier
@@ -98,7 +96,6 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'django_htmx.middleware.HtmxMiddleware',
-    #'core.middlewares.ShowMessagesMiddleware'
 ]
 
 ROOT_URLCONF = 'fossbadge.urls'
@@ -208,5 +205,3 @@ MEDIA_ROOT = BASE_DIR / 'media'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-# Sweetify settings
-SWEETIFY_SWEETALERT_LIBRARY = 'sweetalert2'

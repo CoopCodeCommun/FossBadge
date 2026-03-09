@@ -6,7 +6,7 @@ from django.core.signing import SignatureExpired
 from django.core.validators import validate_email
 from django.http import HttpResponse, JsonResponse
 from django.shortcuts import render, get_object_or_404, redirect
-from django.db.models import Q, Exists, OuterRef, Count
+from django.db.models import Q, Count, Exists, OuterRef, Count
 from django.urls import reverse
 from django_htmx.http import HttpResponseClientRedirect
 from rest_framework import viewsets
@@ -15,12 +15,12 @@ from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.decorators import action,authentication_classes, permission_classes
 from .helpers import TokenHelper
 from .helpers.utils import get_or_create_user, invite_user_to_structure
-from .models import Structure, Badge, User, BadgeAssignment, BadgeEndorsement, BadgeCriteria
+from .models import Structure, Badge, User, BadgeAssignment, BadgeEndorsement, BadgeCriteria, Course, CourseItem
 from .forms import BadgeForm, StructureForm, UserForm, PartialUserForm
-import sweetify
 
-from .permissions import IsBadgeEditor, IsStructureAdmin, CanEditUser, CanAssignBadge, CanEndorseBadge
-from .validators import BadgeAssignmentValidator, BadgeEndorsementValidator
+from .permissions import IsBadgeEditor, IsStructureAdmin, CanEditUser, CanAssignBadge, CanEndorseBadge, CanEditCourse
+from .validators import BadgeAssignmentValidator, BadgeEndorsementValidator, DreamBadgeValidator, InviteUserValidator, \
+    CreateCourseValidator
 
 
 def raise403(request, msg=None):
@@ -45,6 +45,10 @@ def raise404(request, msg=None):
 
 def reload(request):
     return HttpResponseClientRedirect(request.headers['Referer'])
+
+def redirect_reload(url):
+    return HttpResponseClientRedirect(url)
+
 
 
 def read_category_filters(request):
@@ -872,7 +876,7 @@ class BadgeViewSet(viewsets.ViewSet):
         structure_filter = request.GET.get('structure', '')
 
         # Start with all badges
-        badges = Badge.objects.all()
+        badges = Badge.get_all_badges_except_dream()
 
         # Apply search filter if provided
         if search_query:
@@ -1195,7 +1199,39 @@ class BadgeViewSet(viewsets.ViewSet):
         messages.add_message(request, messages.SUCCESS, 'Badge assigné !')
         return reload(request)
 
+    @action(detail=False, methods=['get','post'], url_path="create-dream")
+    def create_dream(self,request):
+        """
+        View for creating a dream badge. Only with HTMX
+        """
+        if not request.htmx:
+            return raise403(request)
 
+        if request.method == "GET":
+            return render(request, 'core/badges/dream/create_dream_badge.html')
+
+        validator = DreamBadgeValidator(data=request.data)
+        is_valid = validator.is_valid()
+
+        if not is_valid:
+            return render(request, 'core/badges/dream/create_dream_badge.html',context={
+                "defaults": validator.data,
+                "errors" : validator.errors,
+            })
+
+        # Create default data for dream badge and add the validator's data to it
+        data={
+            "is_dream_badge":True,
+            "user":request.user,
+        }
+        data.update(validator.validated_data)
+
+        # Create the dream badge and its associated course
+        badge = Badge.objects.create(**data)
+        course = Course.objects.create(badge=badge, user=request.user,name=badge.name,is_dream=True)
+
+        messages.success(request, "Votre badge de rêve a bien été créé")
+        return reload(request)
 
 class AssignmentViewSet(viewsets.ViewSet):
     """
@@ -1323,7 +1359,6 @@ class StructureViewSet(viewsets.ViewSet):
             'issued_badges': issued_badges,
             'is_editor': is_editor,
             'is_admin': is_admin,
-            "roles" : Structure.ROLES
         })
 
     @action(detail=True, methods=["get","post"])
@@ -1404,27 +1439,38 @@ class StructureViewSet(viewsets.ViewSet):
             'form': form
         })
 
-    @action(detail=True, methods=['post'])
+    @action(detail=True, methods=['get','post'])
     def invite(self, request, pk):
         """
         Invite a user to a structure.
         """
+        if not request.htmx:
+            return raise403(request)
+
+        context = {
+            "roles" : Structure.ROLES,
+            "structure_pk": pk,
+        }
+
+        if request.method == 'GET':
+            return render(request,"core/structures/partials/structure_invite.html",context=context)
+
         structure = get_object_or_404(Structure, pk=pk)
 
-        email = request.POST['email']
-        role = request.POST['role']
+        validator = InviteUserValidator(data=request.data)
+        is_valid = validator.is_valid()
 
         res = HttpResponse(headers={"HX-Redirect": reverse('core:structure-detail', kwargs={'pk': structure.pk}),})
 
-        if not any(role in item for item in Structure.ROLES):
-            messages.add_message(request,messages.ERROR,"Le role fourni est invalide")
-            return res
+        if not is_valid:
+            context.update({
+                "errors" : validator.errors,
+                "defaults" : validator.data,
+            })
+            return render(request,"core/structures/partials/structure_invite.html",context=context)
 
-        try:
-            validate_email(email)
-        except ValidationError:
-            messages.add_message(request,messages.ERROR,"Le mail est invalide")
-            return res
+        email = validator.validated_data['email']
+        role = validator.validated_data['role']
 
         invite_user_to_structure(email, role, structure)
 
@@ -1619,11 +1665,16 @@ class UserViewSet(viewsets.ViewSet):
         # TODO when authentication will be added :
         # Send a mail containing a link to delete the account
 
-        sweetify.toast(request, "L'utilisateur a bien été désactivé",showCloseButton=True, timer=10000)
+        if not request.htmx:
+            return raise403(request)
+
+        messages.success(request, "L'utilisateur a bien été désactivé")
+
         user = get_object_or_404(User, pk=pk)
         user.is_active = False
         user.save()
-        return redirect('core:user-list')
+
+        return redirect_reload(reverse('core:user-list'))
 
     @action(detail=False, methods=['get','post'], url_name="login")
     def login_request(self, request):
@@ -1673,17 +1724,243 @@ class UserViewSet(viewsets.ViewSet):
 
             login(request, user)
 
-            sweetify.toast(request, f"Connexion réussi !", showCloseButton=True, timer=10000)
+            messages.success(request, f"Connexion réussi !")
+
             return redirect('core:home-list')
         except SignatureExpired:
-            sweetify.toast(request, f"Ce lien est expiré, veuillez refaire une demande de connexion", icon="error",showCloseButton=True, timer=10000)
+            messages.error(request, f"Ce lien est expiré, veuillez refaire une demande de connexion")
+
             return redirect('core:home-list')
         except Exception:
-            sweetify.toast(request, f"Ce lien est invalide, veuillez refaire une demande de connexion", icon="error",showCloseButton=True, timer=10000)
+
+            messages.error(request, f"Ce lien est invalide, veuillez refaire une demande de connexion")
             return redirect('core:home-list')
 
     @action(detail=False, methods=['get'])
     def logout(self, request):
         logout(request)
-        sweetify.toast(request, f"Déconnexion réussi", icon="success", showCloseButton=True, timer=10000)
+        messages.success(request, f"Déconnexion réussi")
         return redirect('core:home-list')
+
+class CourseViewSet(viewsets.ViewSet):
+    """
+    ViewSet for course related routes
+    """
+
+    def get_permissions(self):
+        permissions_list = []
+
+        if self.action in ['retrieve', 'list']:
+            permissions_list += [AllowAny]
+        elif self.action in ['get_or_create_dream_course']:
+            permissions_list += [IsAuthenticated]
+        elif self.action in ["add_badge", "remove_badge"]:
+            permissions_list += [CanEditCourse]
+
+        return [permission() for permission in permissions_list]
+
+
+    def retrieve(self, request, pk=None):
+
+        course = Course.objects.get(pk=pk)
+        can_edit = request.user.can_edit_course(course)
+
+        return render(request, "core/courses/detail.html",context={
+            "course":course,
+            "editable":False,
+            "can_edit":can_edit
+        })
+
+    def list(self,request):
+
+        template = "core/courses/list.html"
+
+        if request.htmx:
+            template = "core/courses/partial/list.html"
+
+        # Get search query
+        search_query = request.GET.get('search', '')
+        structure_filter = request.GET.get('structure', '')
+        badge_filter = request.GET.get('badge', '')
+
+        # Start with all courses
+        # courses = Course.objects.all()
+        courses = (Course.objects.annotate(num_items=Count("items")).filter(num_items__gt=0))
+
+
+    # Apply search filter if provided
+        if search_query:
+            courses = courses.filter(
+                Q(name__icontains=search_query) |
+                Q(structure__name__icontains=search_query)
+            )
+
+
+        # Apply structure filter if provided
+        if structure_filter:
+            courses = courses.filter(structure__pk=structure_filter)
+
+        # Apply badge filter if provided
+        if badge_filter:
+            courses = courses.filter(
+                Q(items__badge__pk=badge_filter)
+            )
+
+
+
+
+        structures = Structure.objects.all()
+        badges = Badge.objects.all()
+
+        return render(request, template, context={
+            "courses":courses,
+            "structures":structures,
+            "badges":badges,
+        })
+
+    @action(detail=False, methods=['get','post'])
+    def create_course(self,request):
+        """
+        Create a new course
+        """
+
+        if not request.htmx:
+            return raise403(request)
+
+        context = {}
+
+        if request.method == 'GET':
+            structure = request.GET.get('structure', None)
+            badge = request.GET.get('badge', None)
+
+            if not structure and not badge:
+                return raise404(request)
+
+            if structure:
+                structure = Structure.objects.get(pk=structure)
+                badges = structure.endorsed_badges
+                context.update({
+                    "structure":structure,
+                    "badges":badges,
+                })
+
+            if badge:
+                badge = Badge.objects.get(pk=badge)
+                structures = request.user.get_structures_endorsing_badge(badge)
+                context.update({
+                    "structures":structures,
+                    "badge":badge,
+                })
+
+            return render(request, "core/courses/partial/create_popup.html", context=context)
+
+
+        validator = CreateCourseValidator(data=request.data)
+        is_valid = validator.is_valid()
+
+        if not is_valid:
+            context.update({
+                "errors" : validator.errors,
+                "defaults" : validator.data,
+            })
+            return render(request,"core/courses/partial/create_popup.html",context=context)
+
+        structure = validator.validated_data['structure']
+        structure = Structure.objects.get(pk=structure)
+
+        badge = validator.validated_data['badge']
+        badge = Badge.objects.get(pk=badge)
+
+        course = Course.objects.create(badge=badge,structure=structure)
+
+        return redirect_reload(reverse('core:course-edit',kwargs={"pk":course.pk}))
+
+    @action(detail=True, methods=['get'])
+    def edit(self,request, pk=None):
+        course = Course.objects.get(pk=pk)
+        similar_badges = Badge.objects.order_by('?')[:5]
+
+        return render(request, "core/courses/edit.html", context={
+            "course":course,
+            "editable":True,
+            "similar_badges":similar_badges
+        })
+
+    @action(detail=True, methods=['get','post'])
+    def add_badge(self, request, pk=None):
+        if not request.htmx:
+            return raise403(request)
+
+        search_query = request.GET.get('name', '')
+        parent_pk = request.GET.get('parent_pk', '')
+
+        course = Course.objects.get(pk=pk)
+
+        if request.method == "GET":
+            badges = []
+            if search_query:
+                badges = Badge.objects.filter(name__icontains=search_query)
+                for badge in [item.badge for item in course.items.all()]:
+                    badges = badges.exclude(course_items__badge=badge)
+
+            return render(request, "core/courses/partial/add_badge_popup.html",context={
+                "badges":badges,
+                "parent_pk":parent_pk,
+                "course":course
+            })
+
+
+        child_badge_id = request.POST.get('child_id', '')
+        parent_badge_id = request.POST.get('parent_id', None)
+
+        badge = Badge.objects.get(pk=child_badge_id)
+        parent = None
+        if parent_badge_id:
+            parent = Badge.objects.get(pk=parent_badge_id)
+
+        CourseItem.add_to_course(course, badge, parent)
+
+        return HttpResponse()
+
+    @action(detail=True, methods=['post'])
+    def remove_badge(self, request, pk=None):
+        """
+
+        """
+
+        if not request.htmx:
+            return raise403(request)
+
+        course = Course.objects.get(pk=pk)
+
+        badge_pk = request.POST.get('pk', '')
+        badge = Badge.objects.get(pk=badge_pk)
+
+        course_item = CourseItem.objects.get(badge=badge, course=course)
+        course_item.delete()
+
+        return HttpResponse()
+
+    @action(detail=True, methods=['post'])
+    def add_connection(self, request, pk=None):
+        if not request.htmx:
+            return raise403(request)
+
+        course = Course.objects.get(pk=pk)
+
+        parent_pk = request.POST.get('parent', '')
+        badge_parent = Badge.objects.get(pk=parent_pk)
+
+        child_pk = request.POST.get('child', '')
+        badge_child = Badge.objects.get(pk=child_pk)
+
+        course_parent = CourseItem.objects.get(badge=badge_parent, course=course)
+
+        course_child = CourseItem.objects.get(badge=badge_child, course=course)
+
+        course_parent.children.add(course_child)
+
+        return HttpResponse()
+
+
+

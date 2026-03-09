@@ -1,8 +1,8 @@
 {# LOCALISATION : templates/includes/popup.html #}
 {# Système de popup/modale réutilisable pour les formulaires HTMX. #}
-{# Le contenu est injecté par hx-target="#customPopup-content". #}
+{# Le contenu est injecté par hx-target="{% popup_content_id %}". #}
 {# / Reusable popup/modal system for HTMX forms. #}
-{# Content is injected via hx-target="#customPopup-content". #}
+{# Content is injected via hx-target="{% popup_content_id %}". #}
 
 <div id="customPopup" aria-modal="true" role="dialog">
     <div id="{{ popup_content_id }}">
@@ -55,8 +55,8 @@
         position: relative;
         z-index: 1;
         width: 92%;
-        max-width: 540px;
-        max-height: 85vh;
+        {#max-width: 540px;#}
+        {#max-height: 85vh;#}
         overflow-y: auto;
         padding: 2rem 1.75rem 1.5rem;
         background-color: #fff;
@@ -198,12 +198,13 @@
 
     /* Responsive mobile / Mobile responsive */
     @media (max-width: 768px) {
-        #customPopup-content {
+        #customPopup #customPopup-content {
             width: 96%;
             max-width: none;
             padding: 1.5rem 1.25rem 1.25rem;
             border-radius: 14px;
             max-height: 90vh;
+            min-width:auto;
         }
     }
 </style>

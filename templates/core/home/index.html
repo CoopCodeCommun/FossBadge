@@ -239,7 +239,7 @@
     // --- Spinner pour les liens focus ---
     // --- Spinner for focus links ---
     document.body.addEventListener("htmx:beforeRequest", function(event) {
-        if (search_results.contains(event.detail.elt)) {
+        if (search_results.contains(event.detail.elt) && event.target.getAttribute("hx-indicator")!="none") {
             results_spinner.style.display = "flex";
         }
     });

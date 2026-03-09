@@ -2,6 +2,7 @@
 {# Formulaire d'edition de structure pour la modale HTMX (popup). #}
 {# / Structure edit form for HTMX modal (popup). #}
 {% load i18n %}
+{% load custom_tags %}
 
 <h2>{% translate "Modifier la structure" %}</h2>
 
@@ -9,7 +10,7 @@
       enctype="multipart/form-data"
       action="{% url 'core:structure-edit' pk=structure.pk %}"
       hx-post="{% url 'core:structure-edit' pk=structure.pk %}"
-      hx-target="#customPopup-content"
+      hx-target="{% popup_content_id %}"
       hx-swap="innerHTML"
       hx-encoding="multipart/form-data"
       data-testid="form-edit-structure">
@@ -111,7 +112,7 @@
         <button type="submit" class="btn btn-primary" data-testid="btn-submit-edit-structure">
             {% translate "Enregistrer" %}
         </button>
-        <button type="button" class="popup-cancel-btn" onclick="hidepopup()" data-testid="btn-cancel-edit-structure">
+        <button type="button" class="popup-cancel-btn" onclick="{% popup_close %}" data-testid="btn-cancel-edit-structure">
             {% translate "Annuler" %}
         </button>
     </div>

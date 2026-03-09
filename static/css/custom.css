@@ -218,7 +218,7 @@ picture.text-center img.badge-icon {
     }
 
     .btn {
-        width: 100%;
+        /*width: 100%;*/
     }
 
     .badge-grid {
@@ -260,7 +260,7 @@ picture.text-center img.badge-icon {
 .home-search-wrapper.has-results {
     justify-content: flex-start;
     min-height: auto;
-    padding-top: 1.5rem;
+    padding-top: 2rem;
 }
 
 /* Bloc de recherche (titre + input + filtres) — centré, avec transition
@@ -270,6 +270,7 @@ picture.text-center img.badge-icon {
     width: 100%;
     max-width: 680px;
     transition: max-width 0.4s ease;
+    margin-bottom: 20px;
 }
 
 .home-search-wrapper.has-results .home-search-box {
@@ -1481,6 +1482,33 @@ picture.text-center img.badge-icon {
     text-decoration: none;
 }
 
+
+/* Bouton "Forger un badge" — discret, style outline orange
+   "Forge a badge" button — discreet, outline orange style */
+.home-invite-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.3rem 0.75rem;
+    font-size: 0.82rem;
+    font-weight: 500;
+    color: var(--home-color-personnes);
+    border: 1px solid var(--home-color-personnes);
+    border-radius: 8px;
+    background: transparent;
+    text-decoration: none;
+    transition: background-color 0.15s ease, color 0.15s ease;
+    margin: 0;
+}
+
+.home-invite-btn:hover,
+.home-invite-btn:focus {
+    background-color: var(--home-color-personnes);
+    color: #fff;
+    text-decoration: none;
+}
+
+
 /* ---- Responsive lieu / Responsive lieu ---- */
 @media (max-width: 768px) {
     .lieu-header {
@@ -2043,6 +2071,14 @@ picture.text-center img.badge-icon {
     }
     .home-word-cloud-item:nth-child(5n+1) { font-size: 1rem; }
     .home-word-cloud-item:nth-child(5n+4) { font-size: 1.1rem; }
+}
+
+.login-button{
+    position: relative;
+    right: 15px;
+    top:15px;
+    text-align: right;
+    outline: none;
 }
 
 /* Custom class a remplcer par tailwind */

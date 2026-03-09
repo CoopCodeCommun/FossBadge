@@ -6,6 +6,7 @@
 {% load pictures %}
 {% load static %}
 {% load l10n %}
+{% load custom_tags %}
 
 {% block title %}{{ structure.name }} — O2Badge{% endblock %}
 
@@ -31,9 +32,9 @@
             <button type="button"
                class="btn btn-sm btn-outline-secondary"
                hx-get="{% url 'core:structure-edit' pk=structure.pk %}"
-               hx-target="#customPopup-content"
+               hx-target="{% popup_content_id %}"
                hx-swap="innerHTML"
-               hx-on:htmx:after-request="showpopup()"
+               hx-on:htmx:after-request="{% popup_open %}"
                data-testid="lieu-edit-btn">
                 {% translate "Éditer" %}
             </button>
@@ -111,9 +112,9 @@
                 <button type="button"
                         class="home-forge-btn"
                         hx-get="{% url 'core:create_badge' %}?structure={{ structure.pk }}"
-                        hx-target="#customPopup-content"
+                        hx-target="{% popup_content_id %}"
                         hx-swap="innerHTML"
-                        hx-on:htmx:after-request="showpopup()"
+                        hx-on:htmx:after-request="{% popup_open %}"
                         data-testid="btn-forge-badge">
                     <span aria-hidden="true">&#9874;</span>
                     {% translate "Forger un badge" %}
@@ -163,8 +164,8 @@
                             type="button"
                             class="lieu-action-btn lieu-action-btn-assign"
                             hx-get="{% url 'core:badge-assign' badge.pk %}?default_structure={{ structure.pk }}"
-                            hx-on:htmx:after-request="showpopup()"
-                            hx-target="#customPopup-content"
+                            hx-on:htmx:after-request="{% popup_open %}"
+                            hx-target="{% popup_content_id %}"
                             hx-swap="innerHTML"
                             data-testid="btn-assign-badge-{{ badge.pk }}"
                         >
@@ -179,8 +180,8 @@
                             type="button"
                             class="lieu-action-btn lieu-action-btn-endorse"
                             hx-get="{% url 'core:badge-endorse' badge.pk %}?default_structure={{ structure.pk }}"
-                            hx-on:htmx:after-request="showpopup()"
-                            hx-target="#customPopup-content"
+                            hx-on:htmx:after-request="{% popup_open %}"
+                            hx-target="{% popup_content_id %}"
                             hx-swap="innerHTML"
                             data-testid="btn-endorse-badge-{{ badge.pk }}"
                         >
@@ -235,8 +236,8 @@
                             type="button"
                             class="lieu-action-btn lieu-action-btn-assign"
                             hx-get="{% url 'core:badge-assign' badge.pk %}?default_structure={{ structure.pk }}"
-                            hx-on:htmx:after-request="showpopup()"
-                            hx-target="#customPopup-content"
+                            hx-on:htmx:after-request="{% popup_open %}"
+                            hx-target="{% popup_content_id %}"
                             hx-swap="innerHTML"
                             data-testid="btn-assign-badge-{{ badge.pk }}"
                         >
@@ -251,8 +252,8 @@
                             type="button"
                             class="lieu-action-btn lieu-action-btn-endorse"
                             hx-get="{% url 'core:badge-endorse' badge.pk %}?default_structure={{ structure.pk }}"
-                            hx-on:htmx:after-request="showpopup()"
-                            hx-target="#customPopup-content"
+                            hx-on:htmx:after-request="{% popup_open %}"
+                            hx-target="{% popup_content_id %}"
                             hx-swap="innerHTML"
                             data-testid="btn-endorse-badge-{{ badge.pk }}"
                         >
@@ -274,10 +275,25 @@
     {# ── Section Personnes ── #}
     {# ── People section ── #}
     <section aria-label="{% translate 'Personnes' %}" class="mt-4">
-        <h2 class="home-column-title">
-            {% translate "Personnes" %}
-            {% if members_list %}
-                <span class="home-count-badge">{{ members_list|length }}</span>
+        <h2 class="home-column-title justify-content-between flex">
+            <span>
+                {% translate "Personnes" %}
+                {% if members_list %}
+                    <span class="home-count-badge">{{ members_list|length }}</span>
+                {% endif %}
+            </span>
+            {# Bouton inviter un utilisateur (admin/éditeur) — à droite du titre / Invite user button (admin/editor) — to the right of title #}
+            {% if is_admin or is_editor %}
+                <button type="button"
+                        class="home-invite-btn"
+                        hx-get="{% url 'core:structure-invite' structure.pk %}"
+                        hx-on:htmx:after-request="{% popup_open %}"
+                        hx-target="{% popup_content_id %}"
+                        hx-swap="innerHTML"
+                        data-testid="btn-forge-badge">
+                    <span aria-hidden="true">&#x1F4E9;</span>
+                    {% translate "Inviter un utilisateur" %}
+                </button>
             {% endif %}
         </h2>
 
@@ -325,6 +341,9 @@
     {% endif %}
 
 </div>
+
+{% popup popup_width="60%" %}{% endpopup %}
+
 {% endblock %}
 
 {% block extra_js %}
@@ -350,4 +369,5 @@
     });
 </script>
 {% endif %}
+
 {% endblock %}

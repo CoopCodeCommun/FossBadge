@@ -448,6 +448,7 @@ class HomeViewSet(viewsets.ViewSet):
             return render(request, 'core/home/partial/multi_focus.html', multi_focus_context)
 
         multi_focus_context['focus_partial'] = 'core/home/partial/multi_focus.html'
+
         return render(request, 'core/home/index.html', multi_focus_context)
 
     @action(detail=False, methods=["GET"], url_path="person-focus/(?P<person_pk>[^/.]+)")
@@ -1460,8 +1461,6 @@ class StructureViewSet(viewsets.ViewSet):
         validator = InviteUserValidator(data=request.data)
         is_valid = validator.is_valid()
 
-        res = HttpResponse(headers={"HX-Redirect": reverse('core:structure-detail', kwargs={'pk': structure.pk}),})
-
         if not is_valid:
             context.update({
                 "errors" : validator.errors,
@@ -1475,7 +1474,7 @@ class StructureViewSet(viewsets.ViewSet):
         invite_user_to_structure(email, role, structure)
 
         messages.add_message(request, messages.SUCCESS, 'Invitation envoyé !')
-        return res
+        return reload(request)
 
 class UserViewSet(viewsets.ViewSet):
     """
@@ -1642,6 +1641,9 @@ class UserViewSet(viewsets.ViewSet):
         """
         Edit an existing user.
         """
+        if not request.htmx:
+            return redirect(reverse('core:user-detail', kwargs={'pk': pk}))
+
 
         user = get_object_or_404(User, pk=pk)
 
@@ -1650,10 +1652,9 @@ class UserViewSet(viewsets.ViewSet):
             if form.is_valid():
                 form.save()
                 user = User.objects.get(pk=pk)
-                return render(request, 'core/users/partials/user_profile_info.html', {'user': user})
 
-        if not request.htmx:
-            return redirect(reverse('core:user-detail', kwargs={'pk': pk}))
+                return redirect_reload(reverse("core:home-passeport",kwargs={"person_pk":pk}))
+
         form = PartialUserForm(instance=user)
         return render(request, 'core/users/partials/user_profile_edit.html', {'user': user, 'form': form})
 

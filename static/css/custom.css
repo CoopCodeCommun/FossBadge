@@ -270,6 +270,7 @@ picture.text-center img.badge-icon {
     width: 100%;
     max-width: 680px;
     transition: max-width 0.4s ease;
+    margin-bottom: 20px;
 }
 
 .home-search-wrapper.has-results .home-search-box {
@@ -1480,6 +1481,33 @@ picture.text-center img.badge-icon {
     color: #fff;
     text-decoration: none;
 }
+
+
+/* Bouton "Forger un badge" — discret, style outline orange
+   "Forge a badge" button — discreet, outline orange style */
+.home-invite-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.3rem 0.75rem;
+    font-size: 0.82rem;
+    font-weight: 500;
+    color: var(--home-color-personnes);
+    border: 1px solid var(--home-color-personnes);
+    border-radius: 8px;
+    background: transparent;
+    text-decoration: none;
+    transition: background-color 0.15s ease, color 0.15s ease;
+    margin: 0;
+}
+
+.home-invite-btn:hover,
+.home-invite-btn:focus {
+    background-color: var(--home-color-personnes);
+    color: #fff;
+    text-decoration: none;
+}
+
 
 /* ---- Responsive lieu / Responsive lieu ---- */
 @media (max-width: 768px) {

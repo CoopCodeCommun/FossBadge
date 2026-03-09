@@ -6,6 +6,7 @@
 {% load pictures %}
 {% load static %}
 {% load l10n %}
+{% load custom_tags %}
 
 {% block title %}
     {% blocktranslate with name=person.get_full_name|default:person.username %}Passeport de {{ name }}{% endblocktranslate %} — O2Badge
@@ -204,7 +205,7 @@
             type="button"
             class="btn btn-sm btn-outline-primary"
             hx-get="{% url 'core:edit-profile' pk=person.pk %}"
-            hx-on:htmx:after-request="showpopup()"
+            hx-on:htmx:after-request="{% popup_open %}"
             hx-target="#customPopup-content"
             hx-swap="innerHTML"
             data-testid="passeport-edit-profile-btn">
@@ -212,69 +213,24 @@
         </button>
     </div>
 
-    {# Div caché : reçoit la réponse POST du formulaire d'édition (cible #user-info) #}
-    {# / Hidden div: receives the edit form POST response (targets #user-info) #}
-    <div id="user-info" hidden></div>
-
     {# ── Lien discret "Désactiver mon compte" ── #}
     {# ── Discreet "Deactivate my account" link ── #}
     <div class="mt-4 mb-2">
-        <form method="post" action="{% url 'core:user-delete' pk=person.pk %}" id="deactivate-account-form">
-            {% csrf_token %}
-            <button type="button"
-                    class="passeport-deactivate-link"
-                    id="deactivate-account-btn"
-                    data-testid="passeport-deactivate-btn">
-                {% translate "Désactiver mon compte" %}
-            </button>
-        </form>
+        <button class="passeport-deactivate-link" onclick="{% popup_open %}">
+            {% translate "Désactiver mon compte" %}
+        </button>
     </div>
     {% endif %}
 
 </div>
+
+    {% popup %}
+        {% include "core/users/partials/disable_account_popup.html" %}
+    {% endpopup %}
+
 {% endblock %}
 
 {% block extra_js %}
-{% if is_self %}
-<script>
-    document.addEventListener('DOMContentLoaded', function () {
-        // Quand le formulaire d'édition réussit, il envoie le résultat dans #user-info.
-        // On détecte ce swap, on ferme le popup et on recharge la page.
-        // / When the edit form succeeds, it swaps into #user-info.
-        // We detect this swap, close the popup and reload the page.
-        var user_info_target = document.getElementById('user-info');
-        if (user_info_target) {
-            user_info_target.addEventListener('htmx:afterSwap', function () {
-                hidepopup();
-                window.location.reload();
-            });
-        }
-
-        // Confirmation SweetAlert2 avant désactivation du compte.
-        // Le formulaire est soumis seulement si l'utilisateur confirme.
-        // / SweetAlert2 confirmation before account deactivation.
-        // The form is only submitted if the user confirms.
-        var deactivate_btn = document.getElementById('deactivate-account-btn');
-        var deactivate_form = document.getElementById('deactivate-account-form');
-        if (deactivate_btn && deactivate_form) {
-            deactivate_btn.addEventListener('click', function () {
-                Swal.fire({
-                    title: "{% translate 'Désactiver votre compte ?' %}",
-                    text: "{% translate 'Cette action est irréversible.' %}",
-                    icon: 'warning',
-                    showDenyButton: true,
-                    confirmButtonText: "{% translate 'Désactiver' %}",
-                    denyButtonText: "{% translate 'Annuler' %}"
-                }).then(function (result) {
-                    if (result.isConfirmed) {
-                        deactivate_form.submit();
-                    }
-                });
-            });
-        }
-    });
-</script>
-{% endif %}
 {% if structures_pks_csv %}
 <script src="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.js"></script>
 <script>

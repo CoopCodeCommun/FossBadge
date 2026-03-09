@@ -6,6 +6,7 @@
 {% load pictures %}
 {% load static %}
 {% load l10n %}
+{% load custom_tags %}
 
 {% block title %}{{ badge.name }} — O2Badge{% endblock %}
 
@@ -33,7 +34,7 @@
                hx-get="{% url 'core:badge-edit' pk=badge.pk %}"
                hx-target="#customPopup-content"
                hx-swap="innerHTML"
-               hx-on:htmx:after-request="showpopup()"
+               hx-on:htmx:after-request="{% popup_open %}"
                data-testid="badge-page-edit-btn">
                 {% translate "Éditer" %}
             </button>
@@ -104,7 +105,7 @@
                             type="button"
                             class="btn btn-sm btn-outline-primary"
                             hx-get="{% url 'core:badge-assign' pk=badge.pk %}"
-                            hx-on:htmx:after-request="showpopup()"
+                            hx-on:htmx:after-request="{% popup_open %}"
                             hx-target="#customPopup-content"
                             hx-swap="innerHTML"
                             data-testid="badge-page-assign-btn">
@@ -120,7 +121,7 @@
                             type="button"
                             class="btn btn-sm btn-outline-primary"
                             hx-get="{% url 'core:badge-endorse' pk=badge.pk %}"
-                            hx-on:htmx:after-request="showpopup()"
+                            hx-on:htmx:after-request="{% popup_open %}"
                             hx-target="#customPopup-content"
                             hx-swap="innerHTML"
                             data-testid="badge-page-endorse-btn">
@@ -242,6 +243,9 @@
     {% endif %}
 
 </div>
+
+    {% popup %}{% endpopup %}
+
 {% endblock %}
 
 {% block extra_js %}

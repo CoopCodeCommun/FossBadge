@@ -1,3 +1,5 @@
+{% load custom_tags %}
+
 <div id="user-info">
     <form hx-post="{% url 'core:edit-profile' user.pk %}"
             hx-target="#user-info"
@@ -64,6 +66,7 @@
         </div>
 
         <input type="submit" class="btn btn-success" value="Valider"/>
-        <a href="{% url 'core:home-passeport' person_pk=user.pk %}" class="btn btn-danger">Annuler</a>
+{#        <a href="{% url 'core:home-passeport' person_pk=user.pk %}" class="btn btn-danger">Annuler</a>#}
+        <button type="button" onclick="{% popup_close %}" class="btn btn-danger">Annuler </button>
     </form>
 </div>

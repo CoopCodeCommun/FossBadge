@@ -2,6 +2,7 @@
 {# Formulaire de creation de badge pour la modale HTMX (popup). #}
 {# / Badge creation form for HTMX modal (popup). #}
 {% load i18n %}
+{% load custom_tags %}
 
 <h2>{% translate "Forger un badge" %}</h2>
 
@@ -73,7 +74,7 @@
         <button type="submit" class="btn btn-primary" data-testid="btn-submit-create-badge">
             {% translate "Creer le badge" %}
         </button>
-        <button type="button" class="popup-cancel-btn" onclick="hidepopup()" data-testid="btn-cancel-create-badge">
+        <button type="button" class="popup-cancel-btn" onclick="{% popup_close %}" data-testid="btn-cancel-create-badge">
             {% translate "Annuler" %}
         </button>
     </div>

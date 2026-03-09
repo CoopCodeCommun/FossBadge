@@ -11,6 +11,20 @@
 {# Contexte carte / Map context #}
 <div id="map-context" hidden data-structures="{{ multi_structures_pks }}"></div>
 
+{# Bouton retour #}
+{# Back button #}
+<a
+        href="{% url 'core:home-search' %}?q={{ search_query|urlencode }}"
+        hx-get="{% url 'core:home-search' %}?q={{ search_query|urlencode }}"
+        hx-target="#search-results"
+        hx-swap="innerHTML"
+        hx-push-url="/"
+        hx-include="#home-search-filters"
+        class="home-back-link"
+>
+    <span aria-hidden="true">&larr;</span> {% translate "Retour aux résultats" %}
+</a>
+
 <div class="row g-4" data-testid="home-multi-focus" data-focus-type="multi">
 
     {# === Colonne Badges === #}
@@ -19,20 +33,6 @@
 
         {% if selected_badge %}
             {# Carte détail badge sélectionné / Detail card for selected badge #}
-
-            {# Bouton retour — première colonne visible uniquement #}
-            {# Back button — first visible column only #}
-            <a
-                href="{% url 'core:home-search' %}?q={{ search_query|urlencode }}"
-                hx-get="{% url 'core:home-search' %}?q={{ search_query|urlencode }}"
-                hx-target="#search-results"
-                hx-swap="innerHTML"
-                hx-push-url="/"
-                hx-include="#home-search-filters"
-                class="home-back-link"
-            >
-                <span aria-hidden="true">&larr;</span> {% translate "Retour aux résultats" %}
-            </a>
 
             <div class="home-badge-focus-card">
 
@@ -179,22 +179,6 @@
         {% if selected_structure %}
             {# Carte détail structure sélectionnée / Detail card for selected structure #}
 
-            {# Bouton retour si la colonne badges est masquée #}
-            {# Back button if badges column is hidden #}
-            {% if search_badges_enabled is False %}
-            <a
-                href="{% url 'core:home-search' %}?q={{ search_query|urlencode }}"
-                hx-get="{% url 'core:home-search' %}?q={{ search_query|urlencode }}"
-                hx-target="#search-results"
-                hx-swap="innerHTML"
-                hx-push-url="/"
-                hx-include="#home-search-filters"
-                class="home-back-link"
-            >
-                <span aria-hidden="true">&larr;</span> {% translate "Retour aux résultats" %}
-            </a>
-            {% endif %}
-
             <div class="home-badge-focus-card">
 
                 {# Bouton × pour retirer cette structure / × button to remove this structure #}
@@ -328,22 +312,6 @@
 
         {% if selected_person %}
             {# Carte détail personne sélectionnée / Detail card for selected person #}
-
-            {# Bouton retour si les 2 autres colonnes sont masquées #}
-            {# Back button if both other columns are hidden #}
-            {% if search_badges_enabled is False and search_structures_enabled is False %}
-            <a
-                href="{% url 'core:home-search' %}?q={{ search_query|urlencode }}"
-                hx-get="{% url 'core:home-search' %}?q={{ search_query|urlencode }}"
-                hx-target="#search-results"
-                hx-swap="innerHTML"
-                hx-push-url="/"
-                hx-include="#home-search-filters"
-                class="home-back-link"
-            >
-                <span aria-hidden="true">&larr;</span> {% translate "Retour aux résultats" %}
-            </a>
-            {% endif %}
 
             <div class="home-badge-focus-card">
 

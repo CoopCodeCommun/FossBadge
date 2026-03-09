@@ -111,7 +111,7 @@
         <button type="submit" class="btn btn-primary" data-testid="btn-submit-edit-structure">
             {% translate "Enregistrer" %}
         </button>
-        <button type="button" class="popup-cancel-btn" onclick="hidepopup()" data-testid="btn-cancel-edit-structure">
+        <button type="button" class="popup-cancel-btn" onclick="{% popup_close %}" data-testid="btn-cancel-edit-structure">
             {% translate "Annuler" %}
         </button>
     </div>

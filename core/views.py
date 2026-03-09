@@ -372,7 +372,7 @@ class BadgeViewSet(viewsets.ViewSet):
 
         # Create the dream badge and its associated course
         badge = Badge.objects.create(**data)
-        course = Course.objects.create(badge=badge, user=request.user,is_dream=True)
+        course = Course.objects.create(badge=badge, user=request.user,name=badge.name,is_dream=True)
 
         messages.success(request, "Votre badge de rêve a bien été créé")
         return reload(request)

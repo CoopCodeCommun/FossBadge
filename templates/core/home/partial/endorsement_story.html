@@ -1,0 +1,85 @@
+{# LOCALISATION : templates/core/home/partial/endorsement_story.html #}
+{# Bloc récit d'endossement dans le multi-focus. #}
+{# Affiche la description du badge, les notes d'endorsement, et l'assignment si 3 items. #}
+{# / Endorsement story block in multi-focus. #}
+{# Shows badge description, endorsement notes, and assignment if 3 items. #}
+{% load i18n %}
+
+{% if selected_badge and selected_structure %}
+{% if selected_badge.description or endorsement_assignment or badge_criteria_for_story %}
+<section
+    class="endorsement-story bg-body-secondary rounded p-4 mt-4"
+    aria-label="{% if endorsement_assignment %}{% translate 'Histoire de cet endossement' %}{% else %}{% translate 'À propos de ce badge ici' %}{% endif %}"
+    data-testid="endorsement-story"
+>
+    {# Titre du bloc / Block title #}
+    {% if endorsement_assignment %}
+        <h3 class="endorsement-story-title mb-3">{% translate "Histoire de cet endossement" %}</h3>
+    {% else %}
+        <h3 class="endorsement-story-title mb-3">{% translate "À propos de ce badge ici" %}</h3>
+    {% endif %}
+
+    {# Description générale du badge (toujours affichée si elle existe) #}
+    {# General badge description (always shown if it exists) #}
+    {% if selected_badge.description %}
+    <div class="endorsement-story-description mb-3 text-muted" data-testid="endorsement-story-description">
+        {{ selected_badge.description|linebreaks }}
+    </div>
+    {% endif %}
+
+    {# Critères d'attribution de cette structure pour ce badge #}
+    {# Attribution criteria from this structure for this badge #}
+    {% if badge_criteria_for_story %}
+    <div class="endorsement-story-criteria mb-3" data-testid="endorsement-story-criteria">
+        <hr class="my-2">
+        <p class="mb-1">
+            <strong>
+                {% blocktranslate with structure_name=selected_structure.name %}Critères de {{ structure_name }}{% endblocktranslate %}
+            </strong>
+        </p>
+        <div class="text-muted mb-0">{{ badge_criteria_for_story.criteria|linebreaks }}</div>
+    </div>
+    {% endif %}
+
+    {# Notes de l'endorsement : seulement quand les 3 items sont selectionnes #}
+    {# Endorsement notes: only when all 3 items are selected #}
+    {% if endorsement_assignment and endorsement_info and endorsement_info.notes %}
+    <div class="endorsement-story-endorsement-notes mb-3" data-testid="endorsement-story-endorsement-notes">
+        <hr class="my-2">
+        <p class="mb-1">
+            <strong>
+                {% blocktranslate with structure_name=selected_structure.name %}Note de {{ structure_name }}{% endblocktranslate %}
+            </strong>
+        </p>
+        <p class="text-muted mb-0">{{ endorsement_info.notes }}</p>
+    </div>
+    {% endif %}
+
+    {# Détails de l'attribution (badge + structure + personne) #}
+    {# Assignment details (badge + structure + person) #}
+    {% if endorsement_assignment %}
+    <div class="endorsement-story-assignment" data-testid="endorsement-story-assignment">
+        <hr class="my-2">
+        <p class="mb-1">
+            <strong>{% translate "Attribution" %}</strong>
+        </p>
+        <p class="text-muted mb-1">
+            {% if endorsement_assignment.assigned_date %}
+                <time datetime="{{ endorsement_assignment.assigned_date|date:'Y-m-d' }}">
+                    {{ endorsement_assignment.assigned_date|date:"j F Y" }}
+                </time>
+            {% endif %}
+            {% if endorsement_assignment.assigned_by %}
+                &middot;
+                {% blocktranslate with by_name=endorsement_assignment.assigned_by.get_full_name|default:endorsement_assignment.assigned_by.username structure_name=selected_structure.name %}par {{ by_name }} ({{ structure_name }}){% endblocktranslate %}
+            {% endif %}
+        </p>
+        {% if endorsement_assignment.notes %}
+            <p class="text-muted mb-0">{{ endorsement_assignment.notes }}</p>
+        {% endif %}
+    </div>
+    {% endif %}
+
+</section>
+{% endif %}
+{% endif %}

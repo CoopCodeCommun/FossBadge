@@ -4,9 +4,9 @@ from django.contrib.auth import logout, get_user_model, authenticate, login
 from django.core.exceptions import ValidationError, PermissionDenied
 from django.core.signing import SignatureExpired
 from django.core.validators import validate_email
-from django.http import HttpResponse
+from django.http import HttpResponse, JsonResponse
 from django.shortcuts import render, get_object_or_404, redirect
-from django.db.models import Q, Count
+from django.db.models import Q, Count, Exists, OuterRef, Count
 from django.urls import reverse
 from django_htmx.http import HttpResponseClientRedirect
 from rest_framework import viewsets
@@ -15,7 +15,7 @@ from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.decorators import action,authentication_classes, permission_classes
 from .helpers import TokenHelper
 from .helpers.utils import get_or_create_user, invite_user_to_structure
-from .models import Structure, Badge, User, BadgeAssignment, Course, CourseItem
+from .models import Structure, Badge, User, BadgeAssignment, BadgeEndorsement, BadgeCriteria, Course, CourseItem
 from .forms import BadgeForm, StructureForm, UserForm, PartialUserForm
 
 from .permissions import IsBadgeEditor, IsStructureAdmin, CanEditUser, CanAssignBadge, CanEndorseBadge, CanEditCourse
@@ -51,19 +51,797 @@ def redirect_reload(url):
 
 
 
+def read_category_filters(request):
+    """
+    Lit les filtres de catégorie depuis les paramètres GET.
+    Les checkboxes non cochées ne sont pas envoyées.
+    Si aucun filtre n'est présent, on active tout par défaut.
+
+    Reads category filters from GET params.
+    Unchecked checkboxes are not sent.
+    If no filter param is present, all are enabled by default.
+    """
+    has_any_filter_param = any(
+        param in request.GET for param in ('badges', 'structures', 'personnes')
+    )
+    if has_any_filter_param:
+        return {
+            'search_badges_enabled': 'badges' in request.GET,
+            'search_structures_enabled': 'structures' in request.GET,
+            'search_personnes_enabled': 'personnes' in request.GET,
+        }
+    return {
+        'search_badges_enabled': True,
+        'search_structures_enabled': True,
+        'search_personnes_enabled': True,
+    }
+
+
 class HomeViewSet(viewsets.ViewSet):
     """
-    ViewSet for the home page of the site.
+    ViewSet pour la page d'accueil avec recherche unifiée.
+    ViewSet for the home page with unified search.
     """
+
     def list(self, request):
-        # Get some recent badges and structures for the home page
-        recent_badges = Badge.objects.all().order_by('-pk')[:4]
-        popular_structures = Structure.objects.all().order_by('-pk')[:4]
+        # Page d'accueil — champ de recherche centré + nuage de mots des badges
+        # Home page — centered search field + badge word cloud
+
+        # Tous les noms de badges pour le nuage de mots
+        # / All badge names for the word cloud
+        all_badge_names_for_cloud = list(
+            Badge.objects.values_list('name', flat=True).order_by('?')
+        )
 
         return render(request, 'core/home/index.html', {
-            'title': 'FossBadge - Accueil',
-            'recent_badges': recent_badges,
-            'popular_structures': popular_structures
+            'title': 'O2Badge',
+            'badge_names_for_cloud': all_badge_names_for_cloud,
+        })
+
+    @action(detail=False, methods=["GET"])
+    def search(self, request):
+        """
+        Recherche unifiée sur badges, structures et personnes.
+        Fouille dans tous les champs pertinents : noms, descriptions,
+        notes d'endorsement, badges assignés, etc.
+        Retourne un partiel HTML avec 3 colonnes de résultats.
+
+        Unified search across badges, structures and people.
+        Searches all relevant fields: names, descriptions,
+        endorsement notes, assigned badges, etc.
+        Returns an HTML partial with 3 result columns.
+        """
+        search_query = request.GET.get('q', '').strip()
+
+        # Si la requête est vide, retourner un partiel vide.
+        # La limite de 4 caractères est gérée côté client (saisie auto uniquement).
+        # Entrée et bouton loupe peuvent envoyer des requêtes plus courtes.
+        # / If query is empty, return empty partial.
+        # The 4-char limit is enforced client-side (auto-search only).
+        query_is_empty = len(search_query) < 1
+        if query_is_empty:
+            return HttpResponse('')
+
+        # Lire les filtres de catégorie / Read category filters
+        category_filters = read_category_filters(request)
+        search_badges_enabled = category_filters['search_badges_enabled']
+        search_structures_enabled = category_filters['search_structures_enabled']
+        search_personnes_enabled = category_filters['search_personnes_enabled']
+
+        # Limite de résultats par catégorie / Result limit per category
+        max_results_per_category = 5
+
+        # --- Badges ---
+        badges_found_list = []
+        if search_badges_enabled:
+            # Cherche dans : nom, description, structure émettrice, notes d'endorsement
+            # Search in: name, description, issuing structure, endorsement notes
+            badges_found_list = Badge.objects.select_related('issuing_structure').filter(
+                Q(name__icontains=search_query)
+                | Q(description__icontains=search_query)
+                | Q(issuing_structure__name__icontains=search_query)
+                | Q(endorsements__notes__icontains=search_query)
+            ).distinct()[:max_results_per_category]
+
+        # --- Structures ---
+        structures_found_list = []
+        if search_structures_enabled:
+            # Cherche dans : nom, description, noms des badges émis
+            # Search in: name, description, issued badge names
+            structures_found_list = Structure.objects.select_related('marker').filter(
+                Q(name__icontains=search_query)
+                | Q(description__icontains=search_query)
+                | Q(issued_badges__name__icontains=search_query)
+            ).distinct()[:max_results_per_category]
+
+        # --- Personnes ---
+        people_found_list = []
+        if search_personnes_enabled:
+            # Cherche dans : prénom, nom, pseudo, ET aussi dans les noms/descriptions
+            # des badges que la personne possède, et les notes d'assignation
+            # Search in: first name, last name, username, AND also in names/descriptions
+            # of badges the person holds, and assignment notes
+            people_found_list = User.objects.filter(
+                Q(first_name__icontains=search_query)
+                | Q(last_name__icontains=search_query)
+                | Q(username__icontains=search_query)
+                | Q(badge_assignments__badge__name__icontains=search_query)
+                | Q(badge_assignments__badge__description__icontains=search_query)
+                | Q(badge_assignments__notes__icontains=search_query)
+            ).distinct()[:max_results_per_category]
+
+        # PKs des structures trouvées avec marker (pour la carte)
+        # PKs of found structures with markers (for the map)
+        structures_pks_csv = ','.join(
+            str(s.pk) for s in structures_found_list
+            if hasattr(s, 'marker') and s.marker_id
+        )
+
+        search_context = {
+            'badges_found_list': badges_found_list,
+            'structures_found_list': structures_found_list,
+            'people_found_list': people_found_list,
+            'search_query': search_query,
+            'search_badges_enabled': search_badges_enabled,
+            'search_structures_enabled': search_structures_enabled,
+            'search_personnes_enabled': search_personnes_enabled,
+            'structures_pks_csv': structures_pks_csv,
+        }
+
+        # Requête HTMX → retourner seulement le partiel des résultats
+        # HTMX request → return only the results partial
+        if request.htmx:
+            return render(request, 'core/home/partial/search_results.html', search_context)
+
+        # Requête classique (fallback sans JS) → retourner la page complète avec résultats
+        # Regular request (no-JS fallback) → return full page with results
+        search_context['title'] = 'FossBadge — Recherche'
+        return render(request, 'core/home/index.html', search_context)
+
+    @action(detail=False, methods=["GET"], url_path="badge-focus/(?P<badge_pk>[^/.]+)")
+    def badge_focus(self, request, badge_pk=None):
+        """
+        Vue focus sur un badge : affiche le badge en détail dans la colonne gauche,
+        les structures liées (émettrice + endorseuses) au centre,
+        et les personnes qui possèdent ce badge à droite.
+        Remplace les résultats de recherche sans quitter la page /home.
+
+        Badge focus view: shows badge detail in the left column,
+        related structures (issuer + endorsers) in the center,
+        and people who hold this badge on the right.
+        Replaces search results without leaving /home.
+        """
+        badge_focused = get_object_or_404(
+            Badge.objects.select_related('issuing_structure'), uuid=badge_pk
+        )
+
+        # Structures liées : la structure émettrice + celles qui endossent ce badge
+        # Related structures: the issuing structure + those endorsing this badge
+        related_structures_list = Structure.objects.select_related('marker').filter(
+            Q(pk=badge_focused.issuing_structure_id)
+            | Q(endorsements__badge=badge_focused)
+        ).distinct()
+
+        # Personnes qui possèdent ce badge (via BadgeAssignment)
+        # People who hold this badge (via BadgeAssignment)
+        related_people_list = User.objects.filter(
+            badge_assignments__badge=badge_focused
+        ).distinct()
+
+        # Conserver la requête de recherche pour le bouton retour
+        # Keep the search query for the back button
+        search_query_for_back = request.GET.get('q', '')
+
+        # Lire les filtres de catégorie / Read category filters
+        category_filters = read_category_filters(request)
+
+        # PKs des structures liées avec marker (pour la carte)
+        # PKs of related structures with markers (for the map)
+        related_structures_pks = ','.join(
+            str(s.pk) for s in related_structures_list
+            if hasattr(s, 'marker') and s.marker_id
+        )
+
+        badge_focus_context = {
+            'focused_badge': badge_focused,
+            'related_structures_list': related_structures_list,
+            'related_people_list': related_people_list,
+            'search_query': search_query_for_back,
+            'related_structures_pks': related_structures_pks,
+            **category_filters,
+        }
+
+        # Requête HTMX → retourner seulement le partiel focus
+        # HTMX request → return only the focus partial
+        if request.htmx:
+            return render(request, 'core/home/partial/badge_focus.html', badge_focus_context)
+
+        # Requête directe (fallback sans JS) → page complète avec focus pré-rempli
+        # Direct request (no-JS fallback) → full page with pre-filled focus
+        badge_focus_context['focus_partial'] = 'core/home/partial/badge_focus.html'
+        return render(request, 'core/home/index.html', badge_focus_context)
+
+    @action(detail=False, methods=["GET"], url_path="structure-focus/(?P<structure_pk>[^/.]+)")
+    def structure_focus(self, request, structure_pk=None):
+        """
+        Vue focus sur une structure : affiche la structure en détail dans la colonne gauche,
+        les badges liés (émis + endossés) au centre,
+        et les membres de la structure à droite.
+
+        Structure focus view: shows structure detail in the left column,
+        related badges (issued + endorsed) in the center,
+        and structure members on the right.
+        """
+        structure_focused = get_object_or_404(Structure, uuid=structure_pk)
+
+        # Badges liés : émis par cette structure OU endossés par elle
+        # Related badges: issued by this structure OR endorsed by it
+        related_badges_list = Badge.objects.select_related('issuing_structure').filter(
+            Q(issuing_structure=structure_focused)
+            | Q(endorsements__structure=structure_focused)
+        ).distinct()
+
+        # Membres de la structure (admins + éditeurs + utilisateurs)
+        # Structure members (admins + editors + users)
+        related_people_list = User.objects.filter(
+            Q(structures_admins=structure_focused)
+            | Q(structures_editors=structure_focused)
+            | Q(structures_users=structure_focused)
+        ).distinct()
+
+        # Conserver la requête de recherche pour le bouton retour
+        # Keep the search query for the back button
+        search_query_for_back = request.GET.get('q', '')
+
+        category_filters = read_category_filters(request)
+
+        structure_focus_context = {
+            'focused_structure': structure_focused,
+            'related_badges_list': related_badges_list,
+            'related_people_list': related_people_list,
+            'search_query': search_query_for_back,
+            **category_filters,
+        }
+
+        if request.htmx:
+            return render(request, 'core/home/partial/structure_focus.html', structure_focus_context)
+
+        structure_focus_context['focus_partial'] = 'core/home/partial/structure_focus.html'
+        return render(request, 'core/home/index.html', structure_focus_context)
+
+    @action(detail=False, methods=["GET"], url_path="multi-focus")
+    def multi_focus(self, request):
+        """
+        Vue multi-focus : sélectionner 2 ou 3 objets de colonnes différentes.
+        Avec 2 items : affiche les 2 en détail + l'intersection dans la 3e colonne.
+        Avec 3 items : affiche les 3 en détail, pas d'intersection.
+
+        Multi-focus view: select 2 or 3 objects from different columns.
+        With 2 items: shows both in detail + intersection in 3rd column.
+        With 3 items: shows all 3 in detail, no intersection.
+        """
+        badge_pk = request.GET.get('badge')
+        structure_pk = request.GET.get('structure')
+        person_pk = request.GET.get('person')
+
+        # Au moins 2 params sur 3 doivent être fournis
+        # At least 2 out of 3 params must be provided
+        provided_params_count = sum(1 for p in [badge_pk, structure_pk, person_pk] if p)
+        if provided_params_count < 2:
+            return HttpResponse('', status=400)
+
+        selected_badge = None
+        selected_structure = None
+        selected_person = None
+        intersection_type = ''
+        intersection_list = []
+
+        if badge_pk:
+            selected_badge = get_object_or_404(
+                Badge.objects.select_related('issuing_structure'), uuid=badge_pk
+            )
+        if structure_pk:
+            selected_structure = get_object_or_404(
+                Structure.objects.select_related('marker'), uuid=structure_pk
+            )
+        if person_pk:
+            selected_person = get_object_or_404(User, uuid=person_pk)
+
+        # Intersection seulement avec 2 items / Intersection only with 2 items
+        if provided_params_count == 2:
+            # Badge + Structure → Personnes à l'intersection
+            # Badge + Structure → People at the intersection
+            if selected_badge and selected_structure:
+                intersection_type = 'personnes'
+                intersection_list = User.objects.filter(
+                    badge_assignments__badge=selected_badge,
+                ).filter(
+                    Q(structures_admins=selected_structure)
+                    | Q(structures_editors=selected_structure)
+                    | Q(structures_users=selected_structure)
+                ).distinct()
+
+            # Badge + Personne → Structures à l'intersection
+            # Badge + Person → Structures at the intersection
+            elif selected_badge and selected_person:
+                intersection_type = 'structures'
+                intersection_list = Structure.objects.filter(
+                    Q(issued_badges=selected_badge)
+                    | Q(endorsements__badge=selected_badge)
+                ).filter(
+                    Q(admins=selected_person)
+                    | Q(editors=selected_person)
+                    | Q(users=selected_person)
+                ).distinct()
+
+            # Structure + Personne → Badges à l'intersection
+            # Structure + Person → Badges at the intersection
+            elif selected_structure and selected_person:
+                intersection_type = 'badges'
+                intersection_list = Badge.objects.filter(
+                    assignments__user=selected_person,
+                ).filter(
+                    Q(issuing_structure=selected_structure)
+                    | Q(endorsements__structure=selected_structure)
+                ).distinct()
+
+        # Si badge + structure sélectionnés, chercher les critères d'attribution
+        # If badge + structure selected, look for attribution criteria
+        badge_criteria_for_story = None
+        if selected_badge and selected_structure:
+            badge_criteria_for_story = BadgeCriteria.objects.filter(
+                badge=selected_badge, structure=selected_structure
+            ).first()
+
+        # Si badge + structure sélectionnés, chercher l'endorsement entre les deux
+        # If badge + structure selected, look for endorsement between them
+        endorsement_info = None
+        if selected_badge and selected_structure:
+            try:
+                endorsement_info = BadgeEndorsement.objects.get(
+                    badge=selected_badge,
+                    structure=selected_structure,
+                )
+            except BadgeEndorsement.DoesNotExist:
+                endorsement_info = None
+
+        # Si badge + structure + personne, chercher aussi l'assignment
+        # If badge + structure + person, also look for the assignment
+        endorsement_assignment = None
+        if selected_badge and selected_structure and selected_person:
+            try:
+                endorsement_assignment = BadgeAssignment.objects.select_related(
+                    'assigned_by'
+                ).get(
+                    badge=selected_badge,
+                    assigned_structure=selected_structure,
+                    user=selected_person,
+                )
+            except BadgeAssignment.DoesNotExist:
+                endorsement_assignment = None
+
+        search_query_for_back = request.GET.get('q', '')
+        category_filters = read_category_filters(request)
+
+        # PKs des structures avec marker pour la carte
+        # PKs of structures with markers for the map
+        multi_structures_pks = ''
+        if selected_structure and hasattr(selected_structure, 'marker') and selected_structure.marker_id:
+            multi_structures_pks = str(selected_structure.pk)
+
+        multi_focus_context = {
+            'selected_badge': selected_badge,
+            'selected_structure': selected_structure,
+            'selected_person': selected_person,
+            'intersection_type': intersection_type,
+            'intersection_list': intersection_list,
+            'items_count': provided_params_count,
+            'search_query': search_query_for_back,
+            'multi_structures_pks': multi_structures_pks,
+            'endorsement_info': endorsement_info,
+            'endorsement_assignment': endorsement_assignment,
+            'badge_criteria_for_story': badge_criteria_for_story,
+            **category_filters,
+        }
+
+        if request.htmx:
+            return render(request, 'core/home/partial/multi_focus.html', multi_focus_context)
+
+        multi_focus_context['focus_partial'] = 'core/home/partial/multi_focus.html'
+        return render(request, 'core/home/index.html', multi_focus_context)
+
+    @action(detail=False, methods=["GET"], url_path="person-focus/(?P<person_pk>[^/.]+)")
+    def person_focus(self, request, person_pk=None):
+        """
+        Vue focus sur une personne : affiche la personne en détail dans la colonne gauche,
+        les badges qu'elle possède au centre,
+        et les structures auxquelles elle appartient à droite.
+
+        Person focus view: shows person detail in the left column,
+        badges they hold in the center,
+        and structures they belong to on the right.
+        """
+        person_focused = get_object_or_404(User, uuid=person_pk)
+
+        # Badges possédés par cette personne (via BadgeAssignment)
+        # Badges held by this person (via BadgeAssignment)
+        related_badges_list = Badge.objects.select_related('issuing_structure').filter(
+            assignments__user=person_focused
+        ).distinct()
+
+        # Structures auxquelles la personne appartient (admin, éditeur ou utilisateur)
+        # Structures the person belongs to (admin, editor or user)
+        related_structures_list = Structure.objects.select_related('marker').filter(
+            Q(admins=person_focused)
+            | Q(editors=person_focused)
+            | Q(users=person_focused)
+        ).distinct()
+
+        # Conserver la requête de recherche pour le bouton retour
+        # Keep the search query for the back button
+        search_query_for_back = request.GET.get('q', '')
+
+        category_filters = read_category_filters(request)
+
+        # PKs des structures liées avec marker (pour la carte)
+        # PKs of related structures with markers (for the map)
+        related_structures_pks = ','.join(
+            str(s.pk) for s in related_structures_list
+            if hasattr(s, 'marker') and s.marker_id
+        )
+
+        person_focus_context = {
+            'focused_person': person_focused,
+            'related_badges_list': related_badges_list,
+            'related_structures_list': related_structures_list,
+            'search_query': search_query_for_back,
+            'related_structures_pks': related_structures_pks,
+            **category_filters,
+        }
+
+        if request.htmx:
+            return render(request, 'core/home/partial/person_focus.html', person_focus_context)
+
+        person_focus_context['focus_partial'] = 'core/home/partial/person_focus.html'
+        return render(request, 'core/home/index.html', person_focus_context)
+
+    @action(detail=False, methods=["GET"], url_path="map-data")
+    def map_data(self, request):
+        """
+        Retourne les structures avec marker au format GeoJSON,
+        filtrées par la recherche en cours.
+        Returns structures with markers as GeoJSON, filtered by current search.
+        """
+        pks_param = request.GET.get('pks', '')
+        search_query = request.GET.get('q', '')
+
+        structures_with_markers = Structure.objects.filter(
+            marker__isnull=False
+        ).select_related('marker')
+
+        # Si des PKs sont fournis, filtrer par ces PKs uniquement
+        # If PKs are provided, filter by those PKs only
+        if pks_param:
+            pk_list = [p.strip() for p in pks_param.split(',') if p.strip()]
+            structures_with_markers = structures_with_markers.filter(pk__in=pk_list)
+        elif len(search_query) >= 4:
+            # Filtrer par la recherche si assez de caractères
+            # Filter by search if enough characters
+            structures_with_markers = structures_with_markers.filter(
+                Q(name__icontains=search_query)
+                | Q(description__icontains=search_query)
+                | Q(issued_badges__name__icontains=search_query)
+                | Q(issued_badges__description__icontains=search_query)
+            ).distinct()
+
+        # Pour chaque structure, inclure les badges qui matchent la recherche
+        # For each structure, include badges that match the search
+        features = []
+        for structure in structures_with_markers:
+            matching_badges = Badge.objects.filter(
+                Q(issuing_structure=structure) | Q(endorsements__structure=structure)
+            ).distinct()
+            if len(search_query) >= 4:
+                matching_badges = matching_badges.filter(
+                    Q(name__icontains=search_query)
+                    | Q(description__icontains=search_query)
+                )
+
+            features.append({
+                'type': 'Feature',
+                'geometry': {
+                    'type': 'Point',
+                    'coordinates': [structure.marker.lng, structure.marker.lat],
+                },
+                'properties': {
+                    'pk': str(structure.pk),
+                    'name': structure.name,
+                    'badges': [
+                        {'pk': str(b.pk), 'name': b.name}
+                        for b in matching_badges[:10]
+                    ],
+                    'badge_count': matching_badges.count(),
+                },
+            })
+
+        return JsonResponse({'type': 'FeatureCollection', 'features': features})
+
+    @action(detail=False, methods=["GET"], url_path="structure/(?P<structure_pk>[^/.]+)")
+    def lieu(self, request, structure_pk=None):
+        """
+        Page dédiée d'un lieu (structure).
+        Affiche toutes les informations d'une structure sur une seule page :
+        en-tête, badges émis et endossés, membres, référent.
+        Ce n'est plus de la recherche, c'est de l'exploration.
+        / Dedicated structure page — shows all info on a single scrollable page.
+
+        LOCALISATION : core/views.py → HomeViewSet.lieu()
+
+        FLUX :
+        1. Reçoit GET depuis un lien /lieu/<uuid>/ (home, focus, ou URL directe)
+        2. Charge la structure avec son marker (select_related)
+        3. Récupère les badges émis et endossés (sans doublons)
+        4. Récupère les membres avec leur rôle annoté (admin/éditeur) et leur nombre de badges
+        5. Calcule les permissions (is_admin, is_editor) pour les boutons conditionnels
+        6. Rend la page complète core/lieu/index.html
+        """
+        structure = get_object_or_404(
+            Structure.objects.select_related('marker'), uuid=structure_pk
+        )
+
+        # Badges émis par cette structure
+        # Badges issued by this structure
+        issued_badges = Badge.objects.filter(
+            issuing_structure=structure
+        ).select_related('issuing_structure')
+
+        # Badges endossés par cette structure (on exclut ceux déjà émis pour éviter les doublons)
+        # Badges endorsed by this structure (exclude already issued to avoid duplicates)
+        endorsed_badges = Badge.objects.filter(
+            endorsements__structure=structure
+        ).exclude(
+            issuing_structure=structure
+        ).select_related('issuing_structure')
+
+        # Nombre total de badges liés (pour l'affichage)
+        # Total badge count (for display)
+        badges_total_count = issued_badges.count() + endorsed_badges.count()
+
+        # Membres avec annotation du rôle et du nombre de badges
+        # Members with role annotation and badge count
+        members_list = User.objects.filter(
+            Q(structures_admins=structure)
+            | Q(structures_editors=structure)
+            | Q(structures_users=structure)
+        ).annotate(
+            is_structure_admin=Exists(
+                structure.admins.filter(pk=OuterRef('pk'))
+            ),
+            is_structure_editor=Exists(
+                structure.editors.filter(pk=OuterRef('pk'))
+            ),
+            badge_count_for_member=Count('badge_assignments', distinct=True),
+        ).distinct()
+
+        # Permissions
+        is_admin = structure.is_admin(request.user) if request.user.is_authenticated else False
+        is_editor = structure.is_editor(request.user) if request.user.is_authenticated else False
+
+        # Annoter chaque badge avec les permissions d'action pour l'utilisateur courant.
+        # On convertit en liste pour pouvoir ajouter des attributs dynamiques.
+        # / Annotate each badge with action permissions for the current user.
+        user_can_manage_badges = is_admin or is_editor
+
+        # Charger tous les critères de cette structure en un seul appel
+        # Load all criteria for this structure in a single query
+        all_criteria_for_structure = {
+            c.badge_id: c
+            for c in BadgeCriteria.objects.filter(structure=structure)
+        }
+
+        issued_badges_list = list(issued_badges)
+        for badge_item in issued_badges_list:
+            badge_item.can_assign = user_can_manage_badges
+            badge_item.can_endorse = False  # Badge émis par cette structure / Issued by this structure
+            badge_item.criteria_for_lieu = all_criteria_for_structure.get(badge_item.pk)
+
+        endorsed_badges_list = list(endorsed_badges)
+        for badge_item in endorsed_badges_list:
+            badge_item.can_assign = user_can_manage_badges
+            badge_item.can_endorse = False  # Déjà endossé par cette structure / Already endorsed
+            badge_item.criteria_for_lieu = all_criteria_for_structure.get(badge_item.pk)
+
+        return render(request, 'core/lieu/index.html', {
+            'structure': structure,
+            'issued_badges': issued_badges_list,
+            'endorsed_badges': endorsed_badges_list,
+            'badges_total_count': badges_total_count,
+            'members_list': members_list,
+            'is_admin': is_admin,
+            'is_editor': is_editor,
+        })
+
+    @action(detail=False, methods=["GET"], url_path="passeport/(?P<person_pk>[^/.]+)")
+    def passeport(self, request, person_pk=None):
+        """
+        Page dédiée du passeport (profil open badge) d'une personne.
+        Affiche le parcours complet en timeline chronologique :
+        chaque badge est une carte individuelle, triée du plus récent au plus ancien.
+        La page est autonome, partageable, et sert de "carnet de route".
+        / Dedicated passport page — shows a person's full badge journey as a chronological timeline.
+
+        LOCALISATION : core/views.py → HomeViewSet.passeport()
+
+        FLUX :
+        1. Reçoit GET depuis un lien /passeport/<uuid>/ (home, focus, lieu, ou URL directe)
+        2. Charge la personne par UUID
+        3. Récupère tous les assignments triés du plus récent au plus ancien
+        4. Collecte les structures uniques avec marker (pour la carte du parcours)
+        5. Calcule les compteurs (badges, lieux)
+        6. Rend la page complète core/passeport/index.html
+        """
+        person = get_object_or_404(User, uuid=person_pk)
+
+        # Tous les assignments, triés du plus récent au plus ancien (timeline)
+        # All assignments, sorted most recent first (timeline)
+        all_assignments_for_person = BadgeAssignment.objects.filter(
+            user=person
+        ).select_related(
+            'badge', 'badge__issuing_structure',
+            'assigned_by', 'assigned_structure', 'assigned_structure__marker',
+        ).order_by('-assigned_date')
+
+        # Collecter les structures uniques qui ont un marker (pour la carte)
+        # Collect unique structures that have a marker (for the map)
+        structures_with_marker = set()
+        for assignment in all_assignments_for_person:
+            structure = assignment.assigned_structure
+            if structure and structure.marker_id:
+                structures_with_marker.add(structure.pk)
+
+        structures_pks_csv = ','.join(str(pk) for pk in structures_with_marker)
+
+        # Nombre de lieux distincts (structures ayant attribué au moins un badge)
+        # Number of distinct places (structures that assigned at least one badge)
+        total_places = len(set(
+            a.assigned_structure_id for a in all_assignments_for_person
+            if a.assigned_structure_id
+        ))
+
+        # Charger les critères pour chaque assignment (badge + structure d'attribution)
+        # Load criteria for each assignment (badge + assigning structure)
+        criteria_lookup_keys = set()
+        for assignment in all_assignments_for_person:
+            if assignment.assigned_structure_id:
+                criteria_lookup_keys.add((assignment.badge_id, assignment.assigned_structure_id))
+
+        all_criteria_for_passeport = {}
+        if criteria_lookup_keys:
+            all_criteria_qs = BadgeCriteria.objects.filter(
+                Q(*[Q(badge_id=b, structure_id=s) for b, s in criteria_lookup_keys])
+            )
+            for c in all_criteria_qs:
+                all_criteria_for_passeport[(c.badge_id, c.structure_id)] = c
+
+        for assignment in all_assignments_for_person:
+            assignment.criteria_for_passeport = all_criteria_for_passeport.get(
+                (assignment.badge_id, assignment.assigned_structure_id)
+            )
+
+        # Est-ce que l'utilisateur regarde son propre passeport ?
+        # Is the user viewing their own passport?
+        is_self = request.user.is_authenticated and request.user.pk == person.pk
+
+        return render(request, 'core/passeport/index.html', {
+            'person': person,
+            'assignments': all_assignments_for_person,
+            'total_badges': all_assignments_for_person.count(),
+            'total_places': total_places,
+            'structures_pks_csv': structures_pks_csv,
+            'is_self': is_self,
+        })
+
+    @action(detail=False, methods=["GET"], url_path="badge/(?P<badge_pk>[^/.]+)")
+    def badge_detail(self, request, badge_pk=None):
+        """
+        Page dédiée d'un badge.
+        Affiche toutes les informations d'un badge sur une seule page :
+        en-tête, structures qui le reconnaissent, détenteurs, actions, carte.
+        C'est la version complète du badge_focus (home).
+        / Dedicated badge page — shows all badge info on a single scrollable page.
+
+        LOCALISATION : core/views.py → HomeViewSet.badge_detail()
+
+        FLUX :
+        1. Reçoit GET depuis un lien /badge/<uuid>/ (home, focus, lieu, ou URL directe)
+        2. Charge le badge avec sa structure émettrice et son marker (select_related)
+        3. Récupère les structures qui endossent ce badge
+        4. Récupère les détenteurs avec leur structure d'attribution
+        5. Calcule les permissions (is_badge_editor, can_assign, can_endorse)
+        6. Rend la page complète core/badge_page/index.html
+        """
+        badge = get_object_or_404(
+            Badge.objects.select_related('issuing_structure', 'issuing_structure__marker'),
+            uuid=badge_pk
+        )
+
+        # Structures qui endossent ce badge (sans la structure émettrice)
+        # Structures that endorse this badge (excluding issuer)
+        endorsing_structures = Structure.objects.filter(
+            endorsements__badge=badge
+        ).exclude(
+            pk=badge.issuing_structure.pk
+        ).select_related('marker')
+
+        # Toutes les structures (émettrice + endosseuses) pour la carte et la liste
+        # All structures (issuer + endorsers) for the map and the list
+        all_structures_list = [badge.issuing_structure] + list(endorsing_structures)
+
+        # Détenteurs avec leur structure d'attribution, triés du plus récent au plus ancien
+        # Holders with their assigning structure, sorted most recent first
+        holders_assignments = BadgeAssignment.objects.filter(
+            badge=badge
+        ).select_related('user', 'assigned_structure').order_by('-assigned_date')
+
+        # Criteres d'attribution par structure pour ce badge
+        # On les indexe par PK de structure pour les attacher a chaque structure
+        # / Attribution criteria by structure for this badge
+        # Indexed by structure PK to attach to each structure
+        all_criteria_for_badge = BadgeCriteria.objects.filter(
+            badge=badge
+        ).select_related('structure')
+
+        criteria_by_structure_pk = {}
+        for criteria in all_criteria_for_badge:
+            criteria_by_structure_pk[criteria.structure_id] = criteria
+
+        # Attache le critere a chaque structure de la liste
+        # / Attach criteria to each structure in the list
+        for structure_item in all_structures_list:
+            structure_item.criteria_for_badge = criteria_by_structure_pk.get(structure_item.pk)
+
+        # Permissions
+        # / Permissions
+        is_badge_editor = False
+        can_assign = False
+        can_endorse = False
+        if request.user.is_authenticated:
+            # L'utilisateur peut éditer s'il est admin ou éditeur de la structure émettrice
+            # User can edit if admin/editor of the issuing structure
+            is_badge_editor = (
+                badge.issuing_structure.is_admin(request.user)
+                or badge.issuing_structure.is_editor(request.user)
+            )
+
+            # L'utilisateur peut assigner s'il est admin/éditeur d'une structure liée (émettrice ou endosseuse)
+            # User can assign if admin/editor of a related structure (issuer or endorser)
+            can_assign = Structure.objects.filter(
+                Q(endorsements__badge=badge) | Q(issued_badges=badge),
+                Q(admins=request.user) | Q(editors=request.user),
+            ).exists()
+
+            # L'utilisateur peut endosser s'il a au moins une structure
+            # User can endorse if they have at least one structure
+            can_endorse = Structure.objects.filter(
+                Q(admins=request.user) | Q(editors=request.user)
+            ).exists()
+
+        # PKs des structures avec marker (pour la carte MapLibre)
+        # PKs of structures with a marker (for the MapLibre map)
+        structures_pks_csv = ','.join(
+            str(s.pk) for s in all_structures_list if s.marker_id
+        )
+
+        return render(request, 'core/badge_page/index.html', {
+            'badge': badge,
+            'all_structures_list': all_structures_list,
+            'endorsing_structures': endorsing_structures,
+            'holders_assignments': holders_assignments,
+            'is_badge_editor': is_badge_editor,
+            'can_assign': can_assign,
+            'can_endorse': can_endorse,
+            'structures_pks_csv': structures_pks_csv,
+            'all_criteria_for_badge': all_criteria_for_badge,
         })
 
 class BadgeViewSet(viewsets.ViewSet):
@@ -168,13 +946,21 @@ class BadgeViewSet(viewsets.ViewSet):
     @action(detail=True, methods=["get","post"])
     def edit(self, request, pk=None):
         """
-        Edit an existing badge.
+        Modifie un badge existant.
+        Si requete HTMX, retourne le formulaire en partiel pour la modale.
+        / Edit an existing badge. Returns partial for HTMX modal.
+
+        LOCALISATION : core/views.py
         """
         badge = get_object_or_404(Badge, pk=pk)
         if request.method == 'POST':
             form = BadgeForm(request.POST, request.FILES, instance=badge, request=request)
             if form.is_valid():
                 form.save()
+                if request.htmx:
+                    return HttpResponseClientRedirect(
+                        reverse('core:badge-detail', kwargs={'pk': badge.pk})
+                    )
                 return redirect(reverse('core:badge-detail', kwargs={'pk': badge.pk}))
         else:
             form = BadgeForm(instance=badge, request=request)
@@ -183,14 +969,27 @@ class BadgeViewSet(viewsets.ViewSet):
         if badge.icon:
             icon = badge.icon.url
 
+        # Partiel HTMX pour la modale / HTMX partial for modal
+        if request.htmx:
+            return render(request, "core/badges/partial/edit_form.html", {
+                "form": form, "icon": icon, "badge_pk": badge.pk,
+            })
+
         return render(request,"core/badges/edit.html",{"form":form,"icon":icon, "badge_pk":badge.pk})
 
     @action(detail=True, methods=["get", "post"])
     def delete(self, request, pk=None):
         """
-        Delete an existing badge.
+        Supprime un badge existant. Seul un admin de la structure emettrice peut supprimer.
+        / Delete an existing badge. Only admin of the issuing structure can delete.
         """
         badge = get_object_or_404(Badge, pk=pk)
+
+        # Seul un admin de la structure emettrice peut supprimer un badge
+        # / Only admin of the issuing structure can delete a badge
+        if not badge.issuing_structure.is_admin(request.user):
+            return raise403(request)
+
         if request.method == 'POST':
             badge.delete()
             return redirect(reverse('core:badge-list'))
@@ -201,32 +1000,57 @@ class BadgeViewSet(viewsets.ViewSet):
     @action(detail=False, methods=['get', 'post'])
     def create_badge(self, request):
         """
-        Create a new badge.
+        Cree un nouveau badge.
+        Si requete HTMX, retourne le formulaire en partiel pour la modale.
+        / Create a new badge. Returns partial for HTMX modal.
+
+        LOCALISATION : core/views.py
         """
 
-        # If badge is created from a structure page, get the structure
+        # Pre-remplir le formulaire depuis les query params (recherche ou page lieu)
+        # / Pre-fill form from query params (search or structure page)
         default_structure = request.GET.get('structure', '')
+        default_name = request.GET.get('name', '')
 
         if request.method == 'POST':
             form = BadgeForm(request.POST, request.FILES, request=request)
             if form.is_valid():
                 badge = form.save()
-                # Create a history entry for badge creation
+                # Cree une entree historique pour la creation du badge
+                # / Create a history entry for badge creation
                 from .models import BadgeHistory
                 BadgeHistory.objects.create(
                     badge=badge,
                     action="creation",
-                    details="Badge créé"
+                    details="Badge cree"
                 )
-                return redirect(reverse('core:badge-detail', kwargs={'pk': badge.pk}))
+                # Redirige vers la page badge (HTMX ou classique)
+                # / Redirect to badge page (HTMX or classic)
+                messages.success(request,"Badge ajouté avec succès ! ")
+                if request.htmx:
+                    return HttpResponseClientRedirect(
+                        reverse('core:home-badge-detail', kwargs={'badge_pk': badge.pk})
+                    )
+                return redirect(reverse('core:home-badge-detail', kwargs={'badge_pk': badge.pk}))
         else:
-            form = BadgeForm(initial={'issuing_structure':default_structure}, request=request)
+            initial_data = {}
+            if default_structure:
+                initial_data['issuing_structure'] = default_structure
+            if default_name:
+                initial_data['name'] = default_name
+            form = BadgeForm(initial=initial_data, request=request)
 
-        # Get all structures for the dropdown
+        # Toutes les structures pour le dropdown / All structures for dropdown
         structures = Structure.objects.all()
 
+        # Partiel HTMX pour la modale / HTMX partial for modal
+        if request.htmx:
+            return render(request, 'core/badges/partial/create_form.html', {
+                'form': form,
+            })
+
         return render(request, 'core/badges/create.html', {
-            'title': 'FossBadge - Forger un Badge',
+            'title': 'O2Badge - Forger un Badge',
             'structures': structures,
             'form': form
         })
@@ -242,22 +1066,36 @@ class BadgeViewSet(viewsets.ViewSet):
 
         badge = get_object_or_404(Badge, pk=pk)
 
-        # Get only user structure that DO NOT endorse the badge
+        # Structures ou l'user est admin, qui n'endossent PAS encore ce badge
+        # / Structures where user is admin, that do NOT already endorse this badge
         valid_structures = badge.valid_structures
-        user_structures = request.user.structures
-        user_structure_not_endorsing = user_structures.difference(valid_structures)
+        user_admin_structures = Structure.objects.filter(admins=request.user)
+        user_admin_not_endorsing = user_admin_structures.difference(valid_structures)
 
-        # If the user structures already endorse the badge, return an error template
-        if user_structure_not_endorsing.count() == 0:
-            return render(request, "errors/popup_errors.html",context={
-                "error":'Toutes les structures dont vous faites parti ont déjà endosser ce badge'
+        # Si toutes les structures admin endossent deja, erreur
+        # / If all admin structures already endorse, error
+        if user_admin_not_endorsing.count() == 0:
+            return render(request, "errors/popup_errors.html", context={
+                "error": 'Toutes vos structures ont déjà endossé ce badge'
             })
 
         if request.method == "GET":
+            # Pre-remplissage optionnel de la structure (utilise par la page lieu)
+            # / Optional structure pre-fill (used by the lieu page)
+            defaults = {}
+            default_structure_pk = request.GET.get('default_structure', '')
+            if default_structure_pk:
+                defaults['structure'] = default_structure_pk
 
-            return render(request, 'core/badges/partials/badge_endorsement.html',context={
+            # Si une seule structure, la pre-selectionner
+            # / If only one structure, pre-select it
+            if user_admin_not_endorsing.count() == 1 and 'structure' not in defaults:
+                defaults['structure'] = str(user_admin_not_endorsing.first().pk)
+
+            return render(request, 'core/badges/partials/badge_endorsement.html', context={
                 "badge_pk": pk,
-                "structures": user_structure_not_endorsing,
+                "structures": user_admin_not_endorsing,
+                "defaults": defaults,
             })
 
         validator = BadgeEndorsementValidator(data=request.POST)
@@ -267,7 +1105,7 @@ class BadgeViewSet(viewsets.ViewSet):
                 "errors": validator.errors,
                 "defaults": validator.data,
                 "badge_pk": validator.data['badge'],
-                "structures": user_structure_not_endorsing,
+                "structures": user_admin_not_endorsing,
             })
 
         # Get all objects
@@ -295,50 +1133,68 @@ class BadgeViewSet(viewsets.ViewSet):
             return raise403(request)
 
         badge = get_object_or_404(Badge, pk=pk)
-        users = User.objects.all()
-        structures = request.user.get_structures_endorsing_badge(badge)
+
+        # Structures ou l'utilisateur est admin ET qui reconnaissent ce badge
+        # / Structures where user is admin AND that recognize this badge
+        user_admin_structures = Structure.objects.filter(admins=request.user)
+        structures_endorsing_badge = request.user.get_structures_endorsing_badge(badge)
+        structures = structures_endorsing_badge.filter(pk__in=user_admin_structures)
 
         if request.method == "GET":
-            return render(request, 'core/badges/partials/badge_assignment.html',context={
-                "users": users,
+            # Pre-remplissage optionnel de la structure (utilise par la page lieu)
+            # / Optional structure pre-fill (used by the lieu page)
+            defaults = {}
+            default_structure_pk = request.GET.get('default_structure', '')
+            if default_structure_pk:
+                defaults['assigned_by_structure'] = default_structure_pk
+
+            # Si une seule structure, la pre-sélectionner
+            # / If only one structure, pre-select it
+            if structures.count() == 1 and 'assigned_by_structure' not in defaults:
+                defaults['assigned_by_structure'] = str(structures.first().pk)
+
+            return render(request, 'core/badges/partials/badge_assignment.html', context={
                 "badge_pk": pk,
                 "structures": structures,
+                "defaults": defaults,
             })
 
         validator = BadgeAssignmentValidator(data=request.POST)
 
         is_valid = validator.is_valid()
         context = {
-            "users": users,
             "errors": validator.errors,
             "defaults": validator.data,
             "badge_pk": pk,
-            "structures": structures
+            "structures": structures,
         }
 
-        if not is_valid :
-            return render(request, 'core/badges/partials/badge_assignment.html',context=context)
+        if not is_valid:
+            return render(request, 'core/badges/partials/badge_assignment.html', context=context)
 
-        # Get all objects
-        assigned_user = get_object_or_404(User, pk=validator.validated_data["assigned_user"])
+        # Récupère ou crée l'utilisateur a partir de l'email
+        # / Get or create user from email
+        assigned_email = validator.validated_data["assigned_email"]
+        assigned_user = get_or_create_user(assigned_email)
+
         assigned_by_structure = get_object_or_404(Structure, pk=validator.validated_data["assigned_by_structure"])
         assigned_by_user = get_object_or_404(User, pk=validator.validated_data["assigned_by_user"])
 
         notes = request.POST['notes']
 
-        # Check if the assigned structure is in the badge's valid structures (structure that have endorsed the badge)
-        # Because only structures that have endorsed a badge can assign it
+        # Vérifie que la structure est dans les structures qui reconnaissent le badge
+        # / Check that the structure recognizes this badge
         if not badge.valid_structures.contains(assigned_by_structure):
             messages.add_message(request, messages.ERROR, "Veuillez sélectionner une structure valide")
-            return render(request, 'core/badges/partials/badge_assignment.html',context=context)
+            return render(request, 'core/badges/partials/badge_assignment.html', context=context)
 
-        # Assign the badge to the user
-        assignment, created = badge.add_holder(assigned_user,assigned_by_user,assigned_by_structure,notes)
+        # Assigne le badge a l'utilisateur
+        # / Assign the badge to the user
+        assignment, created = badge.add_holder(assigned_user, assigned_by_user, assigned_by_structure, notes)
 
-        #
-        if not created :
+        if not created:
             messages.add_message(request, messages.INFO, "L'utilisateur possède déjà ce badge assigné par cette structure")
-            return render(request, 'core/badges/partials/badge_assignment.html',context=context)
+            return render(request, 'core/badges/partials/badge_assignment.html', context=context)
 
         messages.add_message(request, messages.SUCCESS, 'Badge assigné !')
         return reload(request)
@@ -508,7 +1364,11 @@ class StructureViewSet(viewsets.ViewSet):
     @action(detail=True, methods=["get","post"])
     def edit(self, request, pk=None):
         """
-        Edit an existing structure.
+        Modifie une structure existante.
+        Si requete HTMX, retourne le formulaire en partiel pour la modale.
+        / Edit an existing structure. Returns partial for HTMX modal.
+
+        LOCALISATION : core/views.py
         """
         structure = get_object_or_404(Structure, pk=pk)
         if not structure.is_admin(request.user):
@@ -518,6 +1378,12 @@ class StructureViewSet(viewsets.ViewSet):
             form = StructureForm(request.POST, request.FILES, instance=structure)
             if form.is_valid():
                 form.save()
+                # Redirige vers la page structure (HTMX ou classique)
+                # / Redirect to structure page (HTMX or classic)
+                if request.htmx:
+                    return HttpResponseClientRedirect(
+                        reverse('core:home-lieu', kwargs={'structure_pk': structure.pk})
+                    )
                 return redirect(reverse('core:structure-detail', kwargs={'pk': structure.pk}))
         else:
             form = StructureForm(instance=structure)
@@ -525,6 +1391,12 @@ class StructureViewSet(viewsets.ViewSet):
         logo = None
         if structure.logo:
             logo = structure.logo.url
+
+        # Partiel HTMX pour la modale / HTMX partial for modal
+        if request.htmx:
+            return render(request, "core/structures/partial/edit_form.html", {
+                "form": form, "logo": logo, "structure": structure,
+            })
 
         return render(request,"core/structures/edit.html",{"form":form,"logo":logo})
 
@@ -617,7 +1489,7 @@ class UserViewSet(viewsets.ViewSet):
         elif self.action in ['logout']:
             permissions_list += [IsAuthenticated]
         elif self.action in ["edit", "delete"]:
-            permissions_list += [CanEditUser]
+            permissions_list += [IsAuthenticated, CanEditUser]
 
         return [permission() for permission in permissions_list]
 

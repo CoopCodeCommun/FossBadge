@@ -1,0 +1,80 @@
+{# LOCALISATION : templates/core/badges/partial/create_form.html #}
+{# Formulaire de creation de badge pour la modale HTMX (popup). #}
+{# / Badge creation form for HTMX modal (popup). #}
+{% load i18n %}
+
+<h2>{% translate "Forger un badge" %}</h2>
+
+<form method="post"
+      enctype="multipart/form-data"
+      action="{% url 'core:create_badge' %}"
+      hx-post="{% url 'core:create_badge' %}"
+      hx-target="#customPopup-content"
+      hx-swap="innerHTML"
+      hx-encoding="multipart/form-data"
+      data-testid="form-create-badge">
+    {% csrf_token %}
+
+    {% if form.non_field_errors %}
+    <div class="alert alert-danger">
+        {% for error in form.non_field_errors %}
+            {{ error }}
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    {# Icone / Icon #}
+    <div class="mb-3">
+        <label for="{{ form.icon.id_for_label }}" class="form-label">{{ form.icon.label }}</label>
+        {{ form.icon }}
+        {% if form.icon.errors %}
+            <div class="error">{% for e in form.icon.errors %}{{ e }}{% endfor %}</div>
+        {% endif %}
+    </div>
+
+    {# Nom / Name #}
+    <div class="mb-3">
+        <label for="{{ form.name.id_for_label }}" class="form-label">{{ form.name.label }}</label>
+        {{ form.name }}
+        {% if form.name.errors %}
+            <div class="error">{% for e in form.name.errors %}{{ e }}{% endfor %}</div>
+        {% endif %}
+    </div>
+
+    {# Niveau / Level #}
+    <div class="mb-3">
+        <label class="form-label">{{ form.level.label }}</label>
+        {{ form.level }}
+        {% if form.level.errors %}
+            <div class="error">{% for e in form.level.errors %}{{ e }}{% endfor %}</div>
+        {% endif %}
+    </div>
+
+    {# Structure emettrice / Issuing structure #}
+    <div class="mb-3">
+        <label for="{{ form.issuing_structure.id_for_label }}" class="form-label">{{ form.issuing_structure.label }}</label>
+        {{ form.issuing_structure }}
+        {% if form.issuing_structure.errors %}
+            <div class="error">{% for e in form.issuing_structure.errors %}{{ e }}{% endfor %}</div>
+        {% endif %}
+    </div>
+
+    {# Description #}
+    <div class="mb-3">
+        <label for="{{ form.description.id_for_label }}" class="form-label">{{ form.description.label }}</label>
+        {{ form.description }}
+        {% if form.description.errors %}
+            <div class="error">{% for e in form.description.errors %}{{ e }}{% endfor %}</div>
+        {% endif %}
+    </div>
+
+    {# Boutons / Buttons #}
+    <div class="mt-3 d-flex align-items-center gap-2">
+        <button type="submit" class="btn btn-primary" data-testid="btn-submit-create-badge">
+            {% translate "Creer le badge" %}
+        </button>
+        <button type="button" class="popup-cancel-btn" onclick="hidepopup()" data-testid="btn-cancel-create-badge">
+            {% translate "Annuler" %}
+        </button>
+    </div>
+</form>

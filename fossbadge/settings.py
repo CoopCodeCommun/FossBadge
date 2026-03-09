@@ -45,6 +45,7 @@ INSTALLED_APPS = [
     'django_htmx',
     'rest_framework',
     'pictures',
+    'mapview',
 
     'django_cleanup.apps.CleanupConfig', # Toujours en dernier
 ]

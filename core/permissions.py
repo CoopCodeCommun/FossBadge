@@ -52,18 +52,21 @@ class CanEditUser(permissions.BasePermission):
         ])
 
 class CanAssignBadge(permissions.BasePermission):
-    def has_permission(self, request, view):
+    """
+    Verifie que l'utilisateur est admin de la structure pour attribuer un badge.
+    / Check that the user is admin of the structure to assign a badge.
+    """
+    message = "Seuls les admins peuvent attribuer un badge"
 
-        # Return true because the GET method only show the template
+    def has_permission(self, request, view):
+        # GET affiche le formulaire, on laisse passer (le filtre se fait dans la vue)
+        # / GET shows the form, let it through (filtering is done in the view)
         if request.method == "GET":
             return True
 
         user = request.user
 
-        if not user:
-            return False
-
-        if not user.is_active or not user.is_authenticated:
+        if not user or not user.is_active or not user.is_authenticated:
             return False
 
         try:
@@ -71,33 +74,29 @@ class CanAssignBadge(permissions.BasePermission):
         except Exception:
             return True
 
-
-        return any([
-            #user.is_superuser,
-            is_structure_editor(user, structure),
-            is_structure_admin(user, structure)
-        ])
+        return is_structure_admin(user, structure)
 
 class CanEndorseBadge(permissions.BasePermission):
+    """
+    Verifie que l'utilisateur est admin de la structure pour endosser un badge.
+    / Check that the user is admin of the structure to endorse a badge.
+    """
+    message = "Seuls les admins peuvent endosser un badge"
+
     def has_permission(self, request, view):
-        # Return true because the GET method only show the template
+        # GET affiche le formulaire, on laisse passer (le filtre se fait dans la vue)
+        # / GET shows the form, let it through (filtering is done in the view)
         if request.method == "GET":
             return True
 
         user = request.user
+
+        if not user or not user.is_active or not user.is_authenticated:
+            return False
+
         structure = get_object_or_404(Structure, pk=request.POST["structure"])
 
-        if not user:
-            return False
-
-        if not user.is_active or not user.is_authenticated:
-            return False
-
-        return any([
-            ##user.is_superuser,
-            is_structure_editor(user, structure),
-            is_structure_admin(user, structure)
-        ])
+        return is_structure_admin(user, structure)
 
 
 class CanEditCourse(permissions.BasePermission):

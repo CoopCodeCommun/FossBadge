@@ -1,0 +1,146 @@
+{% load i18n %}
+{% load pictures %}
+
+{# Vue focus personne : la personne s'agrandit dans la colonne Personnes, #}
+{# les deux autres colonnes filtrent sur les objets liés. #}
+{# Person focus: person expands in the Personnes column, #}
+{# the other two columns filter to show related objects. #}
+
+{# Contexte carte / Map context #}
+<div id="map-context" hidden data-structures="{{ related_structures_pks }}"></div>
+
+<div class="row g-4" data-testid="home-person-focus" data-focus-type="person">
+
+    {# === Colonne Badges : badges possédés par cette personne === #}
+    {% if search_badges_enabled is not False %}
+    <div class="col-md" data-category="badges" data-testid="home-person-focus-badges">
+        <h2 class="home-column-title">
+            {% translate "Badges" %}
+            {% if related_badges_list %}
+                <span class="home-count-badge">{{ related_badges_list|length }}</span>
+            {% endif %}
+        </h2>
+
+        {% if related_badges_list %}
+            {% for badge in related_badges_list %}
+                <a
+                    href="{% url 'core:home-multi-focus' %}?badge={{ badge.pk }}&person={{ focused_person.pk }}&q={{ search_query|urlencode }}"
+                    hx-get="{% url 'core:home-multi-focus' %}?badge={{ badge.pk }}&person={{ focused_person.pk }}&q={{ search_query|urlencode }}"
+                    hx-target="#search-results"
+                    hx-swap="innerHTML"
+                    hx-push-url="true"
+                    hx-include="#home-search-filters"
+                    class="home-result-item"
+                >
+                    <div class="home-result-icon">
+                        {% if badge.icon %}
+                            {% picture badge.icon img_alt=badge.name ratio="1/1" %}
+                        {% else %}
+                            <div class="home-result-icon-placeholder home-result-icon-placeholder-badges">
+                                <span aria-hidden="true">&#9733;</span>
+                            </div>
+                        {% endif %}
+                    </div>
+                    <div class="home-result-text">
+                        <span class="home-result-name">{{ badge.name }}</span>
+                        <span class="home-result-desc text-muted">{{ badge.description|truncatewords:12 }}</span>
+                    </div>
+                </a>
+            {% endfor %}
+        {% else %}
+            <p class="home-empty-message text-muted">{% translate "Aucun badge." %}</p>
+        {% endif %}
+    </div>
+    {% endif %}
+
+    {# === Colonne Structures : structures de cette personne === #}
+    {% if search_structures_enabled is not False %}
+    <div class="col-md" data-category="structures" data-testid="home-person-focus-structures">
+        <h2 class="home-column-title">
+            {% translate "Structures" %}
+            {% if related_structures_list %}
+                <span class="home-count-badge">{{ related_structures_list|length }}</span>
+            {% endif %}
+        </h2>
+
+        {% if related_structures_list %}
+            {% for structure in related_structures_list %}
+                <a
+                    href="{% url 'core:home-multi-focus' %}?structure={{ structure.pk }}&person={{ focused_person.pk }}&q={{ search_query|urlencode }}"
+                    hx-get="{% url 'core:home-multi-focus' %}?structure={{ structure.pk }}&person={{ focused_person.pk }}&q={{ search_query|urlencode }}"
+                    hx-target="#search-results"
+                    hx-swap="innerHTML"
+                    hx-push-url="true"
+                    hx-include="#home-search-filters"
+                    class="home-result-item"
+                >
+                    <div class="home-result-icon">
+                        {% if structure.logo %}
+                            {% picture structure.logo img_alt=structure.name ratio="1/1" %}
+                        {% else %}
+                            <div class="home-result-icon-placeholder home-result-icon-placeholder-structures">
+                                <span aria-hidden="true">&#9737;</span>
+                            </div>
+                        {% endif %}
+                    </div>
+                    <div class="home-result-text">
+                        <span class="home-result-name">{{ structure.name }}</span>
+                        <span class="home-result-desc text-muted">{{ structure.description|truncatewords:12 }}</span>
+                    </div>
+                </a>
+            {% endfor %}
+        {% else %}
+            <p class="home-empty-message text-muted">{% translate "Aucune structure." %}</p>
+        {% endif %}
+    </div>
+    {% endif %}
+
+    {# === Colonne Personnes : personne agrandie avec détail === #}
+    {% if search_personnes_enabled is not False %}
+    <div class="col-md" data-category="personnes" data-testid="home-person-focus-detail">
+
+        <!-- Bouton retour / Back button -->
+        <a
+            href="{% url 'core:home-search' %}?q={{ search_query|urlencode }}"
+            hx-get="{% url 'core:home-search' %}?q={{ search_query|urlencode }}"
+            hx-target="#search-results"
+            hx-swap="innerHTML"
+            hx-push-url="/"
+            hx-include="#home-search-filters"
+            class="home-back-link"
+        >
+            <span aria-hidden="true">&larr;</span> {% translate "Retour aux résultats" %}
+        </a>
+
+        <div class="home-badge-focus-card">
+            <div class="home-badge-focus-icon home-result-icon-round" style="border-radius: 50%;">
+                {% if focused_person.avatar %}
+                    {% picture focused_person.avatar img_alt=focused_person.get_full_name|default:focused_person.username ratio="1/1" %}
+                {% else %}
+                    <div class="home-result-icon-placeholder home-result-icon-placeholder-personnes home-result-icon-round" style="width: 120px; height: 120px; font-size: 3rem;">
+                        <span aria-hidden="true">&#9679;</span>
+                    </div>
+                {% endif %}
+            </div>
+
+            <h2 class="home-badge-focus-name">{{ focused_person.get_full_name|default:focused_person.username }}</h2>
+
+            <div class="home-badge-focus-level">
+                <span class="home-level-tag home-level-beginner">
+                    {{ focused_person.get_badges.count }} badge{{ focused_person.get_badges.count|pluralize }}
+                </span>
+            </div>
+
+            {# Lien vers la page dédiée du passeport / Link to dedicated passport page #}
+            <a
+                href="{% url 'core:home-passeport' person_pk=focused_person.pk %}"
+                class="home-detail-link home-detail-link-personnes"
+                data-testid="home-person-focus-detail-link"
+            >
+                {% translate "Voir le passeport" %} <span aria-hidden="true">&rarr;</span>
+            </a>
+        </div>
+    </div>
+    {% endif %}
+
+</div>

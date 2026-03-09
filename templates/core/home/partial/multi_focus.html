@@ -1,0 +1,467 @@
+{% load i18n %}
+{% load pictures %}
+
+{# Vue multi-focus : 2 ou 3 items sélectionnés (cartes détail). #}
+{# Avec 2 items : la 3e colonne affiche l'intersection. #}
+{# Avec 3 items : les 3 colonnes affichent des cartes détail. #}
+{# Multi-focus view: 2 or 3 selected items (detail cards). #}
+{# With 2 items: the 3rd column shows the intersection. #}
+{# With 3 items: all 3 columns show detail cards. #}
+
+{# Contexte carte / Map context #}
+<div id="map-context" hidden data-structures="{{ multi_structures_pks }}"></div>
+
+<div class="row g-4" data-testid="home-multi-focus" data-focus-type="multi">
+
+    {# === Colonne Badges === #}
+    {% if search_badges_enabled is not False %}
+    <div class="col-md" data-category="badges">
+
+        {% if selected_badge %}
+            {# Carte détail badge sélectionné / Detail card for selected badge #}
+
+            {# Bouton retour — première colonne visible uniquement #}
+            {# Back button — first visible column only #}
+            <a
+                href="{% url 'core:home-search' %}?q={{ search_query|urlencode }}"
+                hx-get="{% url 'core:home-search' %}?q={{ search_query|urlencode }}"
+                hx-target="#search-results"
+                hx-swap="innerHTML"
+                hx-push-url="/"
+                hx-include="#home-search-filters"
+                class="home-back-link"
+            >
+                <span aria-hidden="true">&larr;</span> {% translate "Retour aux résultats" %}
+            </a>
+
+            <div class="home-badge-focus-card">
+
+                {# Bouton × pour retirer ce badge / × button to remove this badge #}
+                {% if items_count == 3 %}
+                    {# × → multi-focus avec les 2 items restants #}
+                    {# × → multi-focus with the 2 remaining items #}
+                    <a
+                        href="{% url 'core:home-multi-focus' %}?structure={{ selected_structure.pk }}&person={{ selected_person.pk }}&q={{ search_query|urlencode }}"
+                        hx-get="{% url 'core:home-multi-focus' %}?structure={{ selected_structure.pk }}&person={{ selected_person.pk }}&q={{ search_query|urlencode }}"
+                        hx-target="#search-results"
+                        hx-swap="innerHTML"
+                        hx-push-url="true"
+                        hx-include="#home-search-filters"
+                        class="home-focus-remove-btn"
+                        aria-label="{% translate 'Retirer ce badge' %}"
+                    >
+                        <span aria-hidden="true">&times;</span>
+                    </a>
+                {% else %}
+                    {# × → focus simple de l'item restant #}
+                    {# × → simple focus of the remaining item #}
+                    {% if selected_structure %}
+                    <a
+                        href="{% url 'core:home-structure-focus' structure_pk=selected_structure.pk %}"
+                        hx-get="{% url 'core:home-structure-focus' structure_pk=selected_structure.pk %}?q={{ search_query|urlencode }}"
+                        hx-target="#search-results"
+                        hx-swap="innerHTML"
+                        hx-push-url="true"
+                        hx-include="#home-search-filters"
+                        class="home-focus-remove-btn"
+                        aria-label="{% translate 'Retirer ce badge' %}"
+                    >
+                        <span aria-hidden="true">&times;</span>
+                    </a>
+                    {% elif selected_person %}
+                    <a
+                        href="{% url 'core:home-person-focus' person_pk=selected_person.pk %}"
+                        hx-get="{% url 'core:home-person-focus' person_pk=selected_person.pk %}?q={{ search_query|urlencode }}"
+                        hx-target="#search-results"
+                        hx-swap="innerHTML"
+                        hx-push-url="true"
+                        hx-include="#home-search-filters"
+                        class="home-focus-remove-btn"
+                        aria-label="{% translate 'Retirer ce badge' %}"
+                    >
+                        <span aria-hidden="true">&times;</span>
+                    </a>
+                    {% endif %}
+                {% endif %}
+
+                <div class="home-badge-focus-icon">
+                    {% if selected_badge.icon %}
+                        {% picture selected_badge.icon img_alt=selected_badge.name ratio="1/1" %}
+                    {% else %}
+                        <div class="home-result-icon-placeholder home-result-icon-placeholder-badges" style="width: 120px; height: 120px; font-size: 3rem;">
+                            <span aria-hidden="true">&#9733;</span>
+                        </div>
+                    {% endif %}
+                </div>
+
+                <h2 class="home-badge-focus-name">{{ selected_badge.name }}</h2>
+
+                {% if selected_badge.level %}
+                    <div class="home-badge-focus-level">
+                        {% if selected_badge.level == 'beginner' %}
+                            <span class="home-level-tag home-level-beginner">{{ selected_badge.get_level_display }}</span>
+                        {% elif selected_badge.level == 'intermediate' %}
+                            <span class="home-level-tag home-level-intermediate">{{ selected_badge.get_level_display }}</span>
+                        {% elif selected_badge.level == 'expert' %}
+                            <span class="home-level-tag home-level-expert">{{ selected_badge.get_level_display }}</span>
+                        {% endif %}
+                    </div>
+                {% endif %}
+
+                <div class="home-badge-focus-issuer">
+                    <span class="text-muted" style="font-size: 0.8rem;">{% translate "Émis par" %}</span>
+                    <span class="home-badge-focus-issuer-link">
+                        {% if selected_badge.issuing_structure.logo %}
+                            <span class="home-badge-focus-issuer-logo">
+                                {% picture selected_badge.issuing_structure.logo img_alt=selected_badge.issuing_structure.name ratio="1/1" %}
+                            </span>
+                        {% endif %}
+                        {{ selected_badge.issuing_structure.name }}
+                    </span>
+                </div>
+
+                <div class="home-badge-focus-description">
+                    {{ selected_badge.description|linebreaks }}
+                </div>
+
+                {# Lien vers la page dédiée du badge / Link to dedicated badge page #}
+                <a href="/badge/{{ selected_badge.pk }}/"
+                   class="home-detail-link home-detail-link-badges"
+                   data-testid="multi-focus-badge-detail-link">
+                    {% translate "Voir le badge" %} <span aria-hidden="true">&rarr;</span>
+                </a>
+            </div>
+
+        {% elif intersection_type == 'badges' %}
+            {# Liste d'intersection badges / Badge intersection list #}
+            <h2 class="home-column-title">
+                {% translate "Badges" %}
+                <span class="home-count-badge">{{ intersection_list|length }}</span>
+            </h2>
+
+            {% if intersection_list %}
+                {% for badge in intersection_list %}
+                    <a
+                        href="{% url 'core:home-multi-focus' %}?badge={{ badge.pk }}&structure={{ selected_structure.pk }}&person={{ selected_person.pk }}&q={{ search_query|urlencode }}"
+                        hx-get="{% url 'core:home-multi-focus' %}?badge={{ badge.pk }}&structure={{ selected_structure.pk }}&person={{ selected_person.pk }}&q={{ search_query|urlencode }}"
+                        hx-target="#search-results"
+                        hx-swap="innerHTML"
+                        hx-push-url="true"
+                        hx-include="#home-search-filters"
+                        class="home-result-item"
+                    >
+                        <div class="home-result-icon">
+                            {% if badge.icon %}
+                                {% picture badge.icon img_alt=badge.name ratio="1/1" %}
+                            {% else %}
+                                <div class="home-result-icon-placeholder home-result-icon-placeholder-badges">
+                                    <span aria-hidden="true">&#9733;</span>
+                                </div>
+                            {% endif %}
+                        </div>
+                        <div class="home-result-text">
+                            <span class="home-result-name">{{ badge.name }}</span>
+                            <span class="home-result-desc text-muted">{{ badge.description|truncatewords:12 }}</span>
+                        </div>
+                    </a>
+                {% endfor %}
+            {% else %}
+                <p class="home-empty-message text-muted">{% translate "Aucun badge à l'intersection." %}</p>
+            {% endif %}
+        {% endif %}
+    </div>
+    {% endif %}
+
+    {# === Colonne Structures === #}
+    {% if search_structures_enabled is not False %}
+    <div class="col-md" data-category="structures">
+
+        {% if selected_structure %}
+            {# Carte détail structure sélectionnée / Detail card for selected structure #}
+
+            {# Bouton retour si la colonne badges est masquée #}
+            {# Back button if badges column is hidden #}
+            {% if search_badges_enabled is False %}
+            <a
+                href="{% url 'core:home-search' %}?q={{ search_query|urlencode }}"
+                hx-get="{% url 'core:home-search' %}?q={{ search_query|urlencode }}"
+                hx-target="#search-results"
+                hx-swap="innerHTML"
+                hx-push-url="/"
+                hx-include="#home-search-filters"
+                class="home-back-link"
+            >
+                <span aria-hidden="true">&larr;</span> {% translate "Retour aux résultats" %}
+            </a>
+            {% endif %}
+
+            <div class="home-badge-focus-card">
+
+                {# Bouton × pour retirer cette structure / × button to remove this structure #}
+                {% if items_count == 3 %}
+                    {# × → multi-focus avec les 2 items restants #}
+                    {# × → multi-focus with the 2 remaining items #}
+                    <a
+                        href="{% url 'core:home-multi-focus' %}?badge={{ selected_badge.pk }}&person={{ selected_person.pk }}&q={{ search_query|urlencode }}"
+                        hx-get="{% url 'core:home-multi-focus' %}?badge={{ selected_badge.pk }}&person={{ selected_person.pk }}&q={{ search_query|urlencode }}"
+                        hx-target="#search-results"
+                        hx-swap="innerHTML"
+                        hx-push-url="true"
+                        hx-include="#home-search-filters"
+                        class="home-focus-remove-btn"
+                        aria-label="{% translate 'Retirer cette structure' %}"
+                    >
+                        <span aria-hidden="true">&times;</span>
+                    </a>
+                {% else %}
+                    {# × → focus simple de l'item restant #}
+                    {# × → simple focus of the remaining item #}
+                    {% if selected_badge %}
+                    <a
+                        href="{% url 'core:home-badge-focus' badge_pk=selected_badge.pk %}"
+                        hx-get="{% url 'core:home-badge-focus' badge_pk=selected_badge.pk %}?q={{ search_query|urlencode }}"
+                        hx-target="#search-results"
+                        hx-swap="innerHTML"
+                        hx-push-url="true"
+                        hx-include="#home-search-filters"
+                        class="home-focus-remove-btn"
+                        aria-label="{% translate 'Retirer cette structure' %}"
+                    >
+                        <span aria-hidden="true">&times;</span>
+                    </a>
+                    {% elif selected_person %}
+                    <a
+                        href="{% url 'core:home-person-focus' person_pk=selected_person.pk %}"
+                        hx-get="{% url 'core:home-person-focus' person_pk=selected_person.pk %}?q={{ search_query|urlencode }}"
+                        hx-target="#search-results"
+                        hx-swap="innerHTML"
+                        hx-push-url="true"
+                        hx-include="#home-search-filters"
+                        class="home-focus-remove-btn"
+                        aria-label="{% translate 'Retirer cette structure' %}"
+                    >
+                        <span aria-hidden="true">&times;</span>
+                    </a>
+                    {% endif %}
+                {% endif %}
+
+                <div class="home-badge-focus-icon">
+                    {% if selected_structure.logo %}
+                        {% picture selected_structure.logo img_alt=selected_structure.name ratio="1/1" %}
+                    {% else %}
+                        <div class="home-result-icon-placeholder home-result-icon-placeholder-structures" style="width: 120px; height: 120px; font-size: 3rem;">
+                            <span aria-hidden="true">&#9737;</span>
+                        </div>
+                    {% endif %}
+                </div>
+
+                <h2 class="home-badge-focus-name">{{ selected_structure.name }}</h2>
+
+                {% if selected_structure.type %}
+                    <div class="home-badge-focus-level">
+                        <span class="home-level-tag home-level-intermediate">{{ selected_structure.get_type_display }}</span>
+                    </div>
+                {% endif %}
+
+                {% if selected_structure.address %}
+                    <div class="home-badge-focus-issuer">
+                        <span class="text-muted" style="font-size: 0.8rem;">{% translate "Adresse" %}</span>
+                        <span style="font-size: 0.9rem;">{{ selected_structure.address }}</span>
+                    </div>
+                {% endif %}
+
+                <div class="home-badge-focus-description">
+                    {{ selected_structure.description|linebreaks }}
+                </div>
+
+                {# Lien vers la page dédiée de la structure / Link to dedicated structure page #}
+                <a href="/structure/{{ selected_structure.pk }}/"
+                   class="home-detail-link home-detail-link-structures"
+                   data-testid="multi-focus-structure-detail-link">
+                    {% translate "Voir la structure" %} <span aria-hidden="true">&rarr;</span>
+                </a>
+            </div>
+
+        {% elif intersection_type == 'structures' %}
+            {# Liste d'intersection structures / Structure intersection list #}
+            <h2 class="home-column-title">
+                {% translate "Structures" %}
+                <span class="home-count-badge">{{ intersection_list|length }}</span>
+            </h2>
+
+            {% if intersection_list %}
+                {% for structure in intersection_list %}
+                    <a
+                        href="{% url 'core:home-multi-focus' %}?badge={{ selected_badge.pk }}&structure={{ structure.pk }}&person={{ selected_person.pk }}&q={{ search_query|urlencode }}"
+                        hx-get="{% url 'core:home-multi-focus' %}?badge={{ selected_badge.pk }}&structure={{ structure.pk }}&person={{ selected_person.pk }}&q={{ search_query|urlencode }}"
+                        hx-target="#search-results"
+                        hx-swap="innerHTML"
+                        hx-push-url="true"
+                        hx-include="#home-search-filters"
+                        class="home-result-item"
+                    >
+                        <div class="home-result-icon">
+                            {% if structure.logo %}
+                                {% picture structure.logo img_alt=structure.name ratio="1/1" %}
+                            {% else %}
+                                <div class="home-result-icon-placeholder home-result-icon-placeholder-structures">
+                                    <span aria-hidden="true">&#9737;</span>
+                                </div>
+                            {% endif %}
+                        </div>
+                        <div class="home-result-text">
+                            <span class="home-result-name">{{ structure.name }}</span>
+                            <span class="home-result-desc text-muted">{{ structure.description|truncatewords:12 }}</span>
+                        </div>
+                    </a>
+                {% endfor %}
+            {% else %}
+                <p class="home-empty-message text-muted">{% translate "Aucune structure à l'intersection." %}</p>
+            {% endif %}
+        {% endif %}
+    </div>
+    {% endif %}
+
+    {# === Colonne Personnes === #}
+    {% if search_personnes_enabled is not False %}
+    <div class="col-md" data-category="personnes">
+
+        {% if selected_person %}
+            {# Carte détail personne sélectionnée / Detail card for selected person #}
+
+            {# Bouton retour si les 2 autres colonnes sont masquées #}
+            {# Back button if both other columns are hidden #}
+            {% if search_badges_enabled is False and search_structures_enabled is False %}
+            <a
+                href="{% url 'core:home-search' %}?q={{ search_query|urlencode }}"
+                hx-get="{% url 'core:home-search' %}?q={{ search_query|urlencode }}"
+                hx-target="#search-results"
+                hx-swap="innerHTML"
+                hx-push-url="/"
+                hx-include="#home-search-filters"
+                class="home-back-link"
+            >
+                <span aria-hidden="true">&larr;</span> {% translate "Retour aux résultats" %}
+            </a>
+            {% endif %}
+
+            <div class="home-badge-focus-card">
+
+                {# Bouton × pour retirer cette personne / × button to remove this person #}
+                {% if items_count == 3 %}
+                    {# × → multi-focus avec les 2 items restants #}
+                    {# × → multi-focus with the 2 remaining items #}
+                    <a
+                        href="{% url 'core:home-multi-focus' %}?badge={{ selected_badge.pk }}&structure={{ selected_structure.pk }}&q={{ search_query|urlencode }}"
+                        hx-get="{% url 'core:home-multi-focus' %}?badge={{ selected_badge.pk }}&structure={{ selected_structure.pk }}&q={{ search_query|urlencode }}"
+                        hx-target="#search-results"
+                        hx-swap="innerHTML"
+                        hx-push-url="true"
+                        hx-include="#home-search-filters"
+                        class="home-focus-remove-btn"
+                        aria-label="{% translate 'Retirer cette personne' %}"
+                    >
+                        <span aria-hidden="true">&times;</span>
+                    </a>
+                {% else %}
+                    {# × → focus simple de l'item restant #}
+                    {# × → simple focus of the remaining item #}
+                    {% if selected_badge %}
+                    <a
+                        href="{% url 'core:home-badge-focus' badge_pk=selected_badge.pk %}"
+                        hx-get="{% url 'core:home-badge-focus' badge_pk=selected_badge.pk %}?q={{ search_query|urlencode }}"
+                        hx-target="#search-results"
+                        hx-swap="innerHTML"
+                        hx-push-url="true"
+                        hx-include="#home-search-filters"
+                        class="home-focus-remove-btn"
+                        aria-label="{% translate 'Retirer cette personne' %}"
+                    >
+                        <span aria-hidden="true">&times;</span>
+                    </a>
+                    {% elif selected_structure %}
+                    <a
+                        href="{% url 'core:home-structure-focus' structure_pk=selected_structure.pk %}"
+                        hx-get="{% url 'core:home-structure-focus' structure_pk=selected_structure.pk %}?q={{ search_query|urlencode }}"
+                        hx-target="#search-results"
+                        hx-swap="innerHTML"
+                        hx-push-url="true"
+                        hx-include="#home-search-filters"
+                        class="home-focus-remove-btn"
+                        aria-label="{% translate 'Retirer cette personne' %}"
+                    >
+                        <span aria-hidden="true">&times;</span>
+                    </a>
+                    {% endif %}
+                {% endif %}
+
+                <div class="home-badge-focus-icon home-result-icon-round" style="border-radius: 50%;">
+                    {% if selected_person.avatar %}
+                        {% picture selected_person.avatar img_alt=selected_person.get_full_name|default:selected_person.username ratio="1/1" %}
+                    {% else %}
+                        <div class="home-result-icon-placeholder home-result-icon-placeholder-personnes home-result-icon-round" style="width: 120px; height: 120px; font-size: 3rem;">
+                            <span aria-hidden="true">&#9679;</span>
+                        </div>
+                    {% endif %}
+                </div>
+
+                <h2 class="home-badge-focus-name">{{ selected_person.get_full_name|default:selected_person.username }}</h2>
+
+                <div class="home-badge-focus-level">
+                    <span class="home-level-tag home-level-beginner">
+                        {{ selected_person.get_badges.count }} badge{{ selected_person.get_badges.count|pluralize }}
+                    </span>
+                </div>
+
+                {# Lien vers le passeport de la personne / Link to person's passport #}
+                <a href="/passeport/{{ selected_person.pk }}/"
+                   class="home-detail-link home-detail-link-personnes"
+                   data-testid="multi-focus-person-detail-link">
+                    {% translate "Voir le passeport" %} <span aria-hidden="true">&rarr;</span>
+                </a>
+            </div>
+
+        {% elif intersection_type == 'personnes' %}
+            {# Liste d'intersection personnes / Person intersection list #}
+            <h2 class="home-column-title">
+                {% translate "Personnes" %}
+                <span class="home-count-badge">{{ intersection_list|length }}</span>
+            </h2>
+
+            {% if intersection_list %}
+                {% for person in intersection_list %}
+                    <a
+                        href="{% url 'core:home-multi-focus' %}?badge={{ selected_badge.pk }}&structure={{ selected_structure.pk }}&person={{ person.pk }}&q={{ search_query|urlencode }}"
+                        hx-get="{% url 'core:home-multi-focus' %}?badge={{ selected_badge.pk }}&structure={{ selected_structure.pk }}&person={{ person.pk }}&q={{ search_query|urlencode }}"
+                        hx-target="#search-results"
+                        hx-swap="innerHTML"
+                        hx-push-url="true"
+                        hx-include="#home-search-filters"
+                        class="home-result-item"
+                    >
+                        <div class="home-result-icon home-result-icon-round">
+                            {% if person.avatar %}
+                                {% picture person.avatar img_alt=person.get_full_name|default:person.username ratio="1/1" %}
+                            {% else %}
+                                <div class="home-result-icon-placeholder home-result-icon-placeholder-personnes home-result-icon-round">
+                                    <span aria-hidden="true">&#9679;</span>
+                                </div>
+                            {% endif %}
+                        </div>
+                        <div class="home-result-text">
+                            <span class="home-result-name">{{ person.get_full_name|default:person.username }}</span>
+                        </div>
+                    </a>
+                {% endfor %}
+            {% else %}
+                <p class="home-empty-message text-muted">{% translate "Aucune personne à l'intersection." %}</p>
+            {% endif %}
+        {% endif %}
+    </div>
+    {% endif %}
+
+</div>
+
+{# Bloc récit d'endossement (sous les colonnes) #}
+{# Endorsement story block (below columns) #}
+{% include "core/home/partial/endorsement_story.html" %}

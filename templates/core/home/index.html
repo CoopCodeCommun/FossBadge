@@ -1,46 +1,361 @@
-{% extends 'base.html' %}
+{% extends 'core/home/base_home.html' %}
+{% load static %}
+{% load i18n %}
 
-{% block title %}{{ title }}{% endblock %}
+{% block title %}O2Badge — {% translate "Recherche" %}{% endblock %}
 
 {% block content %}
-    <div class="row">
-        <div class="col-md-12">
-            <div class="jumbotron text-center">
-                <h1 class="display-4">Bienvenue sur FossBadge</h1>
-                <p class="lead">Un système de badges pour valoriser les compétences et les contributions.</p>
-                <hr class="my-4">
-                <p>FossBadge est une plateforme qui permet de créer, gérer et partager des badges numériques.</p>
+<div id="home-search-wrapper" class="home-search-wrapper{% if focus_partial or search_query or badges_found_list or structures_found_list or people_found_list %} has-results{% endif %}" data-testid="home-search-wrapper">
+
+    <!-- Bloc de recherche centré / Centered search block -->
+    <div class="home-search-box" data-testid="home-search-box">
+        <h1 class="home-title text-body">O2Badge</h1>
+        <p class="home-subtitle text-muted">
+            {% translate "Explorez les badges, les structures et les personnes" %}
+        </p>
+
+        <!-- Fallback sans JS : le form pointe vers /search/ en GET
+             No-JS fallback: form submits to /search/ via GET -->
+        <form
+            id="home-search-form"
+            role="search"
+            action="{% url 'core:home-search' %}"
+            method="get"
+            data-testid="home-search-form"
+        >
+            <div class="position-relative">
+                {# Bouton loupe à gauche de l'input (comme Google) #}
+                {# / Search button on the left of the input (Google style) #}
+                <button
+                    id="home-search-btn"
+                    type="button"
+                    class="home-search-btn"
+                    aria-label="{% translate 'Rechercher' %}"
+                    data-testid="home-search-btn"
+                >
+                    <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true">
+                        <path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85zm-5.242.156a5 5 0 1 1 0-10 5 5 0 0 1 0 10z"/>
+                    </svg>
+                </button>
+
+                <input
+                    id="home-search-input"
+                    class="home-search-input"
+                    type="search"
+                    name="q"
+                    autocomplete="off"
+                    value="{{ search_query|default:'' }}"
+                    placeholder="{% translate 'Rechercher un savoir-faire, un métier, une compétence…' %}"
+                    aria-label="{% translate 'Recherche globale' %}"
+                    hx-get="{% url 'core:home-search' %}"
+                    hx-trigger="keyup changed delay:300ms, search"
+                    hx-target="#search-results"
+                    hx-swap="innerHTML"
+                    hx-push-url="false"
+                    hx-params="q,badges,structures,personnes"
+                    hx-include="#home-search-filters"
+                    hx-indicator="#search-spinner"
+                    data-testid="home-search-input"
+                >
+
+                {# Spinner discret à droite de l'input #}
+                {# / Subtle spinner on the right of the input #}
+                <div id="search-spinner" class="htmx-indicator home-search-spinner">
+                    <div class="spinner-border spinner-border-sm text-muted" role="status">
+                        <span class="visually-hidden">{% translate "Chargement..." %}</span>
+                    </div>
+                </div>
             </div>
+
+            <!-- Filtres par catégorie — toggles activés par défaut
+                 Category filters — toggles enabled by default -->
+            <div id="home-search-filters" class="home-search-filters" data-testid="home-search-filters">
+                <label class="home-filter-toggle" data-testid="filter-toggle-badges">
+                    <input type="checkbox" name="badges" value="1" checked>
+                    <span class="home-filter-label">
+                        <span class="home-filter-dot home-filter-dot-badges" aria-hidden="true"></span>
+                        {% translate "Badges" %}
+                    </span>
+                </label>
+                <label class="home-filter-toggle" data-testid="filter-toggle-structures">
+                    <input type="checkbox" name="structures" value="1" checked>
+                    <span class="home-filter-label">
+                        <span class="home-filter-dot home-filter-dot-structures" aria-hidden="true"></span>
+                        {% translate "Structures" %}
+                    </span>
+                </label>
+                <label class="home-filter-toggle" data-testid="filter-toggle-personnes">
+                    <input type="checkbox" name="personnes" value="1" checked>
+                    <span class="home-filter-label">
+                        <span class="home-filter-dot home-filter-dot-personnes" aria-hidden="true"></span>
+                        {% translate "Personnes" %}
+                    </span>
+                </label>
+
+                {# Séparateur visuel / Visual separator #}
+                <span class="home-filter-separator" aria-hidden="true"></span>
+
+                {# Toggle vue liste / carte — boutons radio #}
+                {# View toggle list / map — radio buttons #}
+                <label class="home-view-toggle" data-testid="view-toggle-list">
+                    <input type="radio" name="view_mode" value="list" checked>
+                    <span class="home-filter-label home-view-label" aria-label="{% translate 'Vue liste' %}">
+                        <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true">
+                            <rect x="1" y="2" width="14" height="2" rx="0.5"/>
+                            <rect x="1" y="7" width="14" height="2" rx="0.5"/>
+                            <rect x="1" y="12" width="14" height="2" rx="0.5"/>
+                        </svg>
+                    </span>
+                </label>
+                <label class="home-view-toggle" data-testid="view-toggle-map">
+                    <input type="radio" name="view_mode" value="map">
+                    <span class="home-filter-label home-view-label" aria-label="{% translate 'Vue carte' %}">
+                        <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true">
+                            <path d="M8 1C5.2 1 3 3.7 3 6.5C3 10.5 8 15 8 15s5-4.5 5-8.5C13 3.7 10.8 1 8 1zm0 7.5a2 2 0 1 1 0-4 2 2 0 0 1 0 4z"/>
+                        </svg>
+                    </span>
+                </label>
+            </div>
+
+            <!-- Indication du minimum de caractères / Minimum character hint -->
+            <p class="home-search-hint text-muted" id="home-search-hint" data-testid="home-search-hint">
+                {% translate "Tapez au moins 4 lettres" %}
+            </p>
+        </form>
+
+        {# Nuage de mots des badges — visible uniquement a l'etat initial, #}
+        {# disparait quand les resultats s'affichent (classe .has-results) #}
+        {# / Badge word cloud — visible only in initial state, #}
+        {# disappears when results appear (.has-results class) #}
+        {% if badge_names_for_cloud %}
+        <div class="home-word-cloud" aria-hidden="true" data-testid="home-word-cloud">
+            {% for name in badge_names_for_cloud %}
+                <span class="home-word-cloud-item">{{ name }}</span>
+            {% endfor %}
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- Spinner de chargement centré pour les liens focus / Centered loading spinner for focus links -->
+    <div id="results-spinner" class="home-results-spinner" style="display: none;">
+        <div class="spinner-border text-muted" role="status">
+            <span class="visually-hidden">{% translate "Chargement..." %}</span>
         </div>
     </div>
 
-    <div class="row mt-5">
-        <div class="col-md-4">
-            <div class="card mb-4">
-                <div class="card-body text-center">
-                    <h5 class="card-title">Badges</h5>
-                    <p class="card-text">Découvrez les différents badges disponibles.</p>
-                    <a href="{% url 'core:badge-list' %}" class="btn btn-primary">Voir les badges</a>
-                </div>
-            </div>
-        </div>
-        <div class="col-md-4">
-            <div class="card mb-4">
-                <div class="card-body text-center">
-                    <h5 class="card-title">Structures</h5>
-                    <p class="card-text">Explorez les structures et entreprises partenaires.</p>
-                    <a href="{% url 'core:structure-list' %}" class="btn btn-primary">Voir les structures</a>
-                </div>
-            </div>
-        </div>
-        <div class="col-md-4">
-            <div class="card mb-4">
-                <div class="card-body text-center">
-                    <h5 class="card-title">Profils</h5>
-                    <p class="card-text">Découvrez tous les utilisateurs et leurs badges.</p>
-                    <a href="{% url 'core:user-list' %}" class="btn btn-primary">Voir les profils</a>
-                </div>
-            </div>
-        </div>
+    <!-- Zone de résultats — mise à jour par HTMX / Results area — updated by HTMX -->
+    <div
+        id="search-results"
+        class="home-search-results"
+        aria-live="polite"
+        data-testid="home-search-results"
+    >
+        {# Pré-rempli si fallback sans JS, sinon vide (rempli par HTMX) #}
+        {# Pre-filled if no-JS fallback, otherwise empty (filled by HTMX) #}
+        {% if focus_partial %}
+            {% include focus_partial %}
+        {% elif search_query or badges_found_list or structures_found_list or people_found_list %}
+            {% include "core/home/partial/search_results.html" %}
+        {% endif %}
     </div>
+
+    {# Carte — masquée par défaut, affichée quand on bascule en mode carte #}
+    {# Map — hidden by default, shown when switching to map mode #}
+    <div id="home-map-container" style="display: none;">
+        <div id="home-map"></div>
+    </div>
+
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+{# MapLibre GL JS — chargé une seule fois #}
+{# MapLibre GL JS — loaded once #}
+<link rel="stylesheet" href="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.css">
+<script src="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.js"></script>
+<script src="{% static 'js/home_map.js' %}"></script>
+<script>
+(function() {
+    var search_input = document.getElementById("home-search-input");
+    var search_wrapper = document.getElementById("home-search-wrapper");
+    var search_results = document.getElementById("search-results");
+    var search_hint = document.getElementById("home-search-hint");
+    var results_spinner = document.getElementById("results-spinner");
+    var map_container = document.getElementById("home-map-container");
+    var filter_checkboxes = document.querySelectorAll("#home-search-filters input[type=checkbox]");
+    var view_radios = document.querySelectorAll("input[name='view_mode']");
+    var map_initialized = false;
+
+    var search_btn = document.getElementById("home-search-btn");
+    var search_form = document.getElementById("home-search-form");
+
+    // Drapeau pour distinguer recherche manuelle (Entrée / loupe) de la saisie auto.
+    // La saisie auto est bloquée sous 4 caractères. La recherche manuelle passe toujours.
+    // / Flag to distinguish manual search (Enter/button) from auto-search.
+    var manual_search = false;
+
+    // --- Bloquer HTMX auto si < 4 caractères, sauf recherche manuelle ---
+    // --- Block auto HTMX if < 4 chars, unless manual search ---
+    search_input.addEventListener("htmx:configRequest", function(event) {
+        if (manual_search) {
+            manual_search = false;
+            return;
+        }
+        var q = search_input.value.trim();
+        if (q.length > 0 && q.length < 4) {
+            event.preventDefault();
+        }
+    });
+
+    // --- Entrée et bouton loupe : recherche manuelle sans limite de 4 caractères ---
+    // --- Enter and search button: manual search without the 4-char limit ---
+    search_form.addEventListener("submit", function(event) {
+        event.preventDefault();
+        if (search_input.value.trim().length >= 1) {
+            manual_search = true;
+            htmx.trigger(search_input, "search");
+        }
+    });
+
+    search_btn.addEventListener("click", function() {
+        if (search_input.value.trim().length >= 1) {
+            manual_search = true;
+            htmx.trigger(search_input, "search");
+        }
+        search_input.focus();
+    });
+
+    // --- Relancer la recherche quand un filtre change ---
+    // --- Re-trigger search when a filter changes ---
+    for (var i = 0; i < filter_checkboxes.length; i++) {
+        filter_checkboxes[i].addEventListener("change", function() {
+            if (search_input.value.trim().length >= 4) {
+                htmx.trigger(search_input, "search");
+            }
+        });
+    }
+
+    // --- Spinner pour les liens focus ---
+    // --- Spinner for focus links ---
+    document.body.addEventListener("htmx:beforeRequest", function(event) {
+        if (search_results.contains(event.detail.elt)) {
+            results_spinner.style.display = "flex";
+        }
+    });
+
+    // --- Après un swap HTMX : classes + animation + carte + URL ---
+    // --- After HTMX swap: classes + animation + map + URL ---
+    document.body.addEventListener("htmx:afterSwap", function(event) {
+        if (event.detail.target.id !== "search-results") return;
+        results_spinner.style.display = "none";
+
+        var has_content = search_results.innerHTML.trim().length > 0;
+        if (has_content) {
+            search_wrapper.classList.add("has-results");
+            var items = search_results.querySelectorAll(".home-result-item, .home-column-title");
+            for (var j = 0; j < items.length; j++) {
+                items[j].style.animationDelay = (j * 0.02) + "s";
+            }
+        } else {
+            search_wrapper.classList.remove("has-results");
+        }
+
+        // Mettre à jour l'URL pour refléter la recherche en cours.
+        // On utilise replaceState pour ne pas polluer l'historique à chaque frappe.
+        // / Update URL to reflect current search. Uses replaceState to avoid history spam.
+        var current_query = search_input.value.trim();
+        var url = new URL(window.location);
+        if (current_query.length >= 1) {
+            url.pathname = "{% url 'core:home-search' %}";
+            url.searchParams.set("q", current_query);
+        } else {
+            url.pathname = "/";
+            url.searchParams.delete("q");
+        }
+        history.replaceState(null, "", url);
+
+        // Si on est en mode carte, mettre à jour la carte
+        // If in map mode, update the map
+        if (getViewMode() === "map") {
+            refreshMap();
+        }
+    });
+
+    // --- Hint "4 lettres minimum" ---
+    search_input.addEventListener("input", function() {
+        var len = search_input.value.trim().length;
+        if (len === 0) {
+            search_results.innerHTML = "";
+            search_wrapper.classList.remove("has-results");
+        }
+        if (len > 0 && len < 4) {
+            search_hint.classList.add("visible");
+        } else {
+            search_hint.classList.remove("visible");
+        }
+    });
+
+    // === Vue liste / carte (radios) ===
+    // === List / map view (radios) ===
+
+    function getViewMode() {
+        var checked = document.querySelector("input[name='view_mode']:checked");
+        return checked ? checked.value : "list";
+    }
+
+    function switchView(mode) {
+        if (mode === "map") {
+            search_results.style.display = "none";
+            map_container.style.display = "block";
+            search_wrapper.classList.add("has-results");
+            if (!map_initialized) {
+                initHomeMap(refreshMap);
+                map_initialized = true;
+            } else {
+                refreshMap();
+            }
+        } else {
+            map_container.style.display = "none";
+            search_results.style.display = "";
+        }
+
+        // Mettre à jour l'URL avec le mode de vue
+        // Update URL with view mode
+        var url = new URL(window.location);
+        if (mode === "map") {
+            url.searchParams.set("view", "map");
+        } else {
+            url.searchParams.delete("view");
+        }
+        history.pushState(null, "", url);
+    }
+
+    for (var r = 0; r < view_radios.length; r++) {
+        view_radios[r].addEventListener("change", function() {
+            switchView(this.value);
+        });
+    }
+
+    // Si ?view=map dans l'URL, basculer en mode carte au chargement
+    // If ?view=map in URL, switch to map mode on load
+    if (new URL(window.location).searchParams.get("view") === "map") {
+        document.querySelector("input[name='view_mode'][value='map']").checked = true;
+        switchView("map");
+    }
+
+    /**
+     * Lire les PKs depuis #map-context ou utiliser la query.
+     * Read PKs from #map-context or use the query.
+     */
+    function refreshMap() {
+        var ctx = document.getElementById("map-context");
+        if (ctx && ctx.dataset.structures) {
+            updateHomeMap(ctx.dataset.structures);
+        } else {
+            updateHomeMap(null, search_input.value.trim());
+        }
+    }
+})();
+</script>
 {% endblock %}

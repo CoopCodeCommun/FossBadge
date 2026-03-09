@@ -1,0 +1,39 @@
+{% load static %}
+{% load django_htmx %}
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}O2Badge{% endblock %}</title>
+
+    <!-- Bootstrap 5 CSS -->
+    <link href="{% static 'bootstrap/css/bootstrap.min.css' %}" rel="stylesheet">
+
+    <!-- Custom CSS -->
+    <link href="{% static 'css/custom.css' %}" rel="stylesheet">
+    {% block extra_css %}{% endblock %}
+
+    <!-- HTMX -->
+    {% htmx_script %}
+    <script src="{% static 'js/htmx-ext-response-targets@2.0.4.4' %}" defer></script>
+</head>
+<body hx-ext="response-targets" hx-headers='{"x-csrftoken": "{{ csrf_token }}"}'>
+
+    {# Pas de navbar ni footer sur la home — page épurée pour la recherche #}
+    {# No navbar or footer on home — clean page for search #}
+    {% block content %}{% endblock %}
+
+    <!-- Bootstrap 5 JS Bundle -->
+    <script src="{% static 'bootstrap/js/bootstrap.bundle.min.js' %}"></script>
+
+    {% block extra_js %}{% endblock %}
+
+    <!-- SweetAlert2 -->
+    <script src="{% static 'js/sweetalert2.all.min.js' %}"></script>
+    {%include 'show_message.html'%}
+    {% load sweetify %}
+    {% sweetify %}
+    {% include "includes/popup.html" %}
+</body>
+</html>

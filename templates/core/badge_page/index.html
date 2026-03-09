@@ -92,6 +92,46 @@
         </div>
     </div>
 
+    {# ── Boutons d'action (selon permissions) ── #}
+    {# ── Action buttons (based on permissions) ── #}
+    {% if can_assign or can_endorse %}
+        <section aria-label="{% translate 'Actions' %}" class="mt-4" data-testid="badge-page-actions">
+            <div class="badge-page-actions" role="group" aria-label="{% translate 'Actions' %}">
+                {# Bouton Attribuer : ouvre le formulaire existant dans le popup #}
+                {# / Assign button: opens existing form in popup #}
+                {% if can_assign %}
+                    <button
+                            type="button"
+                            class="btn btn-sm btn-outline-primary"
+                            hx-get="{% url 'core:badge-assign' pk=badge.pk %}"
+                            hx-on:htmx:after-request="showpopup()"
+                            hx-target="#customPopup-content"
+                            hx-swap="innerHTML"
+                            data-testid="badge-page-assign-btn">
+                        <span aria-hidden="true">&#9998;</span>
+                        {% translate "Attribuer" %}
+                    </button>
+                {% endif %}
+
+                {# Bouton Endosser : ouvre le formulaire existant dans le popup #}
+                {# / Endorse button: opens existing form in popup #}
+                {% if can_endorse %}
+                    <button
+                            type="button"
+                            class="btn btn-sm btn-outline-primary"
+                            hx-get="{% url 'core:badge-endorse' pk=badge.pk %}"
+                            hx-on:htmx:after-request="showpopup()"
+                            hx-target="#customPopup-content"
+                            hx-swap="innerHTML"
+                            data-testid="badge-page-endorse-btn">
+                        <span aria-hidden="true">&#9733;</span>
+                        {% translate "Endosser" %}
+                    </button>
+                {% endif %}
+            </div>
+        </section>
+    {% endif %}
+
     {# ── Section Structures qui reconnaissent ce badge ── #}
     {# ── Structures that recognize this badge ── #}
     <section aria-label="{% translate 'Structures' %}" class="mt-4">
@@ -189,46 +229,6 @@
             <p class="home-empty-message text-muted">{% translate "Aucun détenteur." %}</p>
         {% endif %}
     </section>
-
-    {# ── Boutons d'action (selon permissions) ── #}
-    {# ── Action buttons (based on permissions) ── #}
-    {% if can_assign or can_endorse %}
-    <section aria-label="{% translate 'Actions' %}" class="mt-4" data-testid="badge-page-actions">
-        <div class="badge-page-actions" role="group" aria-label="{% translate 'Actions' %}">
-            {# Bouton Attribuer : ouvre le formulaire existant dans le popup #}
-            {# / Assign button: opens existing form in popup #}
-            {% if can_assign %}
-            <button
-                type="button"
-                class="btn btn-sm btn-outline-primary"
-                hx-get="{% url 'core:badge-assign' pk=badge.pk %}"
-                hx-on:htmx:after-request="showpopup()"
-                hx-target="#customPopup-content"
-                hx-swap="innerHTML"
-                data-testid="badge-page-assign-btn">
-                <span aria-hidden="true">&#9998;</span>
-                {% translate "Attribuer" %}
-            </button>
-            {% endif %}
-
-            {# Bouton Endosser : ouvre le formulaire existant dans le popup #}
-            {# / Endorse button: opens existing form in popup #}
-            {% if can_endorse %}
-            <button
-                type="button"
-                class="btn btn-sm btn-outline-primary"
-                hx-get="{% url 'core:badge-endorse' pk=badge.pk %}"
-                hx-on:htmx:after-request="showpopup()"
-                hx-target="#customPopup-content"
-                hx-swap="innerHTML"
-                data-testid="badge-page-endorse-btn">
-                <span aria-hidden="true">&#9733;</span>
-                {% translate "Endosser" %}
-            </button>
-            {% endif %}
-        </div>
-    </section>
-    {% endif %}
 
     {# ── Carte MapLibre (si au moins une structure a un marker) ── #}
     {# ── MapLibre map (if at least one structure has a marker) ── #}

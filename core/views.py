@@ -1347,7 +1347,7 @@ class StructureViewSet(viewsets.ViewSet):
                 # / Redirect to structure page (HTMX or classic)
                 if request.htmx:
                     return HttpResponseClientRedirect(
-                        reverse('core:home-lieu', kwargs={'pk': structure.pk})
+                        reverse('core:home-lieu', kwargs={'structure_pk': structure.pk})
                     )
                 return redirect(reverse('core:structure-detail', kwargs={'pk': structure.pk}))
         else:

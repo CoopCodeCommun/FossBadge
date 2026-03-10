@@ -14,9 +14,14 @@ class IsBadgeEditor(permissions.BasePermission):
         # Check if the user exist and if it has rights to edit badges
         pk = view.kwargs.get("pk")
         user = request.user
-        structure = Badge.objects.get(pk=pk).issuing_structure
+        badge = Badge.objects.get(pk=pk)
 
-        return is_structure_editor(user, structure)
+        if badge.issuing_structure:
+            return is_structure_editor(user, badge.issuing_structure)
+        elif badge.user:
+            return badge.user==request.user
+
+        return False
 
 class IsStructureAdmin(permissions.BasePermission):
     """

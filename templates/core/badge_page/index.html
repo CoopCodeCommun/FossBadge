@@ -74,7 +74,8 @@
                         <span class="home-level-tag home-level-expert">{{ badge.get_level_display }}</span>
                     {% endif %}
                 {% endif %}
-                <span class="text-muted">
+                {% if badge.issuing_structure %}
+                    <span class="text-muted">
                     {% translate "Émis par" %}
                     <a href="/structure/{{ badge.issuing_structure.pk }}/"
                        class="badge-page-issuer-link"
@@ -82,6 +83,21 @@
                         {{ badge.issuing_structure.name }}
                     </a>
                 </span>
+                {% elif badge.user %}
+                    <span class="text-muted">
+                    {% translate "Créé par" %}
+                    <a href="{% url 'core:home-passeport' badge.user.pk %}"
+                       class="badge-page-issuer-link"
+                       data-testid="badge-page-issuer-link">
+                        {{ badge.user.first_name }}
+                        {{ badge.user.last_name }}
+                        {% if not badge.user.first_name and not badge.user.last_name %}
+                            {{ badge.user.username }}
+                        {% endif %}
+                    </a>
+                </span>
+                {% endif %}
+
             </p>
 
             {# Description #}
@@ -160,7 +176,7 @@
                     <div class="home-result-text">
                         <span class="home-result-name">
                             {{ structure.name }}
-                            {% if structure.pk == badge.issuing_structure.pk %}
+                            {% if badge.issuing_structure and structure.pk == badge.issuing_structure.pk %}
                                 <span class="home-relation-tag home-relation-tag-issuer">{% translate "Émetteur" %}</span>
                             {% else %}
                                 <span class="home-relation-tag home-relation-tag-endorser">{% translate "Endosse" %}</span>

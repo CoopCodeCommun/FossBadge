@@ -770,13 +770,21 @@ class HomeViewSet(viewsets.ViewSet):
         # Structures that endorse this badge (excluding issuer)
         endorsing_structures = Structure.objects.filter(
             endorsements__badge=badge
-        ).exclude(
-            pk=badge.issuing_structure.pk
         ).select_related('marker')
 
-        # Toutes les structures (émettrice + endosseuses) pour la carte et la liste
-        # All structures (issuer + endorsers) for the map and the list
-        all_structures_list = [badge.issuing_structure] + list(endorsing_structures)
+        # Check if the badge has an issuing structure, if so change the logic behind it
+        if badge.issuing_structure:
+            endorsing_structures = endorsing_structures.exclude(
+                pk=badge.issuing_structure.pk
+            )
+
+            # Toutes les structures (émettrice + endosseuses) pour la carte et la liste
+            # All structures (issuer + endorsers) for the map and the list
+            all_structures_list = [badge.issuing_structure] + list(endorsing_structures)
+        else:
+            all_structures_list = list(endorsing_structures)
+
+
 
         # Détenteurs avec leur structure d'attribution, triés du plus récent au plus ancien
         # Holders with their assigning structure, sorted most recent first
@@ -784,7 +792,7 @@ class HomeViewSet(viewsets.ViewSet):
             badge=badge
         ).select_related('user', 'assigned_structure').order_by('-assigned_date')
 
-        # Criteres d'attribution par structure pour ce badge
+        # Critères d'attribution par structure pour ce badge
         # On les indexe par PK de structure pour les attacher a chaque structure
         # / Attribution criteria by structure for this badge
         # Indexed by structure PK to attach to each structure
@@ -796,7 +804,7 @@ class HomeViewSet(viewsets.ViewSet):
         for criteria in all_criteria_for_badge:
             criteria_by_structure_pk[criteria.structure_id] = criteria
 
-        # Attache le critere a chaque structure de la liste
+        # Attache le critère a chaque structure de la liste
         # / Attach criteria to each structure in the list
         for structure_item in all_structures_list:
             structure_item.criteria_for_badge = criteria_by_structure_pk.get(structure_item.pk)
@@ -809,10 +817,15 @@ class HomeViewSet(viewsets.ViewSet):
         if request.user.is_authenticated:
             # L'utilisateur peut éditer s'il est admin ou éditeur de la structure émettrice
             # User can edit if admin/editor of the issuing structure
-            is_badge_editor = (
-                badge.issuing_structure.is_admin(request.user)
-                or badge.issuing_structure.is_editor(request.user)
-            )
+            if badge.issuing_structure :
+                is_badge_editor = (
+                        badge.issuing_structure.is_admin(request.user)
+                        or badge.issuing_structure.is_editor(request.user)
+                )
+            else :
+                is_badge_editor = (
+                    badge.user == request.user
+                )
 
             # L'utilisateur peut assigner s'il est admin/éditeur d'une structure liée (émettrice ou endosseuse)
             # User can assign if admin/editor of a related structure (issuer or endorser)
@@ -988,7 +1001,10 @@ class BadgeViewSet(viewsets.ViewSet):
 
         # Seul un admin de la structure emettrice peut supprimer un badge
         # / Only admin of the issuing structure can delete a badge
-        if not badge.issuing_structure.is_admin(request.user):
+        if badge.issuing_structure and not badge.issuing_structure.is_admin(request.user):
+            return raise403(request)
+
+        if badge.user and not badge.user == request.user:
             return raise403(request)
 
         if request.method == 'POST':
@@ -1431,9 +1447,14 @@ class StructureViewSet(viewsets.ViewSet):
                 structure.admins.add(request.user)
                 structure.save()
 
-                return redirect(reverse('core:structure-detail', kwargs={'pk': structure.pk}))
+                return redirect_reload(reverse('core:home-lieu', kwargs={'structure_pk': structure.pk}))
         else:
             form = StructureForm()
+
+        if request.htmx:
+            return render(request, 'core/structures/partial/create_form.html', {
+                'form': form,
+            })
 
         return render(request, 'core/structures/create.html', {
             'title': 'FossBadge - Créer une Structure / Entreprise',

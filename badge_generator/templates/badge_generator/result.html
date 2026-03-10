@@ -1,0 +1,70 @@
+{% load badge_tags %}
+{% load i18n %}
+
+<!-- ============================================================
+     Page de resultat.
+     Le badge est genere. On montre le resultat et les boutons.
+
+     ACCESSIBILITE :
+     - Le badge SVG a un role="img" et un aria-label complet.
+     - Le lien de telechargement a un aria-label explicite.
+     - Le carre de couleur a un aria-hidden car il est decoratif.
+
+     Result page with generated badge and download buttons.
+     ============================================================ -->
+
+<div class="result-container">
+
+    <h2 class="result-title">{% translate "Votre badge est prêt !" %}</h2>
+    <p class="result-subtitle">
+        « {{ badge.title }} »
+        {% if badge.subtitle %} — {{ badge.subtitle }}{% endif %}
+    </p>
+
+    <!-- Le badge genere en grand.
+         Le role="img" et le aria-label decrivent le badge
+         aux personnes qui ne peuvent pas le voir.
+         Generated badge with role="img" for screen readers. -->
+    <div class="result-badge-display"
+         role="img"
+         aria-label="{% translate 'Badge généré' %} : {{ badge.title }}{% if badge.subtitle %}, {{ badge.subtitle }}{% endif %}. {% translate 'Catégorie' %} {{ badge.category.name }}, {% translate 'niveau' %} {{ badge.level.name }}.">
+        {{ badge_svg|safe_svg }}
+    </div>
+
+    <!-- Boutons d'action.
+         Chaque bouton a un aria-label explicite.
+         Action buttons with explicit aria-labels. -->
+    <div class="result-actions">
+        <a href="{% url 'badge_generator:badge-generator-download-svg' pk=badge.uuid %}"
+           class="btn btn-primary"
+           aria-label="{% translate 'Télécharger le badge en SVG' %} — {{ badge.title }}"
+           download>
+            {% translate "Télécharger en SVG" %}
+        </a>
+
+        <a class="btn btn-outline-secondary"
+           href="{% url 'badge_generator:badge-generator-list' %}"
+           aria-label="{% translate 'Créer un nouveau badge' %}">
+            {% translate "Créer un autre badge" %}
+        </a>
+    </div>
+
+    <!-- Informations du badge.
+         Un resume des choix faits par l'utilisateur.
+         Summary of user choices. -->
+    <div class="result-info">
+        <p style="margin: 0;">
+            <strong>{% translate "Catégorie" %} :</strong> {{ badge.category.name }}
+            · <strong>{% translate "Niveau" %} :</strong> {{ badge.level.name }}
+            · <strong>{% translate "Couleur" %} :</strong>
+            <!-- Le petit carre de couleur est decoratif.
+                 On le cache aux lecteurs d'ecran.
+                 Color swatch is decorative, hidden from screen readers. -->
+            <span class="result-info-swatch"
+                  style="background: {{ badge.primary_color }};"
+                  aria-hidden="true"></span>
+            {{ badge.primary_color }}
+        </p>
+    </div>
+
+</div>

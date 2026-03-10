@@ -21,6 +21,7 @@ from django.conf.urls.static import static
 
 urlpatterns = [
     path('admin/', admin.site.urls),
+    path('generator/', include('badge_generator.urls')),
     path('', include('core.urls')),
 ]
 

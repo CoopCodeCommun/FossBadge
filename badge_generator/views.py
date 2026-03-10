@@ -1,0 +1,223 @@
+"""
+Vues du generateur de badges — page unique avec preview temps reel.
+On remplace le wizard 5 etapes par une seule page.
+L'utilisateur choisit la categorie, le niveau, et ecrit le titre.
+La preview se met a jour a la volee via HTMX.
+
+Badge generator views — single page with real-time preview.
+Replaces the 5-step wizard with one page.
+User picks category, level, writes title. Preview updates via HTMX.
+"""
+
+from django.http import HttpResponse
+from django.shortcuts import get_object_or_404, render
+from rest_framework import viewsets
+from rest_framework.decorators import action
+from rest_framework.permissions import AllowAny
+
+from badge_generator.models import BadgeCategory, BadgeLevel, GeneratedBadge
+from badge_generator.serializers import GenerateBadgeSerializer, PreviewBadgeSerializer
+from badge_generator.shapes import ALL_SHAPES, DEFAULT_SHAPE_KEY
+from badge_generator.svg_engine import generate_badge_svg
+
+
+class BadgeGeneratorViewSet(viewsets.ViewSet):
+    """
+    Le ViewSet du generateur de badges.
+    Page unique avec selecteurs en temps reel.
+    Single-page badge generator with real-time selectors.
+    """
+
+    # Tout le monde peut utiliser le generateur. Pas besoin de connexion.
+    # Everyone can use the generator, no login required.
+    permission_classes = [AllowAny]
+
+    # ========================================================================
+    # Page principale du generateur.
+    # On affiche toutes les categories et niveaux sur une seule page.
+    # Main generator page with all categories and levels.
+    # ========================================================================
+
+    def list(self, request):
+        # On recupere les categories qui ont une abbreviation (les 8 du Dome).
+        # Les anciennes categories sans abbreviation ne sont pas affichees.
+        # Get categories with abbreviation (the 8 Dome categories).
+        # Old categories without abbreviation are not displayed.
+        all_categories = BadgeCategory.objects.exclude(abbreviation="")
+        all_levels = BadgeLevel.objects.all()
+
+        # On compte le nombre total de badges generes.
+        # Count total generated badges.
+        total_badges_generated = GeneratedBadge.objects.count()
+
+        # On prepare la liste des formes disponibles pour le template.
+        # Build shape list for the template.
+        all_available_shapes = []
+        for shape_key, shape_data in ALL_SHAPES.items():
+            all_available_shapes.append({
+                "key": shape_key,
+                "name": shape_data["name"],
+                "description": shape_data["description"],
+                "path": shape_data["path"],
+            })
+
+        return render(request, "badge_generator/home.html", {
+            "categories": all_categories,
+            "levels": all_levels,
+            "total_badges_generated": total_badges_generated,
+            "shapes": all_available_shapes,
+            "default_shape_key": DEFAULT_SHAPE_KEY,
+        })
+
+    # ========================================================================
+    # Previsualisation en direct du badge.
+    # On genere le SVG a la volee pour montrer a l'utilisateur ce que ca donne.
+    # HTMX appelle cette vue a chaque changement de selection.
+    # Live badge preview, generating SVG on the fly via HTMX.
+    # ========================================================================
+
+    @action(detail=False, methods=["GET"])
+    def preview(self, request):
+        # On valide les parametres recus.
+        # Validate received parameters.
+        serializer = PreviewBadgeSerializer(data=request.GET)
+
+        if not serializer.is_valid():
+            return render(request, "badge_generator/partials/_badge_preview.html", {
+                "badge_svg": "",
+            })
+
+        validated = serializer.validated_data
+
+        # On cherche la categorie si elle est fournie.
+        # Find category if provided.
+        category_name = ""
+        category_color = "#009eb9"
+        illustration_svg = ""
+
+        category_uuid = validated.get("category_uuid")
+        if category_uuid:
+            chosen_category = BadgeCategory.objects.filter(uuid=category_uuid).first()
+            if chosen_category:
+                category_name = chosen_category.name
+                category_color = chosen_category.color
+                illustration_svg = chosen_category.illustration_svg
+
+        # On cherche le niveau si il est fourni.
+        # Find level if provided.
+        level_stroke_width = 3
+        level_posture_text = ""
+
+        level_uuid = validated.get("level_uuid")
+        if level_uuid:
+            chosen_level = BadgeLevel.objects.filter(uuid=level_uuid).first()
+            if chosen_level:
+                level_stroke_width = chosen_level.stroke_width
+                level_posture_text = chosen_level.posture_text
+
+        # On recupere le titre, le sous-titre et la forme.
+        # Get title, subtitle and shape.
+        title = validated.get("title", "") or "Badge"
+        subtitle = validated.get("subtitle", "")
+        shape_key = validated.get("shape", DEFAULT_SHAPE_KEY)
+
+        # On genere le SVG du badge avec la forme choisie.
+        # Generate badge SVG with chosen shape.
+        badge_svg = generate_badge_svg(
+            category_name=category_name,
+            category_color=category_color,
+            level_stroke_width=level_stroke_width,
+            level_posture_text=level_posture_text,
+            illustration_svg=illustration_svg,
+            title=title,
+            subtitle=subtitle,
+            shape_key=shape_key,
+        )
+
+        return render(request, "badge_generator/partials/_badge_preview.html", {
+            "badge_svg": badge_svg,
+        })
+
+    # ========================================================================
+    # Generation finale et sauvegarde du badge.
+    # On enregistre le badge dans la base de donnees.
+    # Final badge generation and save to database.
+    # ========================================================================
+
+    @action(detail=False, methods=["POST"])
+    def generate(self, request):
+        # On valide toutes les donnees.
+        # Validate all data.
+        serializer = GenerateBadgeSerializer(data=request.POST)
+
+        if not serializer.is_valid():
+            return render(request, "badge_generator/partials/_step_error.html", {
+                "errors": serializer.errors,
+            })
+
+        validated = serializer.validated_data
+
+        # On cherche les objets dans la base de donnees.
+        # Find database objects.
+        chosen_category = get_object_or_404(
+            BadgeCategory, uuid=validated["category_uuid"]
+        )
+        chosen_level = get_object_or_404(
+            BadgeLevel, uuid=validated["level_uuid"]
+        )
+
+        # On recupere la forme choisie.
+        # Get the chosen shape.
+        shape_key = validated.get("shape", DEFAULT_SHAPE_KEY)
+
+        # On genere le SVG final avec la forme choisie.
+        # Generate final SVG with chosen shape.
+        badge_svg = generate_badge_svg(
+            category_name=chosen_category.name,
+            category_color=chosen_category.color,
+            level_stroke_width=chosen_level.stroke_width,
+            level_posture_text=chosen_level.posture_text,
+            illustration_svg=chosen_category.illustration_svg,
+            title=validated["title"],
+            subtitle=validated.get("subtitle", ""),
+            shape_key=shape_key,
+        )
+
+        # On sauvegarde le badge dans la base de donnees.
+        # Save badge to database.
+        generated_badge = GeneratedBadge.objects.create(
+            title=validated["title"],
+            subtitle=validated.get("subtitle", ""),
+            category=chosen_category,
+            level=chosen_level,
+            primary_color=chosen_category.color,
+            svg_content=badge_svg,
+        )
+
+        return render(request, "badge_generator/result.html", {
+            "badge": generated_badge,
+            "badge_svg": badge_svg,
+        })
+
+    # ========================================================================
+    # Telechargement du badge en SVG.
+    # SVG download endpoint.
+    # ========================================================================
+
+    @action(detail=True, methods=["GET"], url_path="download-svg")
+    def download_svg(self, request, pk=None):
+        # On cherche le badge genere.
+        # Find the generated badge.
+        badge = get_object_or_404(GeneratedBadge, uuid=pk)
+
+        # On renvoie le SVG comme un fichier a telecharger.
+        # Return SVG as downloadable file.
+        response = HttpResponse(
+            badge.svg_content,
+            content_type="image/svg+xml",
+        )
+        safe_filename = badge.title.replace(" ", "_").lower()
+        response["Content-Disposition"] = (
+            f'attachment; filename="badge_{safe_filename}.svg"'
+        )
+        return response

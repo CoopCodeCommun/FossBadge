@@ -28,7 +28,7 @@ SECRET_KEY = os.environ.get('SECRET_KEY', insecure_key)
 DEBUG = True
 DEBUG_SEND_EMAIL = False
 
-ALLOWED_HOSTS = ['localhost', '127.0.0.1', 'badge.codecommun.coop', 'badge.localhost']
+ALLOWED_HOSTS = ['localhost', '127.0.0.1', 'badge.codecommun.coop', 'badge.localhost', '91.134.241.241']
 CSRF_TRUSTED_ORIGINS = ['https://badge.codecommun.coop']
 
 # Application definition
@@ -42,6 +42,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'django.contrib.humanize',
     'core',
+    'badge_generator',
     'django_htmx',
     'rest_framework',
     'pictures',

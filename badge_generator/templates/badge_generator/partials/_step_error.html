@@ -1,0 +1,35 @@
+<!-- ============================================================
+     Message d'erreur.
+     On affiche les erreurs de validation de maniere claire.
+
+     ACCESSIBILITE :
+     - role="alert" fait que le lecteur d'ecran lit l'erreur
+       immediatement quand elle apparait.
+     - Le texte est en phrases simples (FALC).
+
+     Error display. role="alert" triggers immediate screen reader reading.
+     ============================================================ -->
+
+<div class="step-error" role="alert">
+    <strong>Quelque chose n'a pas fonctionné.</strong>
+    <p style="margin: 0.5rem 0 0 0;">Voici le problème :</p>
+    <ul style="margin: 0.5rem 0 0 1rem; padding: 0;">
+        {% for field_name, field_errors in errors.items %}
+        {% for error in field_errors %}
+        <li>{{ error }}</li>
+        {% endfor %}
+        {% endfor %}
+    </ul>
+</div>
+
+<div class="wizard-actions">
+    <a class="btn btn-outline-secondary"
+       href="#"
+       aria-label="Recommencer la création du badge"
+       hx-get="{% url 'badge_generator:badge-generator-step-category' %}"
+       hx-target="#wizard-container"
+       hx-swap="innerHTML"
+    >
+        ← Recommencer
+    </a>
+</div>

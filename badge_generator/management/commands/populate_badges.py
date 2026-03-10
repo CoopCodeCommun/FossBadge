@@ -3,12 +3,14 @@ Commande pour remplir la base de donnees avec les 8 categories et 5 niveaux.
 On cree des categories inspirees de la matrice du Dome,
 avec les illustrations SVG et les textes de posture.
 Management command to populate 8 categories x 5 levels with Dome-style data.
+
+LOCALISATION : badge_generator/management/commands/populate_badges.py
 """
 
 from django.core.management.base import BaseCommand
 
 from badge_generator.illustrations import ILLUSTRATIONS_BY_ABBREVIATION
-from badge_generator.models import BadgeCategory, BadgeLevel, Pictogram
+from badge_generator.models import BadgeCategory, BadgeLevel
 
 
 class Command(BaseCommand):
@@ -20,9 +22,6 @@ class Command(BaseCommand):
 
         self.stdout.write("Création des 5 niveaux...")
         self._create_levels()
-
-        self.stdout.write("Création des pictogrammes...")
-        self._create_pictograms()
 
         self.stdout.write(self.style.SUCCESS("Base de données peuplée avec succès !"))
 
@@ -133,7 +132,6 @@ class Command(BaseCommand):
                 "name": "Découverte",
                 "description": "Premier contact avec le sujet.",
                 "rank": 1,
-                "shape_sides": 0,
                 "posture_text": "JE DÉCOUVRE",
                 "stroke_width": 2,
             },
@@ -141,7 +139,6 @@ class Command(BaseCommand):
                 "name": "Compréhension",
                 "description": "Je comprends les bases du sujet.",
                 "rank": 2,
-                "shape_sides": 4,
                 "posture_text": "JE COMPRENDS",
                 "stroke_width": 4,
             },
@@ -149,7 +146,6 @@ class Command(BaseCommand):
                 "name": "Pratique",
                 "description": "Je pratique de manière autonome.",
                 "rank": 3,
-                "shape_sides": 5,
                 "posture_text": "JE PRATIQUE",
                 "stroke_width": 7,
             },
@@ -157,7 +153,6 @@ class Command(BaseCommand):
                 "name": "Maîtrise",
                 "description": "Maîtrise avancée du sujet.",
                 "rank": 4,
-                "shape_sides": 6,
                 "posture_text": "JE MAÎTRISE",
                 "stroke_width": 11,
             },
@@ -165,7 +160,6 @@ class Command(BaseCommand):
                 "name": "Transmission",
                 "description": "Capacité à transmettre et former les autres.",
                 "rank": 5,
-                "shape_sides": 8,
                 "posture_text": "JE TRANSMETS",
                 "stroke_width": 16,
             },
@@ -175,79 +169,4 @@ class Command(BaseCommand):
             BadgeLevel.objects.update_or_create(
                 name=level_data["name"],
                 defaults=level_data,
-            )
-
-    def _create_pictograms(self):
-        """
-        On cree des pictogrammes SVG simples comme extras optionnels.
-        Ce sont des icones supplementaires que l'on peut ajouter au badge.
-        Create simple SVG pictograms as optional extras.
-        """
-
-        # On garde les pictogrammes existants comme extras.
-        # Keep existing pictograms as extras.
-        pictograms_to_create = [
-            {
-                "name": "Livre",
-                "tags": "savoir,lecture,apprentissage,formation",
-                "svg_content": (
-                    '<path d="M20 15 C20 10, 50 10, 50 15 '
-                    'C50 10, 80 10, 80 15 L80 80 '
-                    'C80 75, 50 75, 50 80 '
-                    'C50 75, 20 75, 20 80 Z" '
-                    'fill-opacity="0.9"/>'
-                    '<line x1="50" y1="15" x2="50" y2="80" '
-                    'stroke="currentColor" stroke-width="2" opacity="0.5"/>'
-                ),
-            },
-            {
-                "name": "Étoile",
-                "tags": "reussite,excellence,accomplissement",
-                "svg_content": (
-                    '<polygon points="50,5 61,35 95,35 68,57 79,90 50,70 21,90 32,57 5,35 39,35" '
-                    'fill-opacity="0.9"/>'
-                ),
-            },
-            {
-                "name": "Engrenage",
-                "tags": "technique,mecanique,creation,fabrication",
-                "svg_content": (
-                    '<path d="M43,10 L57,10 L60,22 L72,16 L80,28 L70,36 '
-                    'L78,45 L90,43 L90,57 L78,60 L80,72 L70,76 '
-                    'L64,66 L57,72 L57,85 L43,85 L43,72 L36,66 '
-                    'L30,76 L20,72 L22,60 L10,57 L10,43 L22,45 '
-                    'L20,28 L28,16 L40,22 Z" fill-opacity="0.9"/>'
-                    '<circle cx="50" cy="50" r="14" fill="none" '
-                    'stroke="currentColor" stroke-width="3" opacity="0.4"/>'
-                ),
-            },
-            {
-                "name": "Cœur",
-                "tags": "engagement,passion,benevole,solidarite",
-                "svg_content": (
-                    '<path d="M50,85 L15,50 C5,35 10,15 30,15 '
-                    'C40,15 47,22 50,28 C53,22 60,15 70,15 '
-                    'C90,15 95,35 85,50 Z" fill-opacity="0.9"/>'
-                ),
-            },
-            {
-                "name": "Diplôme",
-                "tags": "certification,reussite,formation,diplome",
-                "svg_content": (
-                    '<rect x="15" y="20" width="70" height="50" rx="3" '
-                    'fill="none" stroke="currentColor" stroke-width="3" opacity="0.9"/>'
-                    '<line x1="30" y1="35" x2="70" y2="35" '
-                    'stroke="currentColor" stroke-width="2" opacity="0.6"/>'
-                    '<line x1="30" y1="45" x2="70" y2="45" '
-                    'stroke="currentColor" stroke-width="2" opacity="0.4"/>'
-                    '<circle cx="50" cy="82" r="8" fill="none" '
-                    'stroke="currentColor" stroke-width="2" opacity="0.7"/>'
-                ),
-            },
-        ]
-
-        for pictogram_data in pictograms_to_create:
-            Pictogram.objects.update_or_create(
-                name=pictogram_data["name"],
-                defaults=pictogram_data,
             )

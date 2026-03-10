@@ -1,6 +1,14 @@
+"""
+Configuration de l'admin Django pour le generateur de badges.
+On enregistre les modeles pour les gerer dans l'interface admin.
+Admin configuration for the badge generator models.
+
+LOCALISATION : badge_generator/admin.py
+"""
+
 from django.contrib import admin
 
-from badge_generator.models import BadgeCategory, BadgeLevel, GeneratedBadge, Pictogram
+from badge_generator.models import BadgeCategory, BadgeLevel, GeneratedBadge
 
 
 @admin.register(BadgeCategory)
@@ -12,16 +20,9 @@ class BadgeCategoryAdmin(admin.ModelAdmin):
 
 @admin.register(BadgeLevel)
 class BadgeLevelAdmin(admin.ModelAdmin):
-    list_display = ["name", "rank", "posture_text", "stroke_width", "shape_sides"]
+    list_display = ["name", "rank", "posture_text", "stroke_width"]
     list_editable = ["rank", "stroke_width"]
     ordering = ["rank"]
-
-
-@admin.register(Pictogram)
-class PictogramAdmin(admin.ModelAdmin):
-    list_display = ["name", "tags"]
-    search_fields = ["name", "tags"]
-    filter_horizontal = ["categories"]
 
 
 @admin.register(GeneratedBadge)

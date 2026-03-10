@@ -1,3 +1,5 @@
+{% load i18n %}
+
 <!-- ============================================================
      Message d'erreur.
      On affiche les erreurs de validation de maniere claire.
@@ -8,11 +10,13 @@
      - Le texte est en phrases simples (FALC).
 
      Error display. role="alert" triggers immediate screen reader reading.
+
+     LOCALISATION : badge_generator/templates/badge_generator/partials/_step_error.html
      ============================================================ -->
 
-<div class="step-error" role="alert">
-    <strong>Quelque chose n'a pas fonctionné.</strong>
-    <p style="margin: 0.5rem 0 0 0;">Voici le problème :</p>
+<div class="step-error" role="alert" data-testid="generator-error">
+    <strong>{% translate "Quelque chose n'a pas fonctionné." %}</strong>
+    <p style="margin: 0.5rem 0 0 0;">{% translate "Voici le problème :" %}</p>
     <ul style="margin: 0.5rem 0 0 1rem; padding: 0;">
         {% for field_name, field_errors in errors.items %}
         {% for error in field_errors %}
@@ -24,12 +28,9 @@
 
 <div class="wizard-actions">
     <a class="btn btn-outline-secondary"
-       href="#"
-       aria-label="Recommencer la création du badge"
-       hx-get="{% url 'badge_generator:badge-generator-step-category' %}"
-       hx-target="#wizard-container"
-       hx-swap="innerHTML"
-    >
-        ← Recommencer
+       href="{% url 'badge_generator:badge-generator-list' %}"
+       aria-label="{% translate 'Recommencer la création du badge' %}"
+       data-testid="generator-restart-link">
+        &larr; {% translate "Recommencer" %}
     </a>
 </div>

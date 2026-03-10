@@ -9,6 +9,8 @@ SVG illustrations for the 8 badge categories.
 Each is a simple line-art drawing stored as a Python constant.
 Drawings use a 100x100 coordinate space.
 Color is applied by the SVG engine.
+
+LOCALISATION : badge_generator/illustrations.py
 """
 
 

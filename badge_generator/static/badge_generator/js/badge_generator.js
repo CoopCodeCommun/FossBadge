@@ -233,8 +233,8 @@ document.addEventListener("DOMContentLoaded", function () {
         }
 
         // On envoie la requete POST avec HTMX.
-        // Le resultat remplace tout le contenu du wizard.
-        // Send POST request with HTMX. Result replaces wizard content.
+        // Le resultat remplace le contenu des deux colonnes.
+        // Send POST request with HTMX. Result replaces the two-column content.
         if (typeof htmx !== "undefined") {
             htmx.ajax("POST", window.BADGE_GENERATE_URL, {
                 target: ".generator-two-columns",
@@ -284,17 +284,5 @@ document.addEventListener("DOMContentLoaded", function () {
         generate_button.addEventListener("click", generate_badge);
     }
 
-
-    // ================================================================
-    // Prevention du scroll sur les liens href="#".
-    // Prevent scroll on href="#" links.
-    // ================================================================
-
-    document.body.addEventListener("click", function (click_event) {
-        var clicked_link = click_event.target.closest('a[href="#"]');
-        if (clicked_link) {
-            click_event.preventDefault();
-        }
-    });
 
 });

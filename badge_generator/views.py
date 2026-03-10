@@ -7,7 +7,11 @@ La preview se met a jour a la volee via HTMX.
 Badge generator views — single page with real-time preview.
 Replaces the 5-step wizard with one page.
 User picks category, level, writes title. Preview updates via HTMX.
+
+LOCALISATION : badge_generator/views.py
 """
+
+import re
 
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404, render
@@ -216,7 +220,16 @@ class BadgeGeneratorViewSet(viewsets.ViewSet):
             badge.svg_content,
             content_type="image/svg+xml",
         )
-        safe_filename = badge.title.replace(" ", "_").lower()
+
+        # On nettoie le titre pour fabriquer un nom de fichier sur.
+        # On garde seulement les lettres, chiffres, tirets et underscores.
+        # Les autres caracteres sont remplaces par des underscores.
+        # Sanitize title for a safe filename. Keep only alphanumeric, hyphens, underscores.
+        safe_filename = re.sub(r'[^\w\-]', '_', badge.title.lower().strip())
+        safe_filename = re.sub(r'_+', '_', safe_filename).strip('_')
+        if not safe_filename:
+            safe_filename = "badge"
+
         response["Content-Disposition"] = (
             f'attachment; filename="badge_{safe_filename}.svg"'
         )

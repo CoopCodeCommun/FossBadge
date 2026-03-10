@@ -13,6 +13,7 @@ Shape is chosen by the user from available shapes.
 LOCALISATION : badge_generator/serializers.py
 """
 
+from django.utils.translation import gettext_lazy as _
 from rest_framework import serializers
 
 from badge_generator.models import BadgeCategory, BadgeLevel
@@ -35,14 +36,14 @@ class PreviewBadgeSerializer(serializers.Serializer):
     category_uuid = serializers.UUIDField(
         required=False,
         error_messages={
-            "invalid": "Cette catégorie n'est pas valide. / Invalid category.",
+            "invalid": _("Cette catégorie n'est pas valide."),
         }
     )
 
     level_uuid = serializers.UUIDField(
         required=False,
         error_messages={
-            "invalid": "Ce niveau n'est pas valide. / Invalid level.",
+            "invalid": _("Ce niveau n'est pas valide."),
         }
     )
 
@@ -78,7 +79,7 @@ class PreviewBadgeSerializer(serializers.Serializer):
         category_exists = BadgeCategory.objects.filter(uuid=value).exists()
         if not category_exists:
             raise serializers.ValidationError(
-                "Cette catégorie n'existe pas. / This category does not exist."
+                _("Cette catégorie n'existe pas.")
             )
         return value
 
@@ -91,7 +92,7 @@ class PreviewBadgeSerializer(serializers.Serializer):
         level_exists = BadgeLevel.objects.filter(uuid=value).exists()
         if not level_exists:
             raise serializers.ValidationError(
-                "Ce niveau n'existe pas. / This level does not exist."
+                _("Ce niveau n'existe pas.")
             )
         return value
 
@@ -119,24 +120,24 @@ class GenerateBadgeSerializer(serializers.Serializer):
 
     category_uuid = serializers.UUIDField(
         error_messages={
-            "required": "Veuillez choisir une catégorie. / Please choose a category.",
-            "invalid": "Cette catégorie n'est pas valide. / Invalid category.",
+            "required": _("Veuillez choisir une catégorie."),
+            "invalid": _("Cette catégorie n'est pas valide."),
         }
     )
 
     level_uuid = serializers.UUIDField(
         error_messages={
-            "required": "Veuillez choisir un niveau. / Please choose a level.",
-            "invalid": "Ce niveau n'est pas valide. / Invalid level.",
+            "required": _("Veuillez choisir un niveau."),
+            "invalid": _("Ce niveau n'est pas valide."),
         }
     )
 
     title = serializers.CharField(
         max_length=100,
         error_messages={
-            "required": "Le titre est obligatoire. / Title is required.",
-            "max_length": "Le titre est trop long (100 caractères max). / Title too long.",
-            "blank": "Le titre ne peut pas être vide. / Title cannot be empty.",
+            "required": _("Le titre est obligatoire."),
+            "max_length": _("Le titre est trop long (100 caractères max)."),
+            "blank": _("Le titre ne peut pas être vide."),
         }
     )
 
@@ -162,7 +163,7 @@ class GenerateBadgeSerializer(serializers.Serializer):
         category_exists = BadgeCategory.objects.filter(uuid=value).exists()
         if not category_exists:
             raise serializers.ValidationError(
-                "Cette catégorie n'existe pas. / This category does not exist."
+                _("Cette catégorie n'existe pas.")
             )
         return value
 
@@ -172,7 +173,7 @@ class GenerateBadgeSerializer(serializers.Serializer):
         level_exists = BadgeLevel.objects.filter(uuid=value).exists()
         if not level_exists:
             raise serializers.ValidationError(
-                "Ce niveau n'existe pas. / This level does not exist."
+                _("Ce niveau n'existe pas.")
             )
         return value
 

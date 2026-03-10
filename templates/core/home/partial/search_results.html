@@ -17,11 +17,24 @@
     {% if search_badges_enabled is not False %}
     <!-- Colonne Badges / Badges column -->
     <div class="col-md" data-testid="home-results-badges">
-        <h2 class="home-column-title">
-            {% translate "Badges" %}
-            {% if badges_found_list %}
-                <span class="home-count-badge" aria-label="{% translate 'résultats' %}">{{ badges_found_list|length }}</span>
-            {% endif %}
+        <h2 class="home-column-title d-flex justify-content-between">
+            <span>
+                {% translate "Badges" %}
+                {% if badges_found_list %}
+                    <span class="home-count-badge" aria-label="{% translate 'résultats' %}">{{ badges_found_list|length }}</span>
+                {% endif %}
+            </span>
+            <button type="button"
+                    class="home-forge-btn"
+                    hx-get="{% url 'core:create_badge' %}"
+                    hx-target="{% popup_content_id %}"
+                    hx-swap="innerHTML"
+                    hx-on:htmx:after-request="{% popup_open %}"
+                    hx-indicator="none"
+                    data-testid="btn-forge-badge">
+                <span aria-hidden="true">&#9874;</span>
+                {% translate "Forger un badge" %}
+            </button>
         </h2>
 
         {% if badges_found_list %}
@@ -78,11 +91,24 @@
     {% if search_structures_enabled is not False %}
     <!-- Colonne Structures / Structures column -->
     <div class="col-md" data-testid="home-results-structures">
-        <h2 class="home-column-title">
-            {% translate "Structures" %}
-            {% if structures_found_list %}
-                <span class="home-count-badge" aria-label="{% translate 'résultats' %}">{{ structures_found_list|length }}</span>
-            {% endif %}
+        <h2 class="home-column-title d-flex justify-content-between">
+            <span>
+                {% translate "Structures" %}
+                {% if structures_found_list %}
+                    <span class="home-count-badge" aria-label="{% translate 'résultats' %}">{{ structures_found_list|length }}</span>
+                {% endif %}
+            </span>
+            <button type="button"
+                    class="home-structure-btn"
+                    hx-get="{% url 'core:create_association' %}"
+                    hx-target="{% popup_content_id %}"
+                    hx-swap="innerHTML"
+                    hx-on:htmx:after-request="{% popup_open %}"
+                    hx-indicator="none"
+                    data-testid="btn-forge-badge">
+                <span aria-hidden="true">&#x1F3E4;</span>
+                {% translate "Créer une structure" %}
+            </button>
         </h2>
 
         {% if structures_found_list %}
@@ -140,8 +166,7 @@
                     hx-push-url="true"
                     hx-include="#home-search-filters"
                     class="home-result-item"
-                    data-testid="home-result-person-{{ person.pk }}"
-                >
+                    data-testid="home-result-person-{{ person.pk }}">
                     <div class="home-result-icon home-result-icon-round">
                         {% if person.avatar %}
                             {% picture person.avatar img_alt=person.get_full_name|default:person.username ratio="1/1" %}
@@ -169,4 +194,4 @@
 
 {% endwith %}
 
-{% popup %}{% endpopup %}
+{% popup popup_width="80%" %}{% endpopup %}

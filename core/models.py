@@ -149,13 +149,21 @@ class User(AbstractUser):
         # AND
         # all structures that endorse the badge OR have created it (# 2)
 
-        structures = Structure.objects.filter(
-            Q(admins=self.pk) | # 1
-            Q(editors=self.pk), # 1
-            Q(endorsements__badge=badge) | # 2
-            Q(pk=badge.issuing_structure.pk), # 2
-        ).distinct()
-        return structures
+        if badge.issuing_structure:
+            return Structure.objects.filter(
+                Q(admins=self.pk) | # 1
+                Q(editors=self.pk), # 1
+                Q(endorsements__badge=badge) | # 2
+                Q(pk=badge.issuing_structure.pk), # 2
+            ).distinct()
+        else:
+            return Structure.objects.filter(
+                Q(admins=self.pk) | # 1
+                Q(editors=self.pk), # 1
+                Q(endorsements__badge=badge) # 2
+            ).distinct()
+
+
 
     def get_structures_not_endorsing_badge(self, badge):
         """
@@ -324,10 +332,16 @@ class Badge(models.Model):
         """
         Return a list of structures that either endorse the badge (1) or have issued the badge (2)
         """
-        return Structure.objects.filter(
-            Q(endorsements__badge=self.pk) | # 1
-            Q(pk=self.issuing_structure.pk) # 2
-        ).distinct()
+        if self.issuing_structure:
+            return Structure.objects.filter(
+                Q(endorsements__badge=self.pk) | # 1
+                Q(pk=self.issuing_structure.pk) # 2
+            ).distinct()
+        else:
+            return Structure.objects.filter(
+                Q(endorsements__badge=self.pk) # 1
+            ).distinct()
+
 
     @staticmethod
     def get_all_badges_except_dream():

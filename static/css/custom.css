@@ -1483,8 +1483,8 @@ picture.text-center img.badge-icon {
 }
 
 
-/* Bouton "Forger un badge" — discret, style outline orange
-   "Forge a badge" button — discreet, outline orange style */
+/* Bouton "Inviter un utilisateur" — discret, style outline green
+   "Invite a user" button — discreet, outline green style */
 .home-invite-btn {
     display: inline-flex;
     align-items: center;
@@ -1508,6 +1508,30 @@ picture.text-center img.badge-icon {
     text-decoration: none;
 }
 
+/* Bouton "Créer une structure" — discret, style outline blue
+   "Create a structure" button — discreet, outline blue style */
+.home-structure-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.3rem 0.75rem;
+    font-size: 0.82rem;
+    font-weight: 500;
+    color: var(--home-color-structures);
+    border: 1px solid var(--home-color-structures);
+    border-radius: 8px;
+    background: transparent;
+    text-decoration: none;
+    transition: background-color 0.15s ease, color 0.15s ease;
+    margin: 0;
+}
+
+.home-structure-btn:hover,
+.home-structure-btn:focus {
+    background-color: var(--home-color-structures);
+    color: #fff;
+    text-decoration: none;
+}
 
 /* ---- Responsive lieu / Responsive lieu ---- */
 @media (max-width: 768px) {

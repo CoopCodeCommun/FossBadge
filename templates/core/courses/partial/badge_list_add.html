@@ -1,17 +1,92 @@
 {% load pictures %}
 
-<div class="grid grid-cols-4 gap-8">
+<style>
+/* Grille de sélection de badges - 4 par ligne
+   / Badge selection grid - 4 per row */
+.course-badge-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 2rem;
+}
+
+/* Responsive - 3 colonnes sur écran moyen
+   / Responsive - 3 columns on medium screen */
+@media (max-width: 1200px) {
+    .course-badge-grid {
+        grid-template-columns: repeat(3, 1fr);
+        gap: 1.5rem;
+    }
+}
+
+/* Responsive - 2 colonnes sur tablette
+   / Responsive - 2 columns on tablet */
+@media (max-width: 900px) {
+    .course-badge-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 1.25rem;
+    }
+}
+
+/* Responsive - 1 colonne sur mobile
+   / Responsive - 1 column on mobile */
+@media (max-width: 640px) {
+    .course-badge-grid {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+    }
+}
+
+/* Style des cartes de badge
+   / Badge card style */
+.course-badge-item {
+    text-align: center;
+    border: 1px solid #e8eaed;
+    border-radius: 12px;
+    padding: 1rem 0;
+    background: #fff;
+    transition: box-shadow 0.2s ease, transform 0.2s ease;
+}
+
+.course-badge-item:hover {
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    transform: translateY(-2px);
+}
+
+/* Icône du badge
+   / Badge icon */
+.course-badge-icon {
+    width: 64px;
+    height: 64px;
+    margin: 0 auto;
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+/* Nom du badge
+   / Badge name */
+.course-badge-name {
+    margin: 0.75rem 0;
+    font-weight: 500;
+    color: #202124;
+    font-size: 0.9rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+</style>
+
+<div class="course-badge-grid">
     {% for badge in badges %}
-    <div class="border-1 text-center justify-center p-4">
+    <div class="course-badge-item">
         {% if badge.icon %}
-            {% picture badge.icon img_alt=badge.name picture_class="ignore" img_class="w-16 h-16 m-auto" ratio="1/1" %}
+            {% picture badge.icon img_alt=badge.name picture_class="course-badge-icon" img_class="course-badge-icon" ratio="1/1" %}
         {% else %}
-            <img src="{{ placeholder_image }}" alt="{{ badge.name }}" class="w-16 h-16 m-auto">
+            <img src="{{ placeholder_image }}" alt="{{ badge.name }}" class="course-badge-icon">
         {% endif %}
-        <p>{{ badge.name }}</p>
-        <button class="btn btn-primary"
+        <p class="course-badge-name">{{ badge.name }}</p>
+        <button class="btn btn-primary btn-sm"
                 onclick="addNode(
-                    '{{ badge.name }}',
+                    '{{ badge.name|escapejs }}',
                     '{{ badge.pk }}',
                     '{% if badge.icon %}{{ badge.icon.url }}{% else %}{{ placeholder_image }}{% endif %}'
                     {% if parent_pk %},'{{ parent_pk }}' {% endif %}

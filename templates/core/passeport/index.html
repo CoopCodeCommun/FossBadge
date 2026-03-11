@@ -108,8 +108,23 @@
                     <div class="passeport-dream-badge-display-header">
                         <span class="passeport-dream-badge-display-icon" aria-hidden="true">🌟</span>
                         <h2 class="passeport-dream-badge-display-title">{% translate "Mon badge de rêve" %}</h2>
+                        {% if person == request.user %}
+                            <a href="{% url 'core:course-edit' pk=person.dream_course.pk %}"
+                               class="passeport-parcours-btn"
+                               data-testid="passeport-parcours-btn">
+                                {% translate "Modifier mon parcours" %}
+                            </a>
+                        {% elif person.has_dream_course and person.dream_course.items.count > 0 %}
+                            <a href="{% url 'core:home-parcours-detail' course_pk=person.dream_course.pk %}"
+                               class="passeport-parcours-btn"
+                               data-testid="passeport-parcours-btn">
+                                {% translate "Voir le parcours associé" %}
+                            </a>
+                        {% endif %}
+
                     </div>
                     <div class="passeport-dream-badge-display-card">
+
                         <a href="{% url 'core:home-badge-detail' badge_pk=dream_badge.pk %}" class="passeport-dream-badge-display-link" data-testid="passeport-dream-badge-link">
                             <div class="passeport-dream-badge-display-image">
                                 {% if dream_badge.icon %}

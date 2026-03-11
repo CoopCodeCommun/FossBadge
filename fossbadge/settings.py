@@ -210,3 +210,13 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 # Sweetify settings
 SWEETIFY_SWEETALERT_LIBRARY = 'sweetalert2'
+
+
+import sentry_sdk
+if not DEBUG:
+    sentry_sdk.init(
+        dsn=os.environ.get('SENTRY_DSN'),
+        # Add data like request headers and IP for users,
+        # see https://docs.sentry.io/platforms/python/data-management/data-collected/ for more info
+        send_default_pii=True,
+    )

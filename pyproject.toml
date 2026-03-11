@@ -7,7 +7,7 @@ requires-python = ">=3.14"
 readme = "README.md"
 license = { text = "AGPLv3" }
 dependencies = [
-    "django (>=5.2)",
+    "django>=5.2",
     "pillow (>=10)",
     "django-htmx (>=1)",
     "djangorestframework (>=3.16)",
@@ -21,6 +21,7 @@ dependencies = [
     "pyopenbadges",
     "django-leaflet>=0.33.0",
     "django-solo>=2.5.1",
+    "sentry-sdk>=2.54.0",
 ]
 
 [dependency-groups]

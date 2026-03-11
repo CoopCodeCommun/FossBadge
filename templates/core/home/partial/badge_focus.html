@@ -43,6 +43,13 @@
 
             <h2 class="home-badge-focus-name">{{ focused_badge.name }}</h2>
 
+            {% if focused_badge.is_dream_badge %}
+            <span class="badge-page-dream-badge-tag" data-testid="badge-focus-dream-badge-tag">
+                <span aria-hidden="true">&#10024;</span>
+                {% translate "Badge de rêve" %}
+            </span>
+            {% endif %}
+
             {% if focused_badge.level %}
                 <div class="home-badge-focus-level">
                     {% if focused_badge.level == 'beginner' %}

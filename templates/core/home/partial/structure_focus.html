@@ -44,7 +44,7 @@
                     hx-swap="innerHTML"
                     hx-push-url="true"
                     hx-include="#home-search-filters"
-                    class="home-result-item"
+                    class="home-result-item{% if badge.is_dream_badge %} home-result-item-dream-badge{% endif %}"
                 >
                     <div class="home-result-icon">
                         {% if badge.icon %}

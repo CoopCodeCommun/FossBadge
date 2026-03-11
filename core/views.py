@@ -1783,7 +1783,7 @@ class UserViewSet(viewsets.ViewSet):
 
             # Send an email to the user
             user = get_or_create_user(email,send_mail=True)
-            if settings.DEBUG:
+            if settings.DEBUG == True:
                 login(request, user)
 
 

@@ -59,6 +59,10 @@ class BadgeAssignmentValidator(serializers.Serializer):
             )
         return data
 
+class BadgeSelfAssignmentValidator(serializers.Serializer):
+    notes = serializers.CharField(required=True)
+
+
 class BadgeEndorsementValidator(serializers.Serializer):
     """
     Valide les donnees pour endosser un badge.
@@ -106,3 +110,23 @@ class BadgeEndorsementValidator(serializers.Serializer):
                 "Vous devez être admin de cette structure pour endosser un badge"
             )
         return data
+
+class DreamBadgeValidator(serializers.Serializer):
+    name = serializers.CharField(required=True)
+    icon = serializers.ImageField(required=False)
+    description = serializers.CharField()
+
+
+class InviteUserValidator(serializers.Serializer):
+    """
+    Validator for user invite from a structure
+    """
+    email = serializers.EmailField()
+    role = serializers.ChoiceField(choices=Structure.ROLES)
+
+class CreateCourseValidator(serializers.Serializer):
+    """
+    Validator for creating a course
+    """
+    structure = serializers.UUIDField()
+    badge = serializers.UUIDField()

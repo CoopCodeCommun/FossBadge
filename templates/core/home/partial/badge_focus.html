@@ -9,24 +9,26 @@
 {# Contexte carte / Map context #}
 <div id="map-context" hidden data-structures="{{ related_structures_pks }}"></div>
 
+{# Bouton retour #}
+{# Back button #}
+<a
+        href="{% url 'core:home-search' %}?q={{ search_query|urlencode }}"
+        hx-get="{% url 'core:home-search' %}?q={{ search_query|urlencode }}"
+        hx-target="#search-results"
+        hx-swap="innerHTML"
+        hx-push-url="/"
+        hx-include="#home-search-filters"
+        class="home-back-link"
+>
+    <span aria-hidden="true">&larr;</span> {% translate "Retour aux résultats" %}
+</a>
+
 <div class="row g-4" data-testid="home-badge-focus" data-focus-type="badge">
 
     {# === Colonne Badges : badge agrandi avec détail === #}
     {% if search_badges_enabled is not False %}
     <div class="col-md" data-category="badges" data-testid="home-badge-focus-detail">
 
-        <!-- Bouton retour / Back button -->
-        <a
-            href="{% url 'core:home-search' %}?q={{ search_query|urlencode }}"
-            hx-get="{% url 'core:home-search' %}?q={{ search_query|urlencode }}"
-            hx-target="#search-results"
-            hx-swap="innerHTML"
-            hx-push-url="/"
-            hx-include="#home-search-filters"
-            class="home-back-link"
-        >
-            <span aria-hidden="true">&larr;</span> {% translate "Retour aux résultats" %}
-        </a>
 
         <div class="home-badge-focus-card">
             <div class="home-badge-focus-icon">
@@ -53,25 +55,44 @@
                 </div>
             {% endif %}
 
-            <div class="home-badge-focus-issuer">
-                <span class="text-muted" style="font-size: 0.8rem;">{% translate "Émis par" %}</span>
-                <a
-                    href="{% url 'core:home-structure-focus' structure_pk=focused_badge.issuing_structure.pk %}"
-                    hx-get="{% url 'core:home-structure-focus' structure_pk=focused_badge.issuing_structure.pk %}?q={{ search_query|urlencode }}"
-                    hx-target="#search-results"
-                    hx-swap="innerHTML"
-                    hx-push-url="true"
-                    hx-include="#home-search-filters"
-                    class="home-badge-focus-issuer-link"
-                >
-                    {% if focused_badge.issuing_structure.logo %}
-                        <div class="home-badge-focus-issuer-logo">
-                            {% picture focused_badge.issuing_structure.logo img_alt=focused_badge.issuing_structure.name ratio="1/1" %}
-                        </div>
-                    {% endif %}
-                    {{ focused_badge.issuing_structure.name }}
-                </a>
-            </div>
+            {% if focused_badge.issuing_structure %}
+                <div class="home-badge-focus-issuer">
+                    <span class="text-muted" style="font-size: 0.8rem;">{% translate "Émis par" %}</span>
+                    <a
+                            href="{% url 'core:home-structure-focus' structure_pk=focused_badge.issuing_structure.pk %}"
+                            hx-get="{% url 'core:home-structure-focus' structure_pk=focused_badge.issuing_structure.pk %}?q={{ search_query|urlencode }}"
+                            hx-target="#search-results"
+                            hx-swap="innerHTML"
+                            hx-push-url="true"
+                            hx-include="#home-search-filters"
+                            class="home-badge-focus-issuer-link">
+                        {% if focused_badge.issuing_structure.logo %}
+                            <div class="home-badge-focus-issuer-logo">
+                                {% picture focused_badge.issuing_structure.logo img_alt=focused_badge.issuing_structure.name ratio="1/1" %}
+                            </div>
+                        {% endif %}
+                        {{ focused_badge.issuing_structure.name }}
+                    </a>
+                </div>
+            {% elif focused_badge.user %}
+                <div class="home-badge-focus-issuer">
+                    <span class="text-muted" style="font-size: 0.8rem;">{% translate "Créé par" %}</span>
+                    <a
+                            href="{% url 'core:home-passeport' person_pk=focused_badge.user.pk %}"
+                            class="home-badge-focus-issuer-link">
+                        {% if focused_badge.user.avatar %}
+                            <div class="home-badge-focus-issuer-logo">
+                                {% picture focused_badge.user.avatar img_alt=focused_badge.user.first_name ratio="1/1" %}
+                            </div>
+                        {% endif %}
+                        {{ focused_badge.user.first_name }}
+                        {{ focused_badge.user.last_name }}
+                        {% if not focused_badge.user.first_name and not focused_badge.user.last_name %}
+                            {{ focused_badge.user.username }}
+                        {% endif %}
+                    </a>
+                </div>
+            {% endif %}
 
             <div class="home-badge-focus-description">
                 {{ focused_badge.description|linebreaks }}

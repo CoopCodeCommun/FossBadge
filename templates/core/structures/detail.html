@@ -1,5 +1,5 @@
 {% extends 'base.html' %}
-{% load pictures %}
+{% load pictures custom_tags %}
 
 {% block title %}{{ structure.name }}{% endblock %}
 
@@ -12,7 +12,12 @@
             <div class="col-md-4">
                 <a class="btn btn-success mb-4" href="{% url 'core:structure-edit' pk=structure.pk %}"> Éditer </a>
                 <a class="btn btn-danger mb-4" href="{% url 'core:structure-delete' pk=structure.pk %}"> Supprimer </a>
-                <button class="btn btn-primary mb-4" onclick="openInviteUserPopUp()">Inviter</button>
+                <button class="btn btn-primary mb-4"
+                        hx-get="{% url 'core:structure-invite' structure.pk %}"
+                        hx-on:htmx:after-request="{%  popup_open %}"
+                        hx-target="{% popup_content_id %}"
+                        hx-swap="innerHTML"> Inviter </button>
+
             </div>
         {% endif %}
     </div>
@@ -29,6 +34,12 @@
             <button class="nav-link" id="structure-badges-tab" data-bs-toggle="pill" data-bs-target="#structure-badges"
                     type="button" role="tab" aria-controls="structure-badges" aria-selected="false">
                 Badges
+            </button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" id="structure-course-tab" data-bs-toggle="pill" data-bs-target="#structure-course"
+                    type="button" role="tab" aria-controls="structure-course" aria-selected="false">
+                Parcours
             </button>
         </li>
         <li class="nav-item" role="presentation">
@@ -50,14 +61,21 @@
                             {% picture structure.logo img_alt="Logo de "|add:structure.name img_class="img-fluid" ratio="1/1" %}
                         </div>
                     {% else %}
-                        <img src="{{ placeholder_image }}" alt="Logo de {{ structure.name }}" class="img-fluid mb-3" style="max-width: 200px;">
+                        <img src="{{ placeholder_image }}" alt="Logo de {{ structure.name }}" class="img-fluid mb-3 m-auto" style="max-width: 200px;">
                     {% endif %}
                     <h2 class="mb-3">{{ structure.name }}</h2>
 
                     {% if is_admin or is_editor %}
-                        <a href="{% url 'core:create_badge' %}?structure={{ structure.pk }}" class="btn btn-primary mb-4">
+                        <a href="{% url 'core:create_badge' %}?structure={{ structure.pk }}" class="btn btn-primary">
                             Forger un nouveau badge
                         </a>
+                        <button class="btn btn-primary"
+                                hx-get="{% url "core:course-create-course" %}?structure={{ structure.pk }}"
+                                hx-on:htmx:after-request="{%  popup_open %}"
+                                hx-target="{% popup_content_id %}"
+                                hx-swap="innerHTML">
+                            Créer un parcours
+                        </button>
                     {% endif %}
                 </div>
 
@@ -165,6 +183,21 @@
             </div>
 
         </div>
+        <div class="tab-pane fade" id="structure-course" role="tabpanel" aria-labelledby="structure-course-tab">
+            <div class="row">
+                <div class="col-md-12">
+                    <div class="card">
+                        <div class="card-body">
+                            <h3 class="card-title">Parcours</h3>
+                            {% with courses=structure.courses.all %}
+                                {% include 'core/courses/partial/list.html' %}
+                            {% endwith %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <div class="tab-pane fade" id="structure-users" role="tabpanel" aria-labelledby="structure-users-tab">
             <div class="row">
                 <div class="col-md-12">
@@ -192,50 +225,5 @@
             </div>
         </div>
     </div>
-
-
-<script>
-    window.openInviteUserPopUp = () =>{
-        Swal.fire({
-            title: "Inviter un utilisateur",
-            icon: "info",
-            html: `
-                <select id="role-input" class="form-select">
-                    <option selected>--- Sélectionnez un rôle ---</option>>
-                    {%for role in roles%}
-                        <option value="{{role.0}}">{{role.1}}</option>>
-                    {%endfor%}
-                </select>
-                <input type="email" id="email-input" class="form-control mt-2">
-
-            `,
-            showCloseButton: true,
-            preConfirm: () => {
-                return {
-                    "email":document.getElementById("email-input").value,
-                    "role":document.getElementById("role-input").value
-                };
-            },
-            showCancelButton: true,
-            focusConfirm: false,
-            confirmButtonText: `
-                Envoyer
-            `,
-            cancelButtonText: `
-                Annuler
-            `,
-        }).then((result) => {
-            if (result.isConfirmed) {
-                    htmx.ajax('POST',  "{% url 'core:structure-invite' structure.pk %}", {
-                        target: 'body',
-                        swap: 'innerHTML',
-                        values: result.value
-                    });
-
-            }
-        });
-    }
-</script>
-
-
+    {% popup %} {% endpopup %}
 {% endblock %}

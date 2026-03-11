@@ -6,6 +6,7 @@
 {% load pictures %}
 {% load static %}
 {% load l10n %}
+{% load custom_tags %}
 
 {% block title %}
     {% blocktranslate with name=person.get_full_name|default:person.username %}Passeport de {{ name }}{% endblocktranslate %} — O2Badge
@@ -70,6 +71,33 @@
         </div>
     </div>
 
+    {%  if is_self %}
+        <div class="mt-3">
+            <button type="button"
+                    class="home-structure-btn"
+                    hx-get="{% url 'core:create_association' %}"
+                    hx-target="{% popup_content_id %}"
+                    hx-swap="innerHTML"
+                    hx-on:htmx:after-request="{% popup_open %}"
+                    data-testid="btn-forge-badge">
+                <span aria-hidden="true">&#x1F3E4;</span>
+                {% translate "Créer une structure" %}
+            </button>
+            {% if user.structures.count > 0 %}
+                <button type="button"
+                        class="home-forge-btn"
+                        hx-get="{% url 'core:create_badge' %}"
+                        hx-target="{% popup_content_id %}"
+                        hx-swap="innerHTML"
+                        hx-on:htmx:after-request="{% popup_open %}"
+                        hx-indicator="none"
+                        data-testid="btn-forge-badge">
+                    <span aria-hidden="true">&#9874;</span>
+                    {% translate "Forger un badge" %}
+                </button>
+            {% endif %}
+        </div>
+    {% endif %}
     {# ── Section Parcours (timeline chronologique) ── #}
     {# ── Journey section (chronological timeline) ── #}
     <section aria-label="{% translate 'Parcours' %}" class="mt-4">
@@ -81,8 +109,31 @@
         </h2>
 
         {% if assignments %}
+        <!--
+           Grille à 2 colonnes pour afficher les badges
+           2-column grid to display badges
+           
+           Le style est défini dans custom.css avec display: grid
+           Style is defined in custom.css with display: grid
+           
+           Sur grand écran : 2 colonnes
+           On large screen: 2 columns
+           
+           Sur mobile : 1 colonne (plus lisible)
+           On mobile: 1 column (more readable)
+        -->
         <ol class="passeport-timeline" role="list" aria-label="{% translate 'Parcours' %}" data-testid="passeport-timeline">
             {% for assignment in assignments %}
+            <!--
+               Chaque badge est une cellule de la grille
+               Each badge is a grid cell
+               
+               Sur grand écran : 2 badges par ligne
+               On large screen: 2 badges per row
+               
+               Sur mobile : 1 badge par ligne
+               On mobile: 1 badge per row
+            -->
             <li class="passeport-timeline-item">
                 <details class="passeport-badge-card"
                          aria-label="{{ assignment.badge.name }}"
@@ -100,9 +151,12 @@
                         <div class="passeport-badge-info">
                             <span class="passeport-badge-name">
                                 {{ assignment.badge.name }}
-                                <span class="home-level-tag home-level-{{ assignment.badge.level }}">
+                                {% if assignment.badge.level %}
+                                    <span class="home-level-tag home-level-{{ assignment.badge.level }}">
                                     {{ assignment.badge.get_level_display }}
                                 </span>
+                                {% endif %}
+
                             </span>
                             <span class="passeport-badge-meta text-muted">
                                 <time datetime="{{ assignment.assigned_date|date:'Y-m-d' }}">
@@ -120,7 +174,11 @@
                                 {% if assignment.assigned_by %}
                                     &middot;
                                     {% translate "par" %}
-                                    {{ assignment.assigned_by.get_full_name|default:assignment.assigned_by.username }}
+                                    {{ assignment.assigned_by.display_name }}
+                                {% endif %}
+                                {% if assignment.self_assign %}
+                                    &middot;
+                                    {% translate "Auto-assigné" %}
                                 {% endif %}
                             </span>
                         </div>
@@ -181,77 +239,32 @@
             type="button"
             class="btn btn-sm btn-outline-primary"
             hx-get="{% url 'core:edit-profile' pk=person.pk %}"
-            hx-on:htmx:after-request="showpopup()"
-            hx-target="#customPopup-content"
+            hx-on:htmx:after-request="{% popup_open %}"
+            hx-target="{% popup_content_id %}"
             hx-swap="innerHTML"
             data-testid="passeport-edit-profile-btn">
             {% translate "Éditer mon profil" %}
         </button>
     </div>
 
-    {# Div caché : reçoit la réponse POST du formulaire d'édition (cible #user-info) #}
-    {# / Hidden div: receives the edit form POST response (targets #user-info) #}
-    <div id="user-info" hidden></div>
-
     {# ── Lien discret "Désactiver mon compte" ── #}
     {# ── Discreet "Deactivate my account" link ── #}
     <div class="mt-4 mb-2">
-        <form method="post" action="{% url 'core:user-delete' pk=person.pk %}" id="deactivate-account-form">
-            {% csrf_token %}
-            <button type="button"
-                    class="passeport-deactivate-link"
-                    id="deactivate-account-btn"
-                    data-testid="passeport-deactivate-btn">
-                {% translate "Désactiver mon compte" %}
-            </button>
-        </form>
+        <button class="passeport-deactivate-link" onclick="{% popup_open %}">
+            {% translate "Désactiver mon compte" %}
+        </button>
     </div>
     {% endif %}
 
 </div>
+
+    {% popup %}
+        {% include "core/users/partials/disable_account_popup.html" %}
+    {% endpopup %}
+
 {% endblock %}
 
 {% block extra_js %}
-{% if is_self %}
-<script>
-    document.addEventListener('DOMContentLoaded', function () {
-        // Quand le formulaire d'édition réussit, il envoie le résultat dans #user-info.
-        // On détecte ce swap, on ferme le popup et on recharge la page.
-        // / When the edit form succeeds, it swaps into #user-info.
-        // We detect this swap, close the popup and reload the page.
-        var user_info_target = document.getElementById('user-info');
-        if (user_info_target) {
-            user_info_target.addEventListener('htmx:afterSwap', function () {
-                hidepopup();
-                window.location.reload();
-            });
-        }
-
-        // Confirmation SweetAlert2 avant désactivation du compte.
-        // Le formulaire est soumis seulement si l'utilisateur confirme.
-        // / SweetAlert2 confirmation before account deactivation.
-        // The form is only submitted if the user confirms.
-        var deactivate_btn = document.getElementById('deactivate-account-btn');
-        var deactivate_form = document.getElementById('deactivate-account-form');
-        if (deactivate_btn && deactivate_form) {
-            deactivate_btn.addEventListener('click', function () {
-                Swal.fire({
-                    title: "{% translate 'Désactiver votre compte ?' %}",
-                    text: "{% translate 'Cette action est irréversible.' %}",
-                    icon: 'warning',
-                    showDenyButton: true,
-                    confirmButtonText: "{% translate 'Désactiver' %}",
-                    denyButtonText: "{% translate 'Annuler' %}"
-                }).then(function (result) {
-                    if (result.isConfirmed) {
-                        deactivate_form.submit();
-                    }
-                });
-            });
-        }
-    });
-</script>
-{% endif %}
 {% if structures_pks_csv %}
 <script src="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.js"></script>
 <script>

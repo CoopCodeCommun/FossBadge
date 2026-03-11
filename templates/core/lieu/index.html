@@ -6,6 +6,7 @@
 {% load pictures %}
 {% load static %}
 {% load l10n %}
+{% load custom_tags %}
 
 {% block title %}{{ structure.name }} — O2Badge{% endblock %}
 
@@ -31,9 +32,9 @@
             <button type="button"
                class="btn btn-sm btn-outline-secondary"
                hx-get="{% url 'core:structure-edit' pk=structure.pk %}"
-               hx-target="#customPopup-content"
+               hx-target="{% popup_content_id %}"
                hx-swap="innerHTML"
-               hx-on:htmx:after-request="showpopup()"
+               hx-on:htmx:after-request="{% popup_open %}"
                data-testid="lieu-edit-btn">
                 {% translate "Éditer" %}
             </button>
@@ -73,6 +74,21 @@
         </div>
     </div>
 
+    {# ── Section Référent ── #}
+    {# ── Referent section ── #}
+    {% if structure.referent_last_name or structure.referent_first_name %}
+        <section aria-label="{% translate 'Référent' %}" class="lieu-referent mt-4">
+            <h2 class="home-column-title">{% translate "Référent" %}</h2>
+            <p class="mb-0">
+                {{ structure.referent_first_name }} {{ structure.referent_last_name }}
+                {% if structure.referent_position %}
+                    <span class="text-muted"> &middot; {{ structure.referent_position }}</span>
+                {% endif %}
+            </p>
+        </section>
+    {% endif %}
+
+
     {# ── Mini carte MapLibre (si marker) ── #}
     {# ── Mini MapLibre map (if marker) ── #}
     {% if structure.marker %}
@@ -84,10 +100,25 @@
     {# ── Section Badges ── #}
     {# ── Badges section ── #}
     <section aria-label="{% translate 'Badges' %}" class="mt-4">
-        <h2 class="home-column-title">
-            {% translate "Badges" %}
-            {% if badges_total_count %}
-                <span class="home-count-badge">{{ badges_total_count }}</span>
+        <h2 class="home-column-title justify-content-between flex">
+            <span>
+                {% translate "Badges" %}
+                {% if badges_total_count %}
+                    <span class="home-count-badge">{{ badges_total_count }}</span>
+                {% endif %}
+            </span>
+            {# Bouton forger un badge (admin/éditeur) — à droite du titre / Forge badge button (admin/editor) — to the right of title #}
+            {% if is_admin or is_editor %}
+                <button type="button"
+                        class="home-forge-btn"
+                        hx-get="{% url 'core:create_badge' %}?structure={{ structure.pk }}"
+                        hx-target="{% popup_content_id %}"
+                        hx-swap="innerHTML"
+                        hx-on:htmx:after-request="{% popup_open %}"
+                        data-testid="btn-forge-badge">
+                    <span aria-hidden="true">&#9874;</span>
+                    {% translate "Forger un badge" %}
+                </button>
             {% endif %}
         </h2>
 
@@ -133,8 +164,8 @@
                             type="button"
                             class="lieu-action-btn lieu-action-btn-assign"
                             hx-get="{% url 'core:badge-assign' badge.pk %}?default_structure={{ structure.pk }}"
-                            hx-on:htmx:after-request="showpopup()"
-                            hx-target="#customPopup-content"
+                            hx-on:htmx:after-request="{% popup_open %}"
+                            hx-target="{% popup_content_id %}"
                             hx-swap="innerHTML"
                             data-testid="btn-assign-badge-{{ badge.pk }}"
                         >
@@ -149,8 +180,8 @@
                             type="button"
                             class="lieu-action-btn lieu-action-btn-endorse"
                             hx-get="{% url 'core:badge-endorse' badge.pk %}?default_structure={{ structure.pk }}"
-                            hx-on:htmx:after-request="showpopup()"
-                            hx-target="#customPopup-content"
+                            hx-on:htmx:after-request="{% popup_open %}"
+                            hx-target="{% popup_content_id %}"
                             hx-swap="innerHTML"
                             data-testid="btn-endorse-badge-{{ badge.pk }}"
                         >
@@ -205,8 +236,8 @@
                             type="button"
                             class="lieu-action-btn lieu-action-btn-assign"
                             hx-get="{% url 'core:badge-assign' badge.pk %}?default_structure={{ structure.pk }}"
-                            hx-on:htmx:after-request="showpopup()"
-                            hx-target="#customPopup-content"
+                            hx-on:htmx:after-request="{% popup_open %}"
+                            hx-target="{% popup_content_id %}"
                             hx-swap="innerHTML"
                             data-testid="btn-assign-badge-{{ badge.pk }}"
                         >
@@ -221,8 +252,8 @@
                             type="button"
                             class="lieu-action-btn lieu-action-btn-endorse"
                             hx-get="{% url 'core:badge-endorse' badge.pk %}?default_structure={{ structure.pk }}"
-                            hx-on:htmx:after-request="showpopup()"
-                            hx-target="#customPopup-content"
+                            hx-on:htmx:after-request="{% popup_open %}"
+                            hx-target="{% popup_content_id %}"
                             hx-swap="innerHTML"
                             data-testid="btn-endorse-badge-{{ badge.pk }}"
                         >
@@ -239,82 +270,68 @@
         {% else %}
             <p class="home-empty-message text-muted">{% translate "Aucun badge." %}</p>
         {% endif %}
-
-        {# Bouton forger un badge (admin/éditeur) #}
-        {# Forge badge button (admin/editor) #}
-        {% if is_admin or is_editor %}
-        <div class="mt-3">
-            <button type="button"
-               class="home-forge-btn"
-               hx-get="{% url 'core:create_badge' %}?structure={{ structure.pk }}"
-               hx-target="#customPopup-content"
-               hx-swap="innerHTML"
-               hx-on:htmx:after-request="showpopup()"
-               data-testid="btn-forge-badge">
-                <span aria-hidden="true">&#9874;</span>
-                {% translate "Forger un badge" %}
-            </button>
-        </div>
-        {% endif %}
     </section>
 
     {# ── Section Personnes ── #}
     {# ── People section ── #}
     <section aria-label="{% translate 'Personnes' %}" class="mt-4">
-        <h2 class="home-column-title">
-            {% translate "Personnes" %}
-            {% if members_list %}
-                <span class="home-count-badge">{{ members_list|length }}</span>
+        <h2 class="home-column-title justify-content-between flex">
+            <span>
+                {% translate "Personnes" %}
+                {% if members_list %}
+                    <span class="home-count-badge">{{ members_list|length }}</span>
+                {% endif %}
+            </span>
+            {# Bouton inviter un utilisateur (admin/éditeur) — à droite du titre / Invite user button (admin/editor) — to the right of title #}
+            {% if is_admin or is_editor %}
+                <button type="button"
+                        class="home-invite-btn"
+                        hx-get="{% url 'core:structure-invite' structure.pk %}"
+                        hx-on:htmx:after-request="{% popup_open %}"
+                        hx-target="{% popup_content_id %}"
+                        hx-swap="innerHTML"
+                        data-testid="btn-forge-badge">
+                    <span aria-hidden="true">&#x1F4E9;</span>
+                    {% translate "Inviter un utilisateur" %}
+                </button>
             {% endif %}
         </h2>
 
         {% if members_list %}
-            {% for member in members_list %}
-            <a href="/passeport/{{ member.pk }}/"
-               class="home-result-item"
-               data-testid="lieu-member-{{ member.pk }}">
-                <div class="home-result-icon home-result-icon-round">
-                    {% if member.avatar %}
-                        {% picture member.avatar img_alt=member.get_full_name|default:member.username ratio="1/1" %}
-                    {% else %}
-                        <div class="home-result-icon-placeholder home-result-icon-placeholder-personnes home-result-icon-round">
-                            <span aria-hidden="true">&#9679;</span>
-                        </div>
-                    {% endif %}
-                </div>
-                <div class="home-result-text">
-                    <span class="home-result-name">
-                        {{ member.get_full_name|default:member.username }}
-                        {% if member.is_structure_admin %}
-                            <span class="home-relation-tag home-relation-tag-issuer">{% translate "Admin" %}</span>
-                        {% elif member.is_structure_editor %}
-                            <span class="home-relation-tag home-relation-tag-endorser">{% translate "Éditeur" %}</span>
+            <div class="lieu-badges-grid" >
+                {% for member in members_list %}
+                <a href="/passeport/{{ member.pk }}/"
+                   class="home-result-item"
+                   data-testid="lieu-member-{{ member.pk }}">
+                    <div class="home-result-icon home-result-icon-round">
+                        {% if member.avatar %}
+                            {% picture member.avatar img_alt=member.get_full_name|default:member.username ratio="1/1" %}
+                        {% else %}
+                            <div class="home-result-icon-placeholder home-result-icon-placeholder-personnes home-result-icon-round">
+                                <span aria-hidden="true">&#9679;</span>
+                            </div>
                         {% endif %}
-                    </span>
-                    <span class="home-result-desc text-muted">
-                        {% blocktranslate count counter=member.badge_count_for_member %}{{ counter }} badge{% plural %}{{ counter }} badges{% endblocktranslate %}
-                    </span>
-                </div>
-            </a>
-            {% endfor %}
+                    </div>
+                    <div class="home-result-text">
+                        <span class="home-result-name">
+                            {{ member.get_full_name|default:member.username }}
+                            {% if member.is_structure_admin %}
+                                <span class="home-relation-tag home-relation-tag-issuer">{% translate "Admin" %}</span>
+                            {% elif member.is_structure_editor %}
+                                <span class="home-relation-tag home-relation-tag-endorser">{% translate "Éditeur" %}</span>
+                            {% endif %}
+                        </span>
+                        <span class="home-result-desc text-muted">
+                            {% blocktranslate count counter=member.badge_count_for_member %}{{ counter }} badge{% plural %}{{ counter }} badges{% endblocktranslate %}
+                        </span>
+                    </div>
+                </a>
+                {% endfor %}
+            </div>
         {% else %}
             <p class="home-empty-message text-muted">{% translate "Aucun membre." %}</p>
         {% endif %}
     </section>
-
-    {# ── Section Référent ── #}
-    {# ── Referent section ── #}
-    {% if structure.referent_last_name or structure.referent_first_name %}
-    <section aria-label="{% translate 'Référent' %}" class="lieu-referent mt-4">
-        <h2 class="home-column-title">{% translate "Référent" %}</h2>
-        <p class="mb-0">
-            {{ structure.referent_first_name }} {{ structure.referent_last_name }}
-            {% if structure.referent_position %}
-                <span class="text-muted"> &middot; {{ structure.referent_position }}</span>
-            {% endif %}
-        </p>
-    </section>
-    {% endif %}
 
     {# SIRET discret / Discreet SIRET #}
     {% if structure.siret %}
@@ -324,6 +341,9 @@
     {% endif %}
 
 </div>
+
+{% popup popup_width="60%" %}{% endpopup %}
+
 {% endblock %}
 
 {% block extra_js %}
@@ -349,4 +369,5 @@
     });
 </script>
 {% endif %}
+
 {% endblock %}

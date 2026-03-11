@@ -135,14 +135,14 @@ a:focus, button:focus, input:focus, select:focus, textarea:focus {
 }
 
 /* Structure detail logo fix */
-.text-center picture {
+.text-center picture:not(.ignore) {
     display: block;
     width: 100%;
     max-width: 200px;
     margin: 0 auto;
 }
 
-.text-center picture img {
+.text-center picture:not(.ignore) img {
     width: 100%;
     height: auto;
     object-fit: contain;
@@ -218,7 +218,7 @@ picture.text-center img.badge-icon {
     }
 
     .btn {
-        width: 100%;
+        /*width: 100%;*/
     }
 
     .badge-grid {
@@ -260,7 +260,7 @@ picture.text-center img.badge-icon {
 .home-search-wrapper.has-results {
     justify-content: flex-start;
     min-height: auto;
-    padding-top: 1.5rem;
+    padding-top: 2rem;
 }
 
 /* Bloc de recherche (titre + input + filtres) — centré, avec transition
@@ -270,6 +270,7 @@ picture.text-center img.badge-icon {
     width: 100%;
     max-width: 680px;
     transition: max-width 0.4s ease;
+    margin-bottom: 20px;
 }
 
 .home-search-wrapper.has-results .home-search-box {
@@ -1481,6 +1482,57 @@ picture.text-center img.badge-icon {
     text-decoration: none;
 }
 
+
+/* Bouton "Inviter un utilisateur" — discret, style outline green
+   "Invite a user" button — discreet, outline green style */
+.home-invite-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.3rem 0.75rem;
+    font-size: 0.82rem;
+    font-weight: 500;
+    color: var(--home-color-personnes);
+    border: 1px solid var(--home-color-personnes);
+    border-radius: 8px;
+    background: transparent;
+    text-decoration: none;
+    transition: background-color 0.15s ease, color 0.15s ease;
+    margin: 0;
+}
+
+.home-invite-btn:hover,
+.home-invite-btn:focus {
+    background-color: var(--home-color-personnes);
+    color: #fff;
+    text-decoration: none;
+}
+
+/* Bouton "Créer une structure" — discret, style outline blue
+   "Create a structure" button — discreet, outline blue style */
+.home-structure-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.3rem 0.75rem;
+    font-size: 0.82rem;
+    font-weight: 500;
+    color: var(--home-color-structures);
+    border: 1px solid var(--home-color-structures);
+    border-radius: 8px;
+    background: transparent;
+    text-decoration: none;
+    transition: background-color 0.15s ease, color 0.15s ease;
+    margin: 0;
+}
+
+.home-structure-btn:hover,
+.home-structure-btn:focus {
+    background-color: var(--home-color-structures);
+    color: #fff;
+    text-decoration: none;
+}
+
 /* ---- Responsive lieu / Responsive lieu ---- */
 @media (max-width: 768px) {
     .lieu-header {
@@ -1573,10 +1625,25 @@ picture.text-center img.badge-icon {
 
 /* ---- Timeline du parcours / Journey timeline ---- */
 
+/*
+   Grille à 2 colonnes pour afficher les badges côte à côte
+   2-column grid to display badges side by side
+   
+   On utilise display: grid pour créer une grille CSS
+   We use display: grid to create a CSS grid
+   
+   grid-template-columns: 1fr 1fr crée 2 colonnes de même taille
+   grid-template-columns: 1fr 1fr creates 2 equal-width columns
+*/
 .passeport-timeline {
     list-style: none;
     padding: 0;
     margin: 0;
+    /* Grille CSS avec 2 colonnes égales / CSS grid with 2 equal columns */
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    /* Espacement entre les badges / Gap between badges */
+    gap: 0.5rem;
 }
 
 .passeport-timeline-item {
@@ -1733,6 +1800,14 @@ picture.text-center img.badge-icon {
 
     .passeport-badge-details {
         padding-left: 0.75rem;
+    }
+
+    /*
+       Sur mobile : une seule colonne pour une meilleure lisibilité
+       On mobile: single column for better readability
+    */
+    .passeport-timeline {
+        grid-template-columns: 1fr; /* Une seule colonne / Single column */
     }
 }
 
@@ -2020,4 +2095,18 @@ picture.text-center img.badge-icon {
     }
     .home-word-cloud-item:nth-child(5n+1) { font-size: 1rem; }
     .home-word-cloud-item:nth-child(5n+4) { font-size: 1.1rem; }
+}
+
+.login-button{
+    position: relative;
+    right: 15px;
+    top:15px;
+    text-align: right;
+    outline: none;
+}
+
+/* Custom class a remplcer par tailwind */
+
+.flex{
+    display: flex;
 }

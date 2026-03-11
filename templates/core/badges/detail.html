@@ -1,5 +1,5 @@
 {% extends 'base.html' %}
-{% load pictures %}
+{% load pictures custom_tags %}
 
 {% block title %}Badge {{ badge.name }}{% endblock %}
 
@@ -17,16 +17,25 @@
                 {% if can_assign %}
                     <button class="btn btn-primary mb-4"
                             hx-get="{% url 'core:badge-assign' badge.pk %}"
-                            hx-on:htmx:after-request="showpopup()"
-                            hx-target="#customPopup-content"
+                            hx-on:htmx:after-request="{%  popup_open %}"
+                            hx-target="{% popup_content_id %}"
                             hx-swap="innerHTML"> Assigner</button>
+
+                    <button class="btn btn-primary"
+                            hx-get="{% url "core:course-create-course" %}?badge={{ badge.pk }}"
+                            hx-on:htmx:after-request="{%  popup_open %}"
+                            hx-target="{% popup_content_id %}"
+                            hx-swap="innerHTML">
+                        Créer un parcours
+                    </button>
+
                 {% endif %}
 
                 {% if can_endorse %}
                     <button class="btn btn-primary mb-4"
                             hx-get="{% url 'core:badge-endorse' badge.pk %}"
-                            hx-on:htmx:after-request="showpopup()"
-                            hx-target="#customPopup-content"
+                            hx-on:htmx:after-request="{%  popup_open %}"
+                            hx-target="{% popup_content_id %}"
                             hx-swap="innerHTML"> Endosser </button>
                 {% endif %}
             </div>
@@ -167,6 +176,9 @@
             </div>
         </div>
     </div>
+
+    {% popup %}{% endpopup %}
+
     {%comment%}
     <script>
         window.openAssignPopUp = () =>{

@@ -23,7 +23,7 @@
                         <img src="{{ placeholder_image }}" alt="{{ badge.name }}" class="badge-icon mb-3"
                              style="width: 150px; height: 150px;">
                     {% endif %}
-                    <h2 class="card-title">{{ badge.name }}</h2>
+                    <h2 class="card-title"><a href="{% url 'core:badge-detail' badge.pk %}">{{ badge.name }}</a></h2>
 
                     <!-- Badge Level -->
                     <div class="mb-3">

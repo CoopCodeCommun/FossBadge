@@ -11,6 +11,20 @@
 {# Contexte carte / Map context #}
 <div id="map-context" hidden data-structures="{{ multi_structures_pks }}"></div>
 
+{# Bouton retour #}
+{# Back button #}
+<a
+        href="{% url 'core:home-search' %}?q={{ search_query|urlencode }}"
+        hx-get="{% url 'core:home-search' %}?q={{ search_query|urlencode }}"
+        hx-target="#search-results"
+        hx-swap="innerHTML"
+        hx-push-url="/"
+        hx-include="#home-search-filters"
+        class="home-back-link"
+>
+    <span aria-hidden="true">&larr;</span> {% translate "Retour aux résultats" %}
+</a>
+
 <div class="row g-4" data-testid="home-multi-focus" data-focus-type="multi">
 
     {# === Colonne Badges === #}
@@ -19,20 +33,6 @@
 
         {% if selected_badge %}
             {# Carte détail badge sélectionné / Detail card for selected badge #}
-
-            {# Bouton retour — première colonne visible uniquement #}
-            {# Back button — first visible column only #}
-            <a
-                href="{% url 'core:home-search' %}?q={{ search_query|urlencode }}"
-                hx-get="{% url 'core:home-search' %}?q={{ search_query|urlencode }}"
-                hx-target="#search-results"
-                hx-swap="innerHTML"
-                hx-push-url="/"
-                hx-include="#home-search-filters"
-                class="home-back-link"
-            >
-                <span aria-hidden="true">&larr;</span> {% translate "Retour aux résultats" %}
-            </a>
 
             <div class="home-badge-focus-card">
 
@@ -108,17 +108,37 @@
                     </div>
                 {% endif %}
 
-                <div class="home-badge-focus-issuer">
-                    <span class="text-muted" style="font-size: 0.8rem;">{% translate "Émis par" %}</span>
-                    <span class="home-badge-focus-issuer-link">
+                {% if selected_badge.issuing_structure %}
+                    <div class="home-badge-focus-issuer">
+                        <span class="text-muted" style="font-size: 0.8rem;">{% translate "Émis par" %}</span>
+                        <span class="home-badge-focus-issuer-link">
                         {% if selected_badge.issuing_structure.logo %}
                             <span class="home-badge-focus-issuer-logo">
                                 {% picture selected_badge.issuing_structure.logo img_alt=selected_badge.issuing_structure.name ratio="1/1" %}
                             </span>
                         {% endif %}
-                        {{ selected_badge.issuing_structure.name }}
+                            {{ selected_badge.issuing_structure.name }}
                     </span>
-                </div>
+                    </div>
+                {% elif selected_badge.user %}
+                    <div class="home-badge-focus-issuer">
+                        <span class="text-muted" style="font-size: 0.8rem;">{% translate "Créé par" %}</span>
+                        <a
+                                href="{% url 'core:home-passeport' person_pk=selected_badge.user.pk %}"
+                                class="home-badge-focus-issuer-link">
+                            {% if selected_badge.user.avatar %}
+                                <div class="home-badge-focus-issuer-logo">
+                                    {% picture selected_badge.user.avatar img_alt=selected_badge.user.first_name ratio="1/1" %}
+                                </div>
+                            {% endif %}
+                            {{ selected_badge.user.first_name }}
+                            {{ selected_badge.user.last_name }}
+                            {% if not selected_badge.user.first_name and not selected_badge.user.last_name %}
+                                {{ selected_badge.user.username }}
+                            {% endif %}
+                        </a>
+                    </div>
+                {% endif %}
 
                 <div class="home-badge-focus-description">
                     {{ selected_badge.description|linebreaks }}
@@ -178,22 +198,6 @@
 
         {% if selected_structure %}
             {# Carte détail structure sélectionnée / Detail card for selected structure #}
-
-            {# Bouton retour si la colonne badges est masquée #}
-            {# Back button if badges column is hidden #}
-            {% if search_badges_enabled is False %}
-            <a
-                href="{% url 'core:home-search' %}?q={{ search_query|urlencode }}"
-                hx-get="{% url 'core:home-search' %}?q={{ search_query|urlencode }}"
-                hx-target="#search-results"
-                hx-swap="innerHTML"
-                hx-push-url="/"
-                hx-include="#home-search-filters"
-                class="home-back-link"
-            >
-                <span aria-hidden="true">&larr;</span> {% translate "Retour aux résultats" %}
-            </a>
-            {% endif %}
 
             <div class="home-badge-focus-card">
 
@@ -328,22 +332,6 @@
 
         {% if selected_person %}
             {# Carte détail personne sélectionnée / Detail card for selected person #}
-
-            {# Bouton retour si les 2 autres colonnes sont masquées #}
-            {# Back button if both other columns are hidden #}
-            {% if search_badges_enabled is False and search_structures_enabled is False %}
-            <a
-                href="{% url 'core:home-search' %}?q={{ search_query|urlencode }}"
-                hx-get="{% url 'core:home-search' %}?q={{ search_query|urlencode }}"
-                hx-target="#search-results"
-                hx-swap="innerHTML"
-                hx-push-url="/"
-                hx-include="#home-search-filters"
-                class="home-back-link"
-            >
-                <span aria-hidden="true">&larr;</span> {% translate "Retour aux résultats" %}
-            </a>
-            {% endif %}
 
             <div class="home-badge-focus-card">
 

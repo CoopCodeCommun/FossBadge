@@ -1,0 +1,71 @@
+{%include 'show_message.html'%}
+{% load custom_tags %}
+
+<div id="dream-badge-form">
+    <h2>Créer mon badge de rêve</h2>
+    <form enctype="multipart/form-data"
+          hx-post="{% url 'core:badge-create-dream' %}"
+          hx-target="#dream-badge-form"
+          hx-swap="innerHTML">
+
+        <p>
+            Lorem ipsum dolor sit amet, consectetur adipiscing elit. In in quam sodales, pulvinar odio et, efficitur est. Fusce egestas sapien sapien, a fringilla est tincidunt in.
+        </p>
+        <hr>
+
+        <label for="name" class=" mt-2"> Nom du badge :</label>
+        <input id="name" class="form-control mt-2" name="name" placeholder="Ex : devenir médecin" value="{% if defaults.name %}{{defaults.name}}{%endif%}" />
+        {% if errors.name %}
+        <p class="error">{{errors.name.0}}</p>
+        {% endif %}
+
+        <div class="row mt-3">
+            <div class="col-md-6">
+                <label for="icon" class=" mt-2"> Icône du badge :</label>
+                <input id="icon" class="form-control mt-2" name="icon" type="file"/>
+
+            </div>
+            <div class="col-md-6">
+                <div class="text-center">
+                    <img src="{{ placeholder_image }}" alt="Aperçu de l'icône" class="img-fluid badge-icon" id="icon_preview">
+                    <p class="form-text">Aperçu</p>
+                </div>
+            </div>
+
+        </div>
+        {% if errors.icon %}
+        <p class="error">{{errors.icon.0}}</p>
+        {% endif %}
+
+
+        <label for="description" class=" mt-2">Description :</label>
+        <textarea id="description" class="form-control mt-2" name="description">{% if defaults.description %}{{defaults.description}}{%endif%}</textarea>
+        {% if errors.description %}
+        <p class="error">{{errors.description.0}}</p>
+        {% endif %}
+
+        <hr>
+
+        <button class="btn btn-primary">Envoyer</button>
+
+        <button class="btn btn-danger" onclick="{% popup_close %}" type="button">Annuler</button>
+    </form>
+</div>
+
+
+
+{% block extra_js %}
+<script>
+    // Simple preview for uploaded image
+    document.getElementById("icon").addEventListener('change', function (event) {
+        const file = event.target.files[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = function (e) {
+                document.getElementById('icon_preview').src = e.target.result;
+            }
+            reader.readAsDataURL(file);
+        }
+    });
+</script>
+{% endblock %}

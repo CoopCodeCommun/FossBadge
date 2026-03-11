@@ -1,10 +1,9 @@
 import uuid
-from itertools import chain
 from django.db import models
 from django.contrib.auth.models import AbstractUser
 from django.utils import timezone
 from pictures.models import PictureField
-from django.db.models import Q
+from django.db.models import Q, CheckConstraint
 
 # Create your models here.
 
@@ -27,6 +26,9 @@ class User(AbstractUser):
 
     @property
     def structures(self):
+        """
+        Returns all structures that the user is part of
+        """
         return Structure.objects.filter(
             Q(admins=self.pk)|
             Q(editors=self.pk)|
@@ -35,10 +37,41 @@ class User(AbstractUser):
 
     @property
     def structures_other_role_than_user(self):
+        """
+        Returns all structures where the user is admin or editor
+        """
         return Structure.objects.filter(
             Q(admins=self.pk)|
             Q(editors=self.pk)
             ).distinct()
+
+    @property
+    def has_dream_badge(self):
+        """
+        Return a boolean indicating if the user has a dream badge
+        """
+        return Badge.objects.filter(user=self,is_dream_badge=True).exists()
+
+    @property
+    def dream_badge(self):
+        """
+        Return the dream badge linked to the user
+        """
+        return Badge.objects.get(user=self,is_dream_badge=True)
+
+    @property
+    def has_dream_course(self):
+        if hasattr(self, 'dream_course'):
+            return True
+
+        return False
+
+    @property
+    def display_name(self):
+        if self.first_name or self.last_name:
+            return f"{self.first_name} {self.last_name}"
+
+        return self.username
 
     def get_badges(self):
         """
@@ -123,13 +156,21 @@ class User(AbstractUser):
         # AND
         # all structures that endorse the badge OR have created it (# 2)
 
-        structures = Structure.objects.filter(
-            Q(admins=self.pk) | # 1
-            Q(editors=self.pk), # 1
-            Q(endorsements__badge=badge) | # 2
-            Q(pk=badge.issuing_structure.pk), # 2
-        ).distinct()
-        return structures
+        if badge.issuing_structure:
+            return Structure.objects.filter(
+                Q(admins=self.pk) | # 1
+                Q(editors=self.pk), # 1
+                Q(endorsements__badge=badge) | # 2
+                Q(pk=badge.issuing_structure.pk), # 2
+            ).distinct()
+        else:
+            return Structure.objects.filter(
+                Q(admins=self.pk) | # 1
+                Q(editors=self.pk), # 1
+                Q(endorsements__badge=badge) # 2
+            ).distinct()
+
+
 
     def get_structures_not_endorsing_badge(self, badge):
         """
@@ -148,6 +189,24 @@ class User(AbstractUser):
             ).distinct()
         return structures
 
+    def get_all_endorsed_badge(self):
+        """
+        Return all badge endorsed by the structures where the user is editor or admin
+        """
+
+        badges = Badge.objects.filter(
+            Q(endorsements__structure__in=self.structures)
+        )
+        return badges
+
+    def can_edit_course(self,course):
+        if course.is_dream and course.user==self:
+            return True
+
+        if course.structure in self.structures and (course.structure.is_editor(self) or course.structure.is_admin(self)):
+            return True
+
+        return False
 
 
 class Structure(models.Model):
@@ -249,16 +308,20 @@ class Badge(models.Model):
     icon_height = models.PositiveIntegerField(blank=True, null=True, editable=False)
     icon = PictureField(upload_to='badges/icons/', blank=True, null=True, verbose_name="Icône", 
                        aspect_ratios=[None, "1/1"], width_field='icon_width', height_field='icon_height')
-    level = models.CharField(max_length=20, choices=LEVEL_CHOICES, verbose_name="Niveau")
+    level = models.CharField(max_length=20, choices=LEVEL_CHOICES, verbose_name="Niveau",null=True, blank=True)
     description = models.TextField(verbose_name="Description")
+
+    is_dream_badge = models.BooleanField(default=False, verbose_name="Badge de rêve")
 
     # Relationships
     issuing_structure = models.ForeignKey(
         Structure, 
         on_delete=models.CASCADE, 
         related_name='issued_badges',
-        verbose_name="Structure émettrice"
+        verbose_name="Structure émettrice",
+        null=True,
     )
+    user = models.ForeignKey(User, related_name='issued_badges', verbose_name="User", null=True, on_delete=models.SET_NULL)
 
     # The holders relationship is now managed through the BadgeAssignment model
     created_at = models.DateTimeField(auto_now_add=True, verbose_name="Date de création")
@@ -276,10 +339,21 @@ class Badge(models.Model):
         """
         Return a list of structures that either endorse the badge (1) or have issued the badge (2)
         """
-        return Structure.objects.filter(
-            Q(endorsements__badge=self.pk) | # 1
-            Q(pk=self.issuing_structure.pk) # 2
-        ).distinct()
+        if self.issuing_structure:
+            return Structure.objects.filter(
+                Q(endorsements__badge=self.pk) | # 1
+                Q(pk=self.issuing_structure.pk) # 2
+            ).distinct()
+        else:
+            return Structure.objects.filter(
+                Q(endorsements__badge=self.pk) # 1
+            ).distinct()
+
+
+    @staticmethod
+    def get_all_badges_except_dream():
+        return Badge.objects.filter(is_dream_badge=False)
+
 
     def get_holders(self):
         """
@@ -291,7 +365,14 @@ class Badge(models.Model):
         """
         Return true if the user has a self assignment of the badge
         """
-        return BadgeAssignment.objects.filter(badge=self, assigned_by=user).exists()
+        return BadgeAssignment.objects.filter(badge=self, assigned_by=user, user=user).exists()
+
+    def can_self_assign(self, user):
+        """
+        Return true if the user can self assign the badge
+        """
+        return not BadgeAssignment.objects.filter(badge=self, assigned_by=user, user=user).exists()
+
 
     def get_non_holders(self):
         """
@@ -321,6 +402,22 @@ class Badge(models.Model):
             }
         )
         return assignment, created
+
+    def self_assign(self, user, notes):
+        """
+        Self assign the badge to the user
+        """
+        assignment, created = BadgeAssignment.objects.get_or_create(
+            badge=self,
+            user=user,
+            defaults={
+                'assigned_by': user,
+                'notes': notes
+            }
+        )
+
+        return assignment, created
+
 
     def endorse(self, endorsed_by, structure=None, notes=None):
         """
@@ -397,6 +494,15 @@ class BadgeAssignment(models.Model):
     def __str__(self):
         return f"{self.badge.name} attribué à {self.user.username} le {self.assigned_date.strftime('%d/%m/%Y')}"
 
+    @property
+    def self_assign(self):
+        """
+        Return if an assignment is self assign
+        """
+        if self.assigned_structure:
+            return False
+        return self.user == self.assigned_by
+
 
 class BadgeEndorsement(models.Model):
     """
@@ -435,6 +541,105 @@ class BadgeEndorsement(models.Model):
         return f"{self.badge.name} approuvé par {self.structure.name} le {self.endorsed_date.strftime('%d/%m/%Y')}"
 
 
+class Course(models.Model):
+    """
+    Model to show a course made of badges
+    """
+    uuid = models.UUIDField(default=uuid.uuid7, primary_key=True, db_index=True)
+    # TODO : when course creation will be implemented, make sure that in the validator the `structure` field is required
+
+    structure = models.ForeignKey(Structure, on_delete=models.CASCADE, related_name='courses', verbose_name="Structure", null=True, default=None)
+    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='dream_course', verbose_name="User", null=True, default=None)
+
+    is_dream = models.BooleanField(default=False)
+    badge = models.ForeignKey(Badge, on_delete=models.CASCADE, related_name='courses', verbose_name="Badge")
+
+    name = models.TextField(blank=False, null=False, verbose_name="Nom")
+
+    class Meta:
+        constraints = [
+            # Check if the user or the structure is not null
+            CheckConstraint(
+                condition=Q(structure__isnull=False) | Q(user__isnull=False),
+                name="structure_or_user_not_null"
+            ),
+        ]
+
+    def get_items_for_cytoscape(self):
+        """
+        Return a dictionary containing all CourseItem associated with a course, formated for cytoscapeJS
+        """
+        items = []
+        for item in self.items.all():
+            src = "/media/placeholder.svg"
+            if item.badge.icon:
+                src = item.badge.icon.url
+
+            items.append({
+                "data": {
+                    "name":item.badge.name,
+                    "id":str(item.badge.pk),
+                },
+                "style":{
+                    "background-image" : src,
+                    "background-fit": "contain"
+                },
+
+            })
+
+        return items
+
+    def get_items_connections_for_cytoscape(self):
+        """
+        Return a dictionary containing all CourseItem links associated with a course, formated for cytoscapeJS
+        """
+        edges = []
+        for item in self.items.all():
+            if item.parents.all().count() == 0:
+                continue
+
+            for parent in item.parents.all():
+                edges.append({
+                    "data":{
+                        "id":f"{str(parent.badge.pk)}-{str(item.badge.pk)}",
+                        "source":str(parent.badge.pk),
+                        "target":str(item.badge.pk),
+                    }
+                })
+        return edges
+
+    def get_item_count(self):
+        return self.items.count()
+
+    def __str__(self):
+        return f"{self.name}"
+
+
+class CourseItem(models.Model):
+    """
+    Model to show course items
+    """
+    uuid = models.UUIDField(default=uuid.uuid7, primary_key=True, db_index=True)
+    badge = models.ForeignKey(Badge, on_delete=models.CASCADE, related_name='course_items', verbose_name="Badge")
+
+    # symmetrical=False is MANDATORY here because else our "parent" CourseItem will have their children in the parents queryset (it doesn't make any sense ik)
+    parents = models.ManyToManyField('self', blank=True, related_name='children', verbose_name="Parent", symmetrical=False)
+    course = models.ForeignKey(Course, on_delete=models.CASCADE, related_name='items', verbose_name="Course")
+
+    class Meta:
+        unique_together = [
+            ["course", "badge"]
+        ]
+
+    def __str__(self):
+        return f"{self.badge} pour {self.course}"
+
+    @staticmethod
+    def add_to_course(course, badge, parent):
+        c = CourseItem.objects.create(course=course,badge=badge)
+        if parent:
+            item = CourseItem.objects.get(badge=parent, course=course)
+            c.parents.add(item)
 class BadgeCriteria(models.Model):
     """
     Critères d'attribution d'un badge par une structure.

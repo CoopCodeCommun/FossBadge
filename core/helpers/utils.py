@@ -18,7 +18,7 @@ def get_or_create_user(email, password=None, send_mail=False, set_active=False):
     email = email.lower().strip()
     user, created = User.objects.get_or_create(email=email, username=email)
 
-    if settings.DEBUG and not settings.DEBUG_SEND_EMAIL:
+    if settings.DEBUG == True and not settings.DEBUG_SEND_EMAIL:
         user.is_active=True
         user.save()
         return user

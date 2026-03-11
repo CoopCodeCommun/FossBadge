@@ -25,7 +25,7 @@ insecure_key = 'django-insecure-&e(amkw5cizcf^2pn0v!(=ll@_z!--6f=4sg^+#j^qzl9p#z
 SECRET_KEY = os.environ.get('SECRET_KEY', insecure_key)
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = os.environ.get('DEBUG', False)
 DEBUG_SEND_EMAIL = False
 
 ALLOWED_HOSTS = ['localhost', '127.0.0.1', 'badge.codecommun.coop', 'badge.localhost', 'openbadge.coop']

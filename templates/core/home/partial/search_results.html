@@ -24,17 +24,19 @@
                     <span class="home-count-badge" aria-label="{% translate 'résultats' %}">{{ badges_found_list|length }}</span>
                 {% endif %}
             </span>
-            <button type="button"
-                    class="home-forge-btn"
-                    hx-get="{% url 'core:create_badge' %}"
-                    hx-target="{% popup_content_id %}"
-                    hx-swap="innerHTML"
-                    hx-on:htmx:after-request="{% popup_open %}"
-                    hx-indicator="none"
-                    data-testid="btn-forge-badge">
-                <span aria-hidden="true">&#9874;</span>
-                {% translate "Forger un badge" %}
-            </button>
+            {% if request.user.is_authenticated %}
+                <button type="button"
+                        class="home-forge-btn"
+                        hx-get="{% url 'core:create_badge' %}"
+                        hx-target="{% popup_content_id %}"
+                        hx-swap="innerHTML"
+                        hx-on:htmx:after-request="{% popup_open %}"
+                        hx-indicator="none"
+                        data-testid="btn-forge-badge">
+                    <span aria-hidden="true">&#9874;</span>
+                    {% translate "Forger un badge" %}
+                </button>
+            {% endif %}
         </h2>
 
         {% if badges_found_list %}
@@ -98,17 +100,20 @@
                     <span class="home-count-badge" aria-label="{% translate 'résultats' %}">{{ structures_found_list|length }}</span>
                 {% endif %}
             </span>
-            <button type="button"
+            {% if request.user.is_authenticated %}
+                <button type="button"
                     class="home-structure-btn"
                     hx-get="{% url 'core:create_association' %}"
                     hx-target="{% popup_content_id %}"
                     hx-swap="innerHTML"
                     hx-on:htmx:after-request="{% popup_open %}"
                     hx-indicator="none"
-                    data-testid="btn-forge-badge">
-                <span aria-hidden="true">&#x1F3E4;</span>
-                {% translate "Créer une structure" %}
-            </button>
+                    data-testid="btn-forge-badge"
+                >
+                    <span aria-hidden="true">&#x1F3E4;</span>
+                    {% translate "Créer une structure" %}
+                </button>
+            {% endif %}
         </h2>
 
         {% if structures_found_list %}

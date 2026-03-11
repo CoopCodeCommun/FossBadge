@@ -365,12 +365,18 @@ class Badge(models.Model):
         """
         Return true if the user has a self assignment of the badge
         """
+        if not user.is_authenticated:
+            return False
+
         return BadgeAssignment.objects.filter(badge=self, assigned_by=user, user=user).exists()
 
     def can_self_assign(self, user):
         """
         Return true if the user can self assign the badge
         """
+        if not user.is_authenticated:
+            return False
+
         return not BadgeAssignment.objects.filter(badge=self, assigned_by=user, user=user).exists()
 
 

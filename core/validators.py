@@ -59,6 +59,10 @@ class BadgeAssignmentValidator(serializers.Serializer):
             )
         return data
 
+class BadgeSelfAssignmentValidator(serializers.Serializer):
+    notes = serializers.CharField(required=True)
+
+
 class BadgeEndorsementValidator(serializers.Serializer):
     """
     Valide les donnees pour endosser un badge.

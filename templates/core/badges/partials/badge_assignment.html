@@ -23,31 +23,34 @@
 <div id="badge-assignment-form">
     <h2>Assigner un badge</h2>
     <form>
-        <label for="email-input" class="form-label">Email de la personne :</label>
-        <input type="email"
-               id="email-input"
-               class="form-control"
-               name="assigned_email"
-               placeholder="exemple@email.com"
-               value="{% if defaults.assigned_email %}{{ defaults.assigned_email }}{% endif %}"
-               required>
-        {% if errors.assigned_email %}
-            <p class="error">{{errors.assigned_email.0}}</p>
+        {% if not self_assign %}
+
+            <label for="email-input" class="form-label">Email de la personne :</label>
+            <input type="email"
+                   id="email-input"
+                   class="form-control"
+                   name="assigned_email"
+                   placeholder="exemple@email.com"
+                   value="{% if defaults.assigned_email %}{{ defaults.assigned_email }}{% endif %}"
+                   required>
+            {% if errors.assigned_email %}
+                <p class="error">{{errors.assigned_email.0}}</p>
+            {% endif %}
+
+            <select id="structure-input" class="form-select mt-2" name="assigned_by_structure">
+                <option>--- Sélectionnez une Structure ---</option>>
+                {%for structure in structures %}
+                    <option {% if defaults.assigned_by_structure == structure.pk|stringformat:"s"  %} selected {%endif%} value="{{structure.pk}}">
+                        {{structure.name}}
+                    </option>
+                {%endfor%}
+            </select>
+
+            {% if errors.assigned_by_structure %}
+                <p class="error">{{errors.assigned_by_structure.0}}</p>
+            {% endif %}
+
         {% endif %}
-
-        <select id="structure-input" class="form-select mt-2" name="assigned_by_structure">
-            <option>--- Sélectionnez une Structure ---</option>>
-            {%for structure in structures %}
-                <option {% if defaults.assigned_by_structure == structure.pk|stringformat:"s"  %} selected {%endif%} value="{{structure.pk}}">
-                    {{structure.name}}
-                </option>
-            {%endfor%}
-        </select>
-
-        {% if errors.assigned_by_structure %}
-            <p class="error">{{errors.assigned_by_structure.0}}</p>
-        {% endif %}
-
 
         <label for="notes-input" class=" mt-2">Notes supplémentaire :</label>
         <textarea id="notes-input" class="form-control mt-2" name="notes">{% if defaults.notes %}{{defaults.notes}}{%endif%}</textarea>
@@ -61,7 +64,12 @@
 
         <div class="mt-3 d-flex align-items-center gap-2">
             <button class="btn btn-primary"
+                    {% if self_assign %}
+                    hx-post="{% url 'core:badge-self-assign' badge_pk %}"
+                    {% else %}
                     hx-post="{% url 'core:badge-assign' badge_pk %}"
+                    {% endif %}
+
                     hx-target="#badge-assignment-form"
                     hx-swap="innerHTML">
                 Envoyer</button>

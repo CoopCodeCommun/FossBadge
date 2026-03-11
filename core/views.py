@@ -6,7 +6,7 @@ from django.core.signing import SignatureExpired
 from django.core.validators import validate_email
 from django.http import HttpResponse, JsonResponse
 from django.shortcuts import render, get_object_or_404, redirect
-from django.db.models import Q, Count, Exists, OuterRef, Count
+from django.db.models import Q, Count, Exists, OuterRef
 from django.urls import reverse
 from django_htmx.http import HttpResponseClientRedirect
 from rest_framework import viewsets

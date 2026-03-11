@@ -12,10 +12,11 @@ USER fossbadge
 ENV PATH="/home/fossbadge/.local/bin:$PATH"
 
 # RUN cd /home/fossbadge && git clone https://github.com/TiBillet/Fedow.git
-COPY --chown=fossbadge:fossbadge ./ /home/fossbadge/FossBadge
+# COPY --chown=fossbadge:fossbadge ./ /home/fossbadge/FossBadge
 COPY --chown=fossbadge:fossbadge ./bashrc /home/fossbadge/.bashrc
 
 WORKDIR /home/fossbadge/FossBadge
+RUN git clone https://github.com/CoopCodeCommun/FossBadge.git .
 RUN uv sync
 
 CMD ["bash", "start.sh"]

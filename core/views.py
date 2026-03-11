@@ -20,7 +20,7 @@ from .forms import BadgeForm, StructureForm, UserForm, PartialUserForm
 
 from .permissions import IsBadgeEditor, IsStructureAdmin, CanEditUser, CanAssignBadge, CanEndorseBadge, CanEditCourse
 from .validators import BadgeAssignmentValidator, BadgeEndorsementValidator, DreamBadgeValidator, InviteUserValidator, \
-    CreateCourseValidator
+    CreateCourseValidator, BadgeSelfAssignmentValidator
 
 
 def raise403(request, msg=None):
@@ -854,6 +854,7 @@ class HomeViewSet(viewsets.ViewSet):
             'is_badge_editor': is_badge_editor,
             'can_assign': can_assign,
             'can_endorse': can_endorse,
+            'can_self_assign': badge.can_self_assign(request.user),
             'structures_pks_csv': structures_pks_csv,
             'all_criteria_for_badge': all_criteria_for_badge,
         })
@@ -1215,6 +1216,51 @@ class BadgeViewSet(viewsets.ViewSet):
 
         messages.add_message(request, messages.SUCCESS, 'Badge assigné !')
         return reload(request)
+
+    @action(detail=True, methods=['get','post'])
+    def self_assign(self, request, pk=None):
+        """
+        Self assign a badge.
+        """
+
+        if not request.htmx:
+            return raise403(request)
+
+        badge = get_object_or_404(Badge, pk=pk)
+
+        if request.method == "GET":
+
+            return render(request, 'core/badges/partials/badge_assignment.html', context={
+                "badge_pk": pk,
+                "self_assign":True
+            })
+
+        validator = BadgeSelfAssignmentValidator(data=request.POST)
+
+        is_valid = validator.is_valid()
+        context = {
+            "errors": validator.errors,
+            "defaults": validator.data,
+            "badge_pk": pk,
+            "self_assign":True
+        }
+
+        if not is_valid:
+            return render(request, 'core/badges/partials/badge_assignment.html', context=context)
+
+        notes = request.POST['notes']
+
+        # Assigne le badge a l'utilisateur
+        # / Assign the badge to the user
+        assignment, created = badge.self_assign(request.user,notes)
+
+        if not created:
+            messages.add_message(request, messages.INFO, "Ce badge est déjà auto-assigné")
+            return render(request, 'core/badges/partials/badge_assignment.html', context=context)
+
+        messages.add_message(request, messages.SUCCESS, 'Badge auto-assigné !')
+        return reload(request)
+
 
     @action(detail=False, methods=['get','post'], url_path="create-dream")
     def create_dream(self,request):

@@ -151,9 +151,12 @@
                         <div class="passeport-badge-info">
                             <span class="passeport-badge-name">
                                 {{ assignment.badge.name }}
-                                <span class="home-level-tag home-level-{{ assignment.badge.level }}">
+                                {% if assignment.badge.level %}
+                                    <span class="home-level-tag home-level-{{ assignment.badge.level }}">
                                     {{ assignment.badge.get_level_display }}
                                 </span>
+                                {% endif %}
+
                             </span>
                             <span class="passeport-badge-meta text-muted">
                                 <time datetime="{{ assignment.assigned_date|date:'Y-m-d' }}">
@@ -171,7 +174,11 @@
                                 {% if assignment.assigned_by %}
                                     &middot;
                                     {% translate "par" %}
-                                    {{ assignment.assigned_by.get_full_name|default:assignment.assigned_by.username }}
+                                    {{ assignment.assigned_by.display_name }}
+                                {% endif %}
+                                {% if assignment.self_assign %}
+                                    &middot;
+                                    {% translate "Auto-assigné" %}
                                 {% endif %}
                             </span>
                         </div>

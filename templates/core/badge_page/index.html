@@ -114,6 +114,22 @@
     {% if can_assign or can_endorse %}
         <section aria-label="{% translate 'Actions' %}" class="mt-4" data-testid="badge-page-actions">
             <div class="badge-page-actions" role="group" aria-label="{% translate 'Actions' %}">
+                {# Bouton auto assignation : ouvre le formulaire existant dans le popup #}
+                {# / self assign button: opens existing form in popup #}
+                {% if can_self_assign %}
+                    <button
+                            type="button"
+                            class="btn btn-sm home-invite-btn"
+                            hx-get="{% url 'core:badge-self-assign' pk=badge.pk %}"
+                            hx-on:htmx:after-request="{% popup_open %}"
+                            hx-target="{% popup_content_id %}"
+                            hx-swap="innerHTML"
+                            data-testid="badge-page-assign-btn">
+                        <span aria-hidden="true">&#9998;</span>
+                        {% translate "Auto-assigner le badge" %}
+                    </button>
+                {% endif %}
+
                 {# Bouton Attribuer : ouvre le formulaire existant dans le popup #}
                 {# / Assign button: opens existing form in popup #}
                 {% if can_assign %}
@@ -231,6 +247,11 @@
                     <span class="home-result-desc text-muted">
                         {% if assignment.assigned_structure %}
                             {% blocktranslate with structure_name=assignment.assigned_structure.name %}via {{ structure_name }}{% endblocktranslate %}
+                        {% elif assignment.self_assign %}
+                            {% blocktranslate %} Auto-assigné{% endblocktranslate %}
+                        {% elif assignment.user %}
+                            {% blocktranslate with username=assignment.user.display_name %}par {{ username }}{% endblocktranslate %}
+
                         {% endif %}
                         {% if assignment.assigned_date %}
                             &middot;

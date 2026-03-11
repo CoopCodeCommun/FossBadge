@@ -15,7 +15,7 @@ from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.decorators import action,authentication_classes, permission_classes
 from .helpers import TokenHelper
 from .helpers.utils import get_or_create_user, invite_user_to_structure
-from .models import Structure, Badge, User, BadgeAssignment, BadgeEndorsement, BadgeCriteria, Course, CourseItem
+from .models import Structure, Badge, User, BadgeAssignment, BadgeEndorsement, BadgeHistory, BadgeCriteria, Course, CourseItem
 from .forms import BadgeForm, StructureForm, UserForm, PartialUserForm
 
 from .permissions import IsBadgeEditor, IsStructureAdmin, CanEditUser, CanAssignBadge, CanEndorseBadge, CanEditCourse
@@ -859,6 +859,31 @@ class HomeViewSet(viewsets.ViewSet):
             'all_criteria_for_badge': all_criteria_for_badge,
         })
 
+    @action(detail=False,methods=["get"],url_path="parcours/(?P<course_pk>[^/.]+)",url_name="parcours-detail")
+    def parcours_detail(self, request, course_pk=None):
+        """
+        Affiche la page d'un parcours avec le graph Cytoscape.
+        / Displays a course/journey page with the Cytoscape graph.
+        LOCALISATION : core/views.py → HomeViewSet.parcours_detail()
+        FLUX :
+        1. Reçoit GET depuis un lien /parcours/<uuid>/
+        2. Charge le parcours (Course) par UUID
+        3. Vérifie les permissions d'édition
+        4. Rend la page templates/parcours/detail.html
+        """
+
+        course = get_object_or_404(Course, pk=course_pk)
+        # Vérifier si l'utilisateur peut éditer ce parcours
+        # / Check if user can edit this course
+        can_edit = False
+        if request.user.is_authenticated:
+            can_edit = course.user == request.user
+
+        return render(
+            request, "core/parcours/detail.html", {"course": course, "can_edit": can_edit}
+        )
+
+
 class BadgeViewSet(viewsets.ViewSet):
     """
     ViewSet for badge-related pages.
@@ -1036,11 +1061,10 @@ class BadgeViewSet(viewsets.ViewSet):
                 badge = form.save()
                 # Cree une entree historique pour la creation du badge
                 # / Create a history entry for badge creation
-                from .models import BadgeHistory
                 BadgeHistory.objects.create(
                     badge=badge,
                     action="creation",
-                    details="Badge cree"
+                    details="Badge crée"
                 )
                 # Redirige vers la page badge (HTMX ou classique)
                 # / Redirect to badge page (HTMX or classic)
@@ -1948,7 +1972,7 @@ class CourseViewSet(viewsets.ViewSet):
         course = Course.objects.get(pk=pk)
         similar_badges = Badge.objects.order_by('?')[:5]
 
-        return render(request, "core/courses/edit.html", context={
+        return render(request, "core/parcours/edit.html", context={
             "course":course,
             "editable":True,
             "similar_badges":similar_badges

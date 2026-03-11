@@ -241,6 +241,8 @@ picture.text-center img.badge-icon {
     --home-color-badges: #e8a735;
     --home-color-structures: #5b8def;
     --home-color-personnes: #6ec477;
+    --home-color-parcours: #b16ec4;
+    --home-color-dream-badges: #ffb021;
 }
 
 /* Conteneur principal — centré verticalement au départ
@@ -1536,6 +1538,32 @@ picture.text-center img.badge-icon {
 .home-invite-btn:hover,
 .home-invite-btn:focus {
     background-color: var(--home-color-personnes);
+    color: #fff;
+    text-decoration: none;
+}
+
+/* Bouton "Voir le parcours associé" — discret, style outline violet
+   "View associated journey" button — discreet, outline purple style */
+.passeport-parcours-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.3rem 0.75rem;
+    font-size: 0.82rem;
+    font-weight: 500;
+    color: var(--home-color-parcours);
+    border: 1px solid var(--home-color-parcours);
+    border-radius: 8px;
+    background: transparent;
+    text-decoration: none;
+    transition: background-color 0.15s ease, color 0.15s ease;
+    margin: 0;
+    cursor: pointer;
+}
+
+.passeport-parcours-btn:hover,
+.passeport-parcours-btn:focus {
+    background-color: var(--home-color-parcours);
     color: #fff;
     text-decoration: none;
 }

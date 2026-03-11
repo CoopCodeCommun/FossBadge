@@ -98,6 +98,78 @@
             {% endif %}
         </div>
     {% endif %}
+
+    {# ── Section Affichage du Badge de Rêve (visible par tout le monde si le badge existe) ── #}
+    {# ── Dream Badge Display Section (visible to everyone if badge exists) ── #}
+    {% if person.has_dream_badge %}
+        {% with dream_badge=person.dream_badge %}
+            <section aria-label="{% translate 'Mon badge de rêve' %}" class="passeport-dream-badge-display-section" data-testid="passeport-dream-badge-display">
+                <div class="passeport-dream-badge-display-content">
+                    <div class="passeport-dream-badge-display-header">
+                        <span class="passeport-dream-badge-display-icon" aria-hidden="true">🌟</span>
+                        <h2 class="passeport-dream-badge-display-title">{% translate "Mon badge de rêve" %}</h2>
+                    </div>
+                    <div class="passeport-dream-badge-display-card">
+                        <a href="{% url 'core:home-badge-detail' badge_pk=dream_badge.pk %}" class="passeport-dream-badge-display-link" data-testid="passeport-dream-badge-link">
+                            <div class="passeport-dream-badge-display-image">
+                                {% if dream_badge.icon %}
+                                    {% picture dream_badge.icon img_alt=dream_badge.name ratio="1/1" %}
+                                {% else %}
+                                    <img src="{{ placeholder_dream_badge }}" alt="{{ dream_badge.name }}" class="badge-icon">
+                                {% endif %}
+                            </div>
+                            <div class="passeport-dream-badge-display-info">
+                                <h3 class="passeport-dream-badge-display-name">{{ dream_badge.name }}</h3>
+                                {% if dream_badge.description %}
+                                    <p class="passeport-dream-badge-display-description">{{ dream_badge.description }}</p>
+                                {% endif %}
+                            </div>
+                        </a>
+                    </div>
+                </div>
+            </section>
+        {% endwith %}
+    {% endif %}
+
+    {# ── Section Badge de Rêve (uniquement pour l'utilisateur connecté sans badge de rêve) ── #}
+    {# ── Dream Badge Section (only for logged-in user without dream badge) ── #}
+    {% if is_self and not person.has_dream_badge %}
+        <section aria-label="{% translate 'Badge de rêve' %}" class="passeport-dream-badge-section" data-testid="passeport-dream-badge-section">
+            <div class="passeport-dream-badge-content">
+                <div class="passeport-dream-badge-icon" aria-hidden="true">✨</div>
+                <h2 class="passeport-dream-badge-title">{% translate "Créez votre badge de rêve" %}</h2>
+                <p class="passeport-dream-badge-description">
+                    {% translate "Définissez l'objectif qui vous inspire et partagez votre ambition avec la communauté." %}
+                </p>
+                <button
+                        type="button"
+                        class="passeport-dream-badge-btn"
+                        hx-get="{% url 'core:badge-create-dream' %}"
+                        hx-target="#dream-badge-form-container"
+                        hx-swap="innerHTML"
+                        data-testid="passeport-create-dream-badge-btn">
+                    <span aria-hidden="true">⭐</span>
+                    {% translate "Ajouter mon badge de rêve" %}
+                </button>
+            </div>
+            {# Container pour le formulaire HTMX #}
+            {# / HTMX form container #}
+            <div id="dream-badge-form-container" class="passeport-dream-badge-form-container" style="display: none;" aria-live="polite"></div>
+        </section>
+
+        {# Script pour afficher le container quand HTMX charge le formulaire #}
+        {# / Script to show container when HTMX loads the form #}
+        <script>
+            document.addEventListener('htmx:afterSwap', function(event) {
+                if (event.detail.target.id === 'dream-badge-form-container') {
+                    event.detail.target.style.display = 'block';
+                }
+            });
+        </script>
+    {% endif %}
+
+
+
     {# ── Section Parcours (timeline chronologique) ── #}
     {# ── Journey section (chronological timeline) ── #}
     <section aria-label="{% translate 'Parcours' %}" class="mt-4">

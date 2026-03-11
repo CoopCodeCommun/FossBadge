@@ -15,12 +15,12 @@ from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.decorators import action,authentication_classes, permission_classes
 from .helpers import TokenHelper
 from .helpers.utils import get_or_create_user, invite_user_to_structure
-from .models import Structure, Badge, User, BadgeAssignment, BadgeEndorsement, BadgeCriteria, Course, CourseItem
+from .models import Structure, Badge, User, BadgeAssignment, BadgeEndorsement, BadgeHistory, BadgeCriteria, Course, CourseItem
 from .forms import BadgeForm, StructureForm, UserForm, PartialUserForm
 
 from .permissions import IsBadgeEditor, IsStructureAdmin, CanEditUser, CanAssignBadge, CanEndorseBadge, CanEditCourse
 from .validators import BadgeAssignmentValidator, BadgeEndorsementValidator, DreamBadgeValidator, InviteUserValidator, \
-    CreateCourseValidator
+    CreateCourseValidator, BadgeSelfAssignmentValidator
 
 
 def raise403(request, msg=None):
@@ -94,7 +94,7 @@ class HomeViewSet(viewsets.ViewSet):
         )
 
         return render(request, 'core/home/index.html', {
-            'title': 'O2Badge',
+            'title': 'openbadge.coop',
             'badge_names_for_cloud': all_badge_names_for_cloud,
         })
 
@@ -770,13 +770,21 @@ class HomeViewSet(viewsets.ViewSet):
         # Structures that endorse this badge (excluding issuer)
         endorsing_structures = Structure.objects.filter(
             endorsements__badge=badge
-        ).exclude(
-            pk=badge.issuing_structure.pk
         ).select_related('marker')
 
-        # Toutes les structures (émettrice + endosseuses) pour la carte et la liste
-        # All structures (issuer + endorsers) for the map and the list
-        all_structures_list = [badge.issuing_structure] + list(endorsing_structures)
+        # Check if the badge has an issuing structure, if so change the logic behind it
+        if badge.issuing_structure:
+            endorsing_structures = endorsing_structures.exclude(
+                pk=badge.issuing_structure.pk
+            )
+
+            # Toutes les structures (émettrice + endosseuses) pour la carte et la liste
+            # All structures (issuer + endorsers) for the map and the list
+            all_structures_list = [badge.issuing_structure] + list(endorsing_structures)
+        else:
+            all_structures_list = list(endorsing_structures)
+
+
 
         # Détenteurs avec leur structure d'attribution, triés du plus récent au plus ancien
         # Holders with their assigning structure, sorted most recent first
@@ -784,7 +792,7 @@ class HomeViewSet(viewsets.ViewSet):
             badge=badge
         ).select_related('user', 'assigned_structure').order_by('-assigned_date')
 
-        # Criteres d'attribution par structure pour ce badge
+        # Critères d'attribution par structure pour ce badge
         # On les indexe par PK de structure pour les attacher a chaque structure
         # / Attribution criteria by structure for this badge
         # Indexed by structure PK to attach to each structure
@@ -796,7 +804,7 @@ class HomeViewSet(viewsets.ViewSet):
         for criteria in all_criteria_for_badge:
             criteria_by_structure_pk[criteria.structure_id] = criteria
 
-        # Attache le critere a chaque structure de la liste
+        # Attache le critère a chaque structure de la liste
         # / Attach criteria to each structure in the list
         for structure_item in all_structures_list:
             structure_item.criteria_for_badge = criteria_by_structure_pk.get(structure_item.pk)
@@ -809,10 +817,15 @@ class HomeViewSet(viewsets.ViewSet):
         if request.user.is_authenticated:
             # L'utilisateur peut éditer s'il est admin ou éditeur de la structure émettrice
             # User can edit if admin/editor of the issuing structure
-            is_badge_editor = (
-                badge.issuing_structure.is_admin(request.user)
-                or badge.issuing_structure.is_editor(request.user)
-            )
+            if badge.issuing_structure :
+                is_badge_editor = (
+                        badge.issuing_structure.is_admin(request.user)
+                        or badge.issuing_structure.is_editor(request.user)
+                )
+            else :
+                is_badge_editor = (
+                    badge.user == request.user
+                )
 
             # L'utilisateur peut assigner s'il est admin/éditeur d'une structure liée (émettrice ou endosseuse)
             # User can assign if admin/editor of a related structure (issuer or endorser)
@@ -841,9 +854,35 @@ class HomeViewSet(viewsets.ViewSet):
             'is_badge_editor': is_badge_editor,
             'can_assign': can_assign,
             'can_endorse': can_endorse,
+            'can_self_assign': badge.can_self_assign(request.user),
             'structures_pks_csv': structures_pks_csv,
             'all_criteria_for_badge': all_criteria_for_badge,
         })
+
+    @action(detail=False,methods=["get"],url_path="parcours/(?P<course_pk>[^/.]+)",url_name="parcours-detail")
+    def parcours_detail(self, request, course_pk=None):
+        """
+        Affiche la page d'un parcours avec le graph Cytoscape.
+        / Displays a course/journey page with the Cytoscape graph.
+        LOCALISATION : core/views.py → HomeViewSet.parcours_detail()
+        FLUX :
+        1. Reçoit GET depuis un lien /parcours/<uuid>/
+        2. Charge le parcours (Course) par UUID
+        3. Vérifie les permissions d'édition
+        4. Rend la page templates/parcours/detail.html
+        """
+
+        course = get_object_or_404(Course, pk=course_pk)
+        # Vérifier si l'utilisateur peut éditer ce parcours
+        # / Check if user can edit this course
+        can_edit = False
+        if request.user.is_authenticated:
+            can_edit = course.user == request.user
+
+        return render(
+            request, "core/parcours/detail.html", {"course": course, "can_edit": can_edit}
+        )
+
 
 class BadgeViewSet(viewsets.ViewSet):
     """
@@ -988,7 +1027,10 @@ class BadgeViewSet(viewsets.ViewSet):
 
         # Seul un admin de la structure emettrice peut supprimer un badge
         # / Only admin of the issuing structure can delete a badge
-        if not badge.issuing_structure.is_admin(request.user):
+        if badge.issuing_structure and not badge.issuing_structure.is_admin(request.user):
+            return raise403(request)
+
+        if badge.user and not badge.user == request.user:
             return raise403(request)
 
         if request.method == 'POST':
@@ -1019,11 +1061,10 @@ class BadgeViewSet(viewsets.ViewSet):
                 badge = form.save()
                 # Cree une entree historique pour la creation du badge
                 # / Create a history entry for badge creation
-                from .models import BadgeHistory
                 BadgeHistory.objects.create(
                     badge=badge,
                     action="creation",
-                    details="Badge cree"
+                    details="Badge crée"
                 )
                 # Redirige vers la page badge (HTMX ou classique)
                 # / Redirect to badge page (HTMX or classic)
@@ -1051,7 +1092,7 @@ class BadgeViewSet(viewsets.ViewSet):
             })
 
         return render(request, 'core/badges/create.html', {
-            'title': 'O2Badge - Forger un Badge',
+            'title': 'openbadge.coop - Forger un Badge',
             'structures': structures,
             'form': form
         })
@@ -1199,6 +1240,51 @@ class BadgeViewSet(viewsets.ViewSet):
 
         messages.add_message(request, messages.SUCCESS, 'Badge assigné !')
         return reload(request)
+
+    @action(detail=True, methods=['get','post'])
+    def self_assign(self, request, pk=None):
+        """
+        Self assign a badge.
+        """
+
+        if not request.htmx:
+            return raise403(request)
+
+        badge = get_object_or_404(Badge, pk=pk)
+
+        if request.method == "GET":
+
+            return render(request, 'core/badges/partials/badge_assignment.html', context={
+                "badge_pk": pk,
+                "self_assign":True
+            })
+
+        validator = BadgeSelfAssignmentValidator(data=request.POST)
+
+        is_valid = validator.is_valid()
+        context = {
+            "errors": validator.errors,
+            "defaults": validator.data,
+            "badge_pk": pk,
+            "self_assign":True
+        }
+
+        if not is_valid:
+            return render(request, 'core/badges/partials/badge_assignment.html', context=context)
+
+        notes = request.POST['notes']
+
+        # Assigne le badge a l'utilisateur
+        # / Assign the badge to the user
+        assignment, created = badge.self_assign(request.user,notes)
+
+        if not created:
+            messages.add_message(request, messages.INFO, "Ce badge est déjà auto-assigné")
+            return render(request, 'core/badges/partials/badge_assignment.html', context=context)
+
+        messages.add_message(request, messages.SUCCESS, 'Badge auto-assigné !')
+        return reload(request)
+
 
     @action(detail=False, methods=['get','post'], url_path="create-dream")
     def create_dream(self,request):
@@ -1431,9 +1517,14 @@ class StructureViewSet(viewsets.ViewSet):
                 structure.admins.add(request.user)
                 structure.save()
 
-                return redirect(reverse('core:structure-detail', kwargs={'pk': structure.pk}))
+                return redirect_reload(reverse('core:home-lieu', kwargs={'structure_pk': structure.pk}))
         else:
             form = StructureForm()
+
+        if request.htmx:
+            return render(request, 'core/structures/partial/create_form.html', {
+                'form': form,
+            })
 
         return render(request, 'core/structures/create.html', {
             'title': 'FossBadge - Créer une Structure / Entreprise',
@@ -1692,7 +1783,7 @@ class UserViewSet(viewsets.ViewSet):
 
             # Send an email to the user
             user = get_or_create_user(email,send_mail=True)
-            if settings.DEBUG:
+            if settings.DEBUG == True:
                 login(request, user)
 
 
@@ -1881,7 +1972,7 @@ class CourseViewSet(viewsets.ViewSet):
         course = Course.objects.get(pk=pk)
         similar_badges = Badge.objects.order_by('?')[:5]
 
-        return render(request, "core/courses/edit.html", context={
+        return render(request, "core/parcours/edit.html", context={
             "course":course,
             "editable":True,
             "similar_badges":similar_badges

@@ -14,9 +14,11 @@ def get_or_create_user(email, password=None, send_mail=False, set_active=False):
     # TODO check si on laisse ça comme ça pour set le username
     # Si oui il faudrait ne pas afficher les utilisateurs qui n'ont pas mis de prénom
     # Ou meme faire un flag pour que le user puisse choisir si son profile est public ou non
+
+    email = email.lower().strip()
     user, created = User.objects.get_or_create(email=email, username=email)
 
-    if settings.DEBUG and not settings.DEBUG_SEND_EMAIL:
+    if settings.DEBUG == True and not settings.DEBUG_SEND_EMAIL:
         user.is_active=True
         user.save()
         return user

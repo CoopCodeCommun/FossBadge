@@ -66,6 +66,13 @@ class User(AbstractUser):
 
         return False
 
+    @property
+    def display_name(self):
+        if self.first_name or self.last_name:
+            return f"{self.first_name} {self.last_name}"
+
+        return self.username
+
     def get_badges(self):
         """
         Returns all badges held by this user
@@ -149,13 +156,21 @@ class User(AbstractUser):
         # AND
         # all structures that endorse the badge OR have created it (# 2)
 
-        structures = Structure.objects.filter(
-            Q(admins=self.pk) | # 1
-            Q(editors=self.pk), # 1
-            Q(endorsements__badge=badge) | # 2
-            Q(pk=badge.issuing_structure.pk), # 2
-        ).distinct()
-        return structures
+        if badge.issuing_structure:
+            return Structure.objects.filter(
+                Q(admins=self.pk) | # 1
+                Q(editors=self.pk), # 1
+                Q(endorsements__badge=badge) | # 2
+                Q(pk=badge.issuing_structure.pk), # 2
+            ).distinct()
+        else:
+            return Structure.objects.filter(
+                Q(admins=self.pk) | # 1
+                Q(editors=self.pk), # 1
+                Q(endorsements__badge=badge) # 2
+            ).distinct()
+
+
 
     def get_structures_not_endorsing_badge(self, badge):
         """
@@ -324,10 +339,16 @@ class Badge(models.Model):
         """
         Return a list of structures that either endorse the badge (1) or have issued the badge (2)
         """
-        return Structure.objects.filter(
-            Q(endorsements__badge=self.pk) | # 1
-            Q(pk=self.issuing_structure.pk) # 2
-        ).distinct()
+        if self.issuing_structure:
+            return Structure.objects.filter(
+                Q(endorsements__badge=self.pk) | # 1
+                Q(pk=self.issuing_structure.pk) # 2
+            ).distinct()
+        else:
+            return Structure.objects.filter(
+                Q(endorsements__badge=self.pk) # 1
+            ).distinct()
+
 
     @staticmethod
     def get_all_badges_except_dream():
@@ -344,7 +365,20 @@ class Badge(models.Model):
         """
         Return true if the user has a self assignment of the badge
         """
+        if not user.is_authenticated:
+            return False
+
         return BadgeAssignment.objects.filter(badge=self, assigned_by=user, user=user).exists()
+
+    def can_self_assign(self, user):
+        """
+        Return true if the user can self assign the badge
+        """
+        if not user.is_authenticated:
+            return False
+
+        return not BadgeAssignment.objects.filter(badge=self, assigned_by=user, user=user).exists()
+
 
     def get_non_holders(self):
         """
@@ -374,6 +408,22 @@ class Badge(models.Model):
             }
         )
         return assignment, created
+
+    def self_assign(self, user, notes):
+        """
+        Self assign the badge to the user
+        """
+        assignment, created = BadgeAssignment.objects.get_or_create(
+            badge=self,
+            user=user,
+            defaults={
+                'assigned_by': user,
+                'notes': notes
+            }
+        )
+
+        return assignment, created
+
 
     def endorse(self, endorsed_by, structure=None, notes=None):
         """
@@ -449,6 +499,15 @@ class BadgeAssignment(models.Model):
 
     def __str__(self):
         return f"{self.badge.name} attribué à {self.user.username} le {self.assigned_date.strftime('%d/%m/%Y')}"
+
+    @property
+    def self_assign(self):
+        """
+        Return if an assignment is self assign
+        """
+        if self.assigned_structure:
+            return False
+        return self.user == self.assigned_by
 
 
 class BadgeEndorsement(models.Model):

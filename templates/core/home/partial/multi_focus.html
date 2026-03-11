@@ -96,6 +96,13 @@
 
                 <h2 class="home-badge-focus-name">{{ selected_badge.name }}</h2>
 
+                {% if selected_badge.is_dream_badge %}
+                <span class="badge-page-dream-badge-tag" data-testid="multi-focus-dream-badge-tag">
+                    <span aria-hidden="true">&#10024;</span>
+                    {% translate "Badge de rêve" %}
+                </span>
+                {% endif %}
+
                 {% if selected_badge.level %}
                     <div class="home-badge-focus-level">
                         {% if selected_badge.level == 'beginner' %}
@@ -108,17 +115,37 @@
                     </div>
                 {% endif %}
 
-                <div class="home-badge-focus-issuer">
-                    <span class="text-muted" style="font-size: 0.8rem;">{% translate "Émis par" %}</span>
-                    <span class="home-badge-focus-issuer-link">
+                {% if selected_badge.issuing_structure %}
+                    <div class="home-badge-focus-issuer">
+                        <span class="text-muted" style="font-size: 0.8rem;">{% translate "Émis par" %}</span>
+                        <span class="home-badge-focus-issuer-link">
                         {% if selected_badge.issuing_structure.logo %}
                             <span class="home-badge-focus-issuer-logo">
                                 {% picture selected_badge.issuing_structure.logo img_alt=selected_badge.issuing_structure.name ratio="1/1" %}
                             </span>
                         {% endif %}
-                        {{ selected_badge.issuing_structure.name }}
+                            {{ selected_badge.issuing_structure.name }}
                     </span>
-                </div>
+                    </div>
+                {% elif selected_badge.user %}
+                    <div class="home-badge-focus-issuer">
+                        <span class="text-muted" style="font-size: 0.8rem;">{% translate "Créé par" %}</span>
+                        <a
+                                href="{% url 'core:home-passeport' person_pk=selected_badge.user.pk %}"
+                                class="home-badge-focus-issuer-link">
+                            {% if selected_badge.user.avatar %}
+                                <div class="home-badge-focus-issuer-logo">
+                                    {% picture selected_badge.user.avatar img_alt=selected_badge.user.first_name ratio="1/1" %}
+                                </div>
+                            {% endif %}
+                            {{ selected_badge.user.first_name }}
+                            {{ selected_badge.user.last_name }}
+                            {% if not selected_badge.user.first_name and not selected_badge.user.last_name %}
+                                {{ selected_badge.user.username }}
+                            {% endif %}
+                        </a>
+                    </div>
+                {% endif %}
 
                 <div class="home-badge-focus-description">
                     {{ selected_badge.description|linebreaks }}
@@ -148,7 +175,7 @@
                         hx-swap="innerHTML"
                         hx-push-url="true"
                         hx-include="#home-search-filters"
-                        class="home-result-item"
+                        class="home-result-item{% if badge.is_dream_badge %} home-result-item-dream-badge{% endif %}"
                     >
                         <div class="home-result-icon">
                             {% if badge.icon %}

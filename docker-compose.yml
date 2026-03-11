@@ -5,7 +5,7 @@ services:
     container_name: fossbadge_postgres
     hostname: fossbadge_postgres
     volumes:
-      - o2badge_dev_db:/var/lib/postgresql
+      - ./o2badge_dev_db:/var/lib/postgresql
     env_file:
       - .env
     networks:

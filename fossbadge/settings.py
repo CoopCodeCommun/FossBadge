@@ -23,13 +23,12 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # SECURITY WARNING: keep the secret key used in production secret!
 insecure_key = 'django-insecure-&e(amkw5cizcf^2pn0v!(=ll@_z!--6f=4sg^+#j^qzl9p#zfh'
 SECRET_KEY = os.environ.get('SECRET_KEY', insecure_key)
-
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = (os.getenv('DEBUG','0')=='1')
 DEBUG_SEND_EMAIL = False
 
-ALLOWED_HOSTS = ['localhost', '127.0.0.1', 'badge.codecommun.coop', 'badge.localhost', '91.134.241.241']
-CSRF_TRUSTED_ORIGINS = ['https://badge.codecommun.coop']
+ALLOWED_HOSTS = ['localhost', '127.0.0.1', 'badge.codecommun.coop', 'badge.localhost', '91.134.241.241','openbadge.coop']
+CSRF_TRUSTED_ORIGINS = ['https://badge.codecommun.coop', 'https://openbadge.coop']
 
 # Application definition
 
@@ -206,3 +205,13 @@ MEDIA_ROOT = BASE_DIR / 'media'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
+
+
+import sentry_sdk
+if not DEBUG:
+    sentry_sdk.init(
+        dsn=os.environ.get('SENTRY_DSN'),
+        # Add data like request headers and IP for users,
+        # see https://docs.sentry.io/platforms/python/data-management/data-collected/ for more info
+        send_default_pii=True,
+    )

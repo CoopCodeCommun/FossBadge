@@ -11,8 +11,7 @@ USER fossbadge
 
 ENV PATH="/home/fossbadge/.local/bin:$PATH"
 
-# RUN cd /home/fossbadge && git clone https://github.com/TiBillet/Fedow.git
-COPY --chown=fossbadge:fossbadge ./ /home/fossbadge/FossBadge
+RUN cd /home/fossbadge && git clone https://github.com/CoopCodeCommun/FossBadge.git
 COPY --chown=fossbadge:fossbadge ./bashrc /home/fossbadge/.bashrc
 
 WORKDIR /home/fossbadge/FossBadge

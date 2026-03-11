@@ -8,7 +8,7 @@
 {% load l10n %}
 {% load custom_tags %}
 
-{% block title %}{{ badge.name }} — O2Badge{% endblock %}
+{% block title %}{{ badge.name }} — openbadge.coop{% endblock %}
 
 {% block extra_css %}
 {% if structures_pks_csv %}
@@ -18,13 +18,12 @@
 
 {% block content %}
 <div class="container py-4 badge-page-container">
-
     {# Barre supérieure : retour + actions admin #}
     {# Top bar: back link + admin actions #}
     <div class="d-flex justify-content-between align-items-center mb-3">
         <a href="/" class="home-back-link" data-testid="badge-page-back-link"
            onclick="event.preventDefault(); history.back();">
-            <span aria-hidden="true">&larr;</span> O2Badge
+            <span aria-hidden="true">&larr;</span> openbadge.coop
         </a>
 
         {% if is_badge_editor %}
@@ -60,7 +59,15 @@
             {% endif %}
         </div>
         <div class="badge-page-header-info">
-            <h1 class="badge-page-header-name">{{ badge.name }}</h1>
+            <div class="badge-page-header-title-row">
+                <h1 class="badge-page-header-name">{{ badge.name }}</h1>
+                {% if badge.is_dream_badge %}
+                <span class="badge-page-dream-badge-tag" data-testid="badge-page-dream-badge-tag">
+                    <span aria-hidden="true">&#10024;</span>
+                    {% translate "Badge de rêve" %}
+                </span>
+                {% endif %}
+            </div>
 
             {# Niveau (pastille colorée) #}
             {# Level (colored pill) #}
@@ -74,7 +81,8 @@
                         <span class="home-level-tag home-level-expert">{{ badge.get_level_display }}</span>
                     {% endif %}
                 {% endif %}
-                <span class="text-muted">
+                {% if badge.issuing_structure %}
+                    <span class="text-muted">
                     {% translate "Émis par" %}
                     <a href="/structure/{{ badge.issuing_structure.pk }}/"
                        class="badge-page-issuer-link"
@@ -82,6 +90,21 @@
                         {{ badge.issuing_structure.name }}
                     </a>
                 </span>
+                {% elif badge.user %}
+                    <span class="text-muted">
+                    {% translate "Créé par" %}
+                    <a href="{% url 'core:home-passeport' badge.user.pk %}"
+                       class="badge-page-issuer-link"
+                       data-testid="badge-page-issuer-link">
+                        {{ badge.user.first_name }}
+                        {{ badge.user.last_name }}
+                        {% if not badge.user.first_name and not badge.user.last_name %}
+                            {{ badge.user.username }}
+                        {% endif %}
+                    </a>
+                </span>
+                {% endif %}
+
             </p>
 
             {# Description #}
@@ -98,6 +121,22 @@
     {% if can_assign or can_endorse %}
         <section aria-label="{% translate 'Actions' %}" class="mt-4" data-testid="badge-page-actions">
             <div class="badge-page-actions" role="group" aria-label="{% translate 'Actions' %}">
+                {# Bouton auto assignation : ouvre le formulaire existant dans le popup #}
+                {# / self assign button: opens existing form in popup #}
+                {% if can_self_assign %}
+                    <button
+                            type="button"
+                            class="btn btn-sm home-invite-btn"
+                            hx-get="{% url 'core:badge-self-assign' pk=badge.pk %}"
+                            hx-on:htmx:after-request="{% popup_open %}"
+                            hx-target="{% popup_content_id %}"
+                            hx-swap="innerHTML"
+                            data-testid="badge-page-assign-btn">
+                        <span aria-hidden="true">&#9998;</span>
+                        {% translate "Auto-assigner le badge" %}
+                    </button>
+                {% endif %}
+
                 {# Bouton Attribuer : ouvre le formulaire existant dans le popup #}
                 {# / Assign button: opens existing form in popup #}
                 {% if can_assign %}
@@ -160,7 +199,7 @@
                     <div class="home-result-text">
                         <span class="home-result-name">
                             {{ structure.name }}
-                            {% if structure.pk == badge.issuing_structure.pk %}
+                            {% if badge.issuing_structure and structure.pk == badge.issuing_structure.pk %}
                                 <span class="home-relation-tag home-relation-tag-issuer">{% translate "Émetteur" %}</span>
                             {% else %}
                                 <span class="home-relation-tag home-relation-tag-endorser">{% translate "Endosse" %}</span>
@@ -215,6 +254,11 @@
                     <span class="home-result-desc text-muted">
                         {% if assignment.assigned_structure %}
                             {% blocktranslate with structure_name=assignment.assigned_structure.name %}via {{ structure_name }}{% endblocktranslate %}
+                        {% elif assignment.self_assign %}
+                            {% blocktranslate %} Auto-assigné{% endblocktranslate %}
+                        {% elif assignment.user %}
+                            {% blocktranslate with username=assignment.user.display_name %}par {{ username }}{% endblocktranslate %}
+
                         {% endif %}
                         {% if assignment.assigned_date %}
                             &middot;

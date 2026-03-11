@@ -9,7 +9,7 @@
 {% load custom_tags %}
 
 {% block title %}
-    {% blocktranslate with name=person.get_full_name|default:person.username %}Passeport de {{ name }}{% endblocktranslate %} — O2Badge
+    {% blocktranslate with name=person.get_full_name|default:person.username %}Passeport de {{ name }}{% endblocktranslate %} — openbadge.coop
 {% endblock %}
 
 {% block extra_css %}
@@ -26,7 +26,7 @@
     <div class="d-flex justify-content-between align-items-center mb-3">
         <a href="/" class="home-back-link" data-testid="passeport-back-link"
            onclick="event.preventDefault(); history.back();">
-            <span aria-hidden="true">&larr;</span> O2Badge
+            <span aria-hidden="true">&larr;</span> openbadge.coop
         </a>
 
         {% if is_self %}
@@ -70,6 +70,120 @@
             </p>
         </div>
     </div>
+
+    {% if is_self %}
+        <div class="mt-3">
+            <button type="button"
+                    class="home-structure-btn"
+                    hx-get="{% url 'core:create_association' %}"
+                    hx-target="{% popup_content_id %}"
+                    hx-swap="innerHTML"
+                    hx-on:htmx:after-request="{% popup_open %}"
+                    data-testid="btn-forge-badge">
+                <span aria-hidden="true">&#x1F3E4;</span>
+                {% translate "Créer une structure" %}
+            </button>
+            {% if user.structures.count > 0 %}
+                <button type="button"
+                        class="home-forge-btn"
+                        hx-get="{% url 'core:create_badge' %}"
+                        hx-target="{% popup_content_id %}"
+                        hx-swap="innerHTML"
+                        hx-on:htmx:after-request="{% popup_open %}"
+                        hx-indicator="none"
+                        data-testid="btn-forge-badge">
+                    <span aria-hidden="true">&#9874;</span>
+                    {% translate "Forger un badge" %}
+                </button>
+            {% endif %}
+        </div>
+    {% endif %}
+
+    {# ── Section Affichage du Badge de Rêve (visible par tout le monde si le badge existe) ── #}
+    {# ── Dream Badge Display Section (visible to everyone if badge exists) ── #}
+    {% if person.has_dream_badge %}
+        {% with dream_badge=person.dream_badge %}
+            <section aria-label="{% translate 'Mon badge de rêve' %}" class="passeport-dream-badge-display-section" data-testid="passeport-dream-badge-display">
+                <div class="passeport-dream-badge-display-content">
+                    <div class="passeport-dream-badge-display-header">
+                        <span class="passeport-dream-badge-display-icon" aria-hidden="true">🌟</span>
+                        <h2 class="passeport-dream-badge-display-title">{% translate "Mon badge de rêve" %}</h2>
+                        {% if person == request.user %}
+                            <a href="{% url 'core:course-edit' pk=person.dream_course.pk %}"
+                               class="passeport-parcours-btn"
+                               data-testid="passeport-parcours-btn">
+                                {% translate "Modifier mon parcours" %}
+                            </a>
+                        {% elif person.has_dream_course and person.dream_course.items.count > 0 %}
+                            <a href="{% url 'core:home-parcours-detail' course_pk=person.dream_course.pk %}"
+                               class="passeport-parcours-btn"
+                               data-testid="passeport-parcours-btn">
+                                {% translate "Voir le parcours associé" %}
+                            </a>
+                        {% endif %}
+
+                    </div>
+                    <div class="passeport-dream-badge-display-card">
+
+                        <a href="{% url 'core:home-badge-detail' badge_pk=dream_badge.pk %}" class="passeport-dream-badge-display-link" data-testid="passeport-dream-badge-link">
+                            <div class="passeport-dream-badge-display-image">
+                                {% if dream_badge.icon %}
+                                    {% picture dream_badge.icon img_alt=dream_badge.name ratio="1/1" %}
+                                {% else %}
+                                    <img src="{{ placeholder_dream_badge }}" alt="{{ dream_badge.name }}" class="badge-icon">
+                                {% endif %}
+                            </div>
+                            <div class="passeport-dream-badge-display-info">
+                                <h3 class="passeport-dream-badge-display-name">{{ dream_badge.name }}</h3>
+                                {% if dream_badge.description %}
+                                    <p class="passeport-dream-badge-display-description">{{ dream_badge.description }}</p>
+                                {% endif %}
+                            </div>
+                        </a>
+                    </div>
+                </div>
+            </section>
+        {% endwith %}
+    {% endif %}
+
+    {# ── Section Badge de Rêve (uniquement pour l'utilisateur connecté sans badge de rêve) ── #}
+    {# ── Dream Badge Section (only for logged-in user without dream badge) ── #}
+    {% if is_self and not person.has_dream_badge %}
+        <section aria-label="{% translate 'Badge de rêve' %}" class="passeport-dream-badge-section" data-testid="passeport-dream-badge-section">
+            <div class="passeport-dream-badge-content">
+                <div class="passeport-dream-badge-icon" aria-hidden="true">✨</div>
+                <h2 class="passeport-dream-badge-title">{% translate "Créez votre badge de rêve" %}</h2>
+                <p class="passeport-dream-badge-description">
+                    {% translate "Définissez l'objectif qui vous inspire et partagez votre ambition avec la communauté." %}
+                </p>
+                <button
+                        type="button"
+                        class="passeport-dream-badge-btn"
+                        hx-get="{% url 'core:badge-create-dream' %}"
+                        hx-target="#dream-badge-form-container"
+                        hx-swap="innerHTML"
+                        data-testid="passeport-create-dream-badge-btn">
+                    <span aria-hidden="true">⭐</span>
+                    {% translate "Ajouter mon badge de rêve" %}
+                </button>
+            </div>
+            {# Container pour le formulaire HTMX #}
+            {# / HTMX form container #}
+            <div id="dream-badge-form-container" class="passeport-dream-badge-form-container" style="display: none;" aria-live="polite"></div>
+        </section>
+
+        {# Script pour afficher le container quand HTMX charge le formulaire #}
+        {# / Script to show container when HTMX loads the form #}
+        <script>
+            document.addEventListener('htmx:afterSwap', function(event) {
+                if (event.detail.target.id === 'dream-badge-form-container') {
+                    event.detail.target.style.display = 'block';
+                }
+            });
+        </script>
+    {% endif %}
+
+
 
     {# ── Section Parcours (timeline chronologique) ── #}
     {# ── Journey section (chronological timeline) ── #}
@@ -124,9 +238,12 @@
                         <div class="passeport-badge-info">
                             <span class="passeport-badge-name">
                                 {{ assignment.badge.name }}
-                                <span class="home-level-tag home-level-{{ assignment.badge.level }}">
+                                {% if assignment.badge.level %}
+                                    <span class="home-level-tag home-level-{{ assignment.badge.level }}">
                                     {{ assignment.badge.get_level_display }}
                                 </span>
+                                {% endif %}
+
                             </span>
                             <span class="passeport-badge-meta text-muted">
                                 <time datetime="{{ assignment.assigned_date|date:'Y-m-d' }}">
@@ -144,7 +261,11 @@
                                 {% if assignment.assigned_by %}
                                     &middot;
                                     {% translate "par" %}
-                                    {{ assignment.assigned_by.get_full_name|default:assignment.assigned_by.username }}
+                                    {{ assignment.assigned_by.display_name }}
+                                {% endif %}
+                                {% if assignment.self_assign %}
+                                    &middot;
+                                    {% translate "Auto-assigné" %}
                                 {% endif %}
                             </span>
                         </div>

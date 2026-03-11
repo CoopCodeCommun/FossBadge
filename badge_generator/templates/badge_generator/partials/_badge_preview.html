@@ -1,0 +1,17 @@
+{% load badge_tags i18n %}
+
+<!-- ============================================================
+     Previsualisation du badge.
+     On affiche le SVG genere par le serveur.
+     Le conteneur a un role="img" et un aria-label
+     pour que les lecteurs d'ecran sachent ce que c'est.
+     Badge preview with role="img" + aria-label for screen readers.
+
+     LOCALISATION : badge_generator/templates/badge_generator/partials/_badge_preview.html
+     ============================================================ -->
+
+<div class="badge-preview-container"
+     role="img"
+     aria-label="{% translate 'Prévisualisation du badge en cours de création' %}">
+    {{ badge_svg|safe_svg }}
+</div>

@@ -1,0 +1,317 @@
+{% extends "core/home/base_home.html" %}
+{% load static badge_tags %}
+{% load i18n %}
+
+{% block title %}{% translate "Générateur de Badges" %} — O2Badge{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'badge_generator/css/badge_generator.css' %}">
+{% endblock %}
+
+{% block content %}
+
+<!-- ============================================================
+     Page principale du generateur de badges.
+     On affiche tous les selecteurs sur une seule page.
+     A droite, la previsualisation se met a jour en temps reel.
+
+     Main badge generator page. All selectors on one page.
+     Right side: real-time preview updates.
+
+     LOCALISATION : badge_generator/templates/badge_generator/home.html
+     ============================================================ -->
+
+<div class="container py-4 generator-page-container">
+
+    <!-- Lien retour vers la page d'accueil.
+         Back link to home page. -->
+    <a href="/" class="home-back-link" data-testid="generator-back-link">
+        <span aria-hidden="true">&larr;</span> O2Badge
+    </a>
+
+    <!-- En-tete du generateur.
+         Generator header. -->
+    <div class="generator-header" data-testid="generator-header">
+        <div class="home-result-icon-placeholder home-result-icon-placeholder-badges generator-header-icon">
+            <span aria-hidden="true">&#9733;</span>
+        </div>
+        <div class="generator-header-info">
+            <h1 class="generator-header-name">{% translate "Générateur de Badges" %}</h1>
+            <p class="text-muted mb-0">
+                {% translate "Créez un badge numérique de qualité en choisissant une catégorie, un niveau et un titre." %}
+            </p>
+            {% if total_badges_generated > 0 %}
+            <p class="text-muted mb-0" style="font-size: 0.82rem;">
+                {{ total_badges_generated }} badge{{ total_badges_generated|pluralize }} {% translate "créé" %}{{ total_badges_generated|pluralize }}
+            </p>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- ============================================================
+         Mise en page deux colonnes.
+         Gauche : selecteurs (categorie, niveau, forme, texte).
+         Droite : previsualisation du badge en temps reel.
+
+         Two-column layout.
+         Left: selectors (category, level, shape, text).
+         Right: real-time badge preview.
+         ============================================================ -->
+
+    <div class="generator-two-columns mt-4">
+
+        <!-- ========================================================
+             Colonne gauche : les selecteurs.
+             Left column: selectors.
+             ======================================================== -->
+        <div class="generator-selectors">
+
+            <!-- Champs caches pour stocker les selections.
+                 HTMX et JavaScript les remplissent quand l'utilisateur clique.
+                 Hidden fields to store selections.
+                 HTMX and JavaScript fill them on user click. -->
+            <input type="hidden" id="selected-category-uuid" name="category_uuid" value="">
+            <input type="hidden" id="selected-level-uuid" name="level_uuid" value="">
+            <input type="hidden" id="selected-shape" name="shape" value="{{ default_shape_key }}">
+
+            <!-- ====================================================
+                 Section 1 : Choisir une categorie.
+                 On affiche les 8 categories en grille 4x2.
+                 Chaque carte montre l'illustration SVG de la categorie
+                 au lieu d'un emoji.
+
+                 Section 1: Choose a category.
+                 8 categories in a 4x2 grid with SVG illustration.
+                 ==================================================== -->
+            <h2 class="step-title">
+                <span class="step-number" aria-hidden="true">1</span>
+                {% translate "Catégorie" %}
+            </h2>
+            <p class="step-subtitle">{% translate "Choisissez le type de badge." %}</p>
+
+            <div class="selection-grid category-grid"
+                 role="radiogroup"
+                 aria-label="{% translate 'Choix de la catégorie' %}">
+                {% for category in categories %}
+                <!-- Chaque carte est un bouton radio visuel.
+                     L'illustration SVG de la categorie est affichee dans un mini SVG.
+                     Each card is a visual radio button with the category SVG illustration. -->
+                <button type="button"
+                        class="selection-card category-card"
+                        data-category-uuid="{{ category.uuid }}"
+                        data-testid="category-card-{{ category.abbreviation }}"
+                        role="radio"
+                        aria-checked="false"
+                        aria-label="{{ category.name }}"
+                        style="border-left: 4px solid {{ category.color }};">
+                    <!-- Illustration SVG de la categorie.
+                         On l'affiche dans un petit SVG de 40x40 pixels.
+                         Si la categorie n'a pas d'illustration, on affiche un point colore.
+                         Category SVG illustration in a 40x40 mini SVG.
+                         Falls back to a colored dot if no illustration. -->
+                    <span class="selection-card-icon" aria-hidden="true">
+                        {% if category.illustration_svg %}
+                        <svg xmlns="http://www.w3.org/2000/svg"
+                             viewBox="0 0 100 100"
+                             width="40" height="40"
+                             class="category-illustration-mini"
+                             fill="none"
+                             stroke="{{ category.color }}"
+                             stroke-width="3"
+                             stroke-linecap="round"
+                             stroke-linejoin="round">
+                            {{ category.illustration_svg|safe_svg }}
+                        </svg>
+                        {% else %}
+                        <span class="category-color-dot"
+                              style="background: {{ category.color }};"></span>
+                        {% endif %}
+                    </span>
+                    <span class="selection-card-title">{{ category.name }}</span>
+                    <span class="selection-card-abbr">{{ category.abbreviation }}</span>
+                </button>
+                {% endfor %}
+            </div>
+
+            <!-- ====================================================
+                 Section 2 : Choisir un niveau.
+                 5 cartes avec indicateur visuel d'epaisseur de trait.
+
+                 Section 2: Choose a level.
+                 5 cards with visual stroke thickness indicator.
+                 ==================================================== -->
+            <h2 class="step-title mt-4">
+                <span class="step-number" aria-hidden="true">2</span>
+                {% translate "Niveau" %}
+            </h2>
+            <p class="step-subtitle">{% translate "Choisissez le niveau du badge." %}</p>
+
+            <div class="selection-grid level-grid"
+                 role="radiogroup"
+                 aria-label="{% translate 'Choix du niveau' %}">
+                {% for level in levels %}
+                <!-- Chaque carte de niveau montre une barre d'epaisseur.
+                     Plus le niveau est haut, plus la barre est epaisse.
+                     Each level card shows a thickness bar. -->
+                <button type="button"
+                        class="selection-card level-card"
+                        data-level-uuid="{{ level.uuid }}"
+                        data-testid="level-card-{{ level.rank }}"
+                        role="radio"
+                        aria-checked="false"
+                        aria-label="{{ level.name }} — {{ level.posture_text }}">
+                    <!-- Indicateur visuel d'epaisseur.
+                         Visual thickness indicator. -->
+                    <span class="level-stroke-indicator"
+                          aria-hidden="true"
+                          style="height: {{ level.stroke_width }}px;"></span>
+                    <span class="selection-card-title">{{ level.name }}</span>
+                    <span class="selection-card-desc">{{ level.posture_text }}</span>
+                </button>
+                {% endfor %}
+            </div>
+
+            <!-- ====================================================
+                 Section 3 : Choisir la forme du badge.
+                 On affiche les 8 formes disponibles en grille 4x2.
+                 Chaque carte montre un apercu miniature de la forme.
+                 La forme par defaut (starburst) est pre-selectionnee.
+
+                 Section 3: Choose the badge shape.
+                 8 shapes in a 4x2 grid with miniature preview.
+                 Default shape (starburst) is pre-selected.
+                 ==================================================== -->
+            <h2 class="step-title mt-4">
+                <span class="step-number" aria-hidden="true">3</span>
+                {% translate "Forme" %}
+            </h2>
+            <p class="step-subtitle">{% translate "Choisissez la forme du badge." %}</p>
+
+            <div class="selection-grid shape-grid"
+                 role="radiogroup"
+                 aria-label="{% translate 'Choix de la forme' %}">
+                {% for shape in shapes %}
+                <!-- Chaque carte montre un apercu de la forme en miniature.
+                     Le chemin SVG est dessine dans un petit carre.
+                     Each card shows a miniature shape preview. -->
+                <button type="button"
+                        class="selection-card shape-card {% if shape.key == default_shape_key %}selected{% endif %}"
+                        data-shape-key="{{ shape.key }}"
+                        data-testid="shape-card-{{ shape.key }}"
+                        role="radio"
+                        aria-checked="{% if shape.key == default_shape_key %}true{% else %}false{% endif %}"
+                        aria-label="{{ shape.name }}">
+                    <!-- Apercu miniature de la forme.
+                         Mini SVG with the shape path.
+                         On utilise un viewBox 0 0 500 500 pour afficher la forme. -->
+                    <span class="selection-card-icon" aria-hidden="true">
+                        <svg xmlns="http://www.w3.org/2000/svg"
+                             viewBox="0 0 500 500"
+                             width="48" height="48"
+                             class="shape-preview-mini">
+                            <path d="{{ shape.path }}"
+                                  fill="#f1f3f4"
+                                  stroke="#5f6368"
+                                  stroke-width="4"/>
+                        </svg>
+                    </span>
+                    <span class="selection-card-title">{{ shape.name }}</span>
+                </button>
+                {% endfor %}
+            </div>
+
+            <!-- ====================================================
+                 Section 4 : Ecrire le titre et le sous-titre.
+                 Chaque frappe (avec debounce 300ms) met a jour la preview.
+
+                 Section 4: Write title and subtitle.
+                 Each keystroke (300ms debounce) updates the preview.
+                 ==================================================== -->
+            <h2 class="step-title mt-4">
+                <span class="step-number" aria-hidden="true">4</span>
+                {% translate "Texte" %}
+            </h2>
+            <p class="step-subtitle">{% translate "Donnez un titre à votre badge." %}</p>
+
+            <div class="form-group">
+                <label for="badge-title">{% translate "Titre du badge" %} *</label>
+                <input type="text"
+                       id="badge-title"
+                       name="title"
+                       class="form-control"
+                       maxlength="100"
+                       required
+                       aria-required="true"
+                       placeholder="{% translate 'Ex: Initiation Arduino' %}"
+                       data-testid="badge-title-input">
+            </div>
+
+            <div class="form-group">
+                <label for="badge-subtitle">{% translate "Sous-titre" %} <span class="text-muted">({% translate "optionnel" %})</span></label>
+                <input type="text"
+                       id="badge-subtitle"
+                       name="subtitle"
+                       class="form-control"
+                       maxlength="100"
+                       placeholder="{% translate 'Ex: Atelier du 15 mars' %}"
+                       data-testid="badge-subtitle-input">
+            </div>
+
+            <!-- ====================================================
+                 Bouton de generation finale.
+                 Final generate button.
+                 ==================================================== -->
+            <div class="wizard-actions mt-3">
+                <button type="button"
+                        id="generate-button"
+                        class="btn btn-primary"
+                        disabled
+                        aria-label="{% translate 'Générer le badge' %}"
+                        data-testid="generate-button">
+                    {% translate "Générer le badge" %}
+                </button>
+            </div>
+
+        </div>
+
+        <!-- ========================================================
+             Colonne droite : previsualisation du badge.
+             Le contenu est mis a jour via HTMX a chaque changement.
+
+             Right column: badge preview.
+             Content updated via HTMX on each change.
+             ======================================================== -->
+        <div class="generator-preview-panel">
+            <h2 class="step-title">{% translate "Prévisualisation" %}</h2>
+            <div id="badge-preview-container"
+                 aria-live="polite"
+                 aria-atomic="true"
+                 role="status"
+                 data-testid="badge-preview">
+                <!-- La previsualisation vide.
+                     Le SVG apparaitra ici quand l'utilisateur fera des choix.
+                     Empty preview. SVG appears here when user makes choices. -->
+                <div class="badge-preview-container badge-preview-empty">
+                    <p class="text-muted" style="font-size: 0.85rem;">
+                        {% translate "Choisissez une catégorie pour voir le badge." %}
+                    </p>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// On passe l'URL de la preview au JavaScript.
+// Pass preview URL to JavaScript.
+window.BADGE_PREVIEW_URL = "{% url 'badge_generator:badge-generator-preview' %}";
+window.BADGE_GENERATE_URL = "{% url 'badge_generator:badge-generator-generate' %}";
+window.CSRF_TOKEN = "{{ csrf_token }}";
+</script>
+<script src="{% static 'badge_generator/js/badge_generator.js' %}"></script>
+{% endblock %}

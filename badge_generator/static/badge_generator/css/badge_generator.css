@@ -1,0 +1,515 @@
+/*
+ * Styles specifiques au generateur de badges — version Le Dome.
+ * Tout le reste (boutons, typo, grille) vient de Bootstrap 5
+ * et de custom.css de FossBadge.
+ *
+ * On reutilise les classes de custom.css autant que possible.
+ * On ne definit QUE ce qui n'existe pas dans custom.css.
+ *
+ * Generator-specific styles — Le Dome version.
+ * custom.css + Bootstrap handle the rest.
+ */
+
+
+/* ============================================================
+   Conteneur de page — largeur editoriale sobre
+   Page container — editorial sober width
+   ============================================================ */
+
+.generator-page-container {
+    max-width: 1100px;
+}
+
+
+/* ============================================================
+   En-tete du generateur — horizontal comme badge-page-header
+   Generator header — horizontal like badge-page-header
+   ============================================================ */
+
+.generator-header {
+    display: flex;
+    align-items: flex-start;
+    gap: 1.25rem;
+}
+
+.generator-header-icon {
+    width: 80px;
+    height: 80px;
+    flex-shrink: 0;
+    font-size: 2rem;
+    border-radius: 16px;
+}
+
+.generator-header-info {
+    flex: 1;
+    min-width: 0;
+}
+
+.generator-header-name {
+    font-size: 1.6rem;
+    font-weight: 600;
+    color: #202124;
+    margin-bottom: 0.15rem;
+    line-height: 1.2;
+}
+
+
+/* ============================================================
+   Mise en page 2 colonnes — selecteurs + preview.
+   Gauche : selecteurs (categories, niveaux, texte).
+   Droite : previsualisation sticky.
+
+   Two-column layout — selectors + preview.
+   Left: selectors. Right: sticky preview.
+   ============================================================ */
+
+.generator-two-columns {
+    display: grid;
+    grid-template-columns: 1fr 340px;
+    gap: 2rem;
+    align-items: start;
+}
+
+.generator-selectors {
+    min-width: 0;
+}
+
+.generator-preview-panel {
+    position: sticky;
+    top: 1rem;
+}
+
+
+/* ============================================================
+   Titres des sections — avec numero d'etape.
+   Section titles with step number.
+   ============================================================ */
+
+.step-title {
+    font-size: 0.9rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: #5f6368;
+    border-bottom: 2px solid #e8eaed;
+    padding-bottom: 0.5rem;
+    margin-bottom: 0.5rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.step-number {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    background: #202124;
+    color: #fff;
+    font-size: 0.72rem;
+    font-weight: 700;
+    flex-shrink: 0;
+}
+
+.step-subtitle {
+    font-size: 0.88rem;
+    color: #5f6368;
+    margin-bottom: 1rem;
+}
+
+
+/* ============================================================
+   Grille de selection (categories, niveaux).
+   Des cartes cliquables sobres en grille.
+
+   Selection grid, sober clickable cards.
+   ============================================================ */
+
+.selection-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+    gap: 0.5rem;
+    margin: 0.75rem 0;
+    padding: 0;
+    list-style: none;
+}
+
+/* La grille des categories utilise 4 colonnes.
+   Category grid uses 4 columns. */
+.category-grid {
+    grid-template-columns: repeat(4, 1fr);
+}
+
+/* La grille des niveaux utilise 5 colonnes (1 par niveau).
+   Level grid uses 5 columns (1 per level). */
+.level-grid {
+    grid-template-columns: repeat(5, 1fr);
+}
+
+/* La grille des formes utilise 4 colonnes (16 formes en 4x4).
+   8 formes calculees + 8 formes du Dome.
+   Shape grid uses 4 columns (16 shapes in 4x4).
+   8 computed shapes + 8 Dome shapes. */
+.shape-grid {
+    grid-template-columns: repeat(4, 1fr);
+}
+
+.selection-card {
+    background: #fff;
+    border: 1.5px solid #dfe1e5;
+    border-radius: 12px;
+    padding: 0.85rem 0.6rem;
+    text-align: center;
+    cursor: pointer;
+    transition: background-color 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease;
+    text-decoration: none;
+    color: inherit;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.2rem;
+    font-family: inherit;
+    font-size: inherit;
+    line-height: inherit;
+}
+
+.selection-card:hover,
+.selection-card:focus-visible {
+    background-color: #f1f3f4;
+    border-color: #9aa0a6;
+    text-decoration: none;
+    color: inherit;
+    outline: none;
+}
+
+/* Carte selectionnee — fond dore leger, bordure doree.
+   Selected card — light golden background, golden border. */
+.selection-card.selected {
+    border-color: var(--home-color-badges, #e8a735);
+    background: rgba(232, 167, 53, 0.08);
+    box-shadow: 0 0 0 2px rgba(232, 167, 53, 0.2);
+}
+
+.selection-card-icon {
+    font-size: 1.5rem;
+    line-height: 1;
+}
+
+.selection-card-title {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: #202124;
+}
+
+.selection-card-abbr {
+    font-size: 0.72rem;
+    color: #9aa0a6;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.selection-card-desc {
+    font-size: 0.75rem;
+    color: #5f6368;
+    line-height: 1.2;
+}
+
+
+/* ============================================================
+   Illustration miniature dans les cartes categorie.
+   Le SVG de l'illustration est reduit a 40x40 pixels.
+   Si pas d'illustration, un point colore est affiche.
+
+   Mini illustration in category cards.
+   SVG reduced to 40x40. Color dot fallback.
+   ============================================================ */
+
+.category-illustration-mini {
+    display: block;
+}
+
+.category-color-dot {
+    display: inline-block;
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+}
+
+
+/* ============================================================
+   Apercu miniature des formes dans les cartes forme.
+   Le SVG de la forme est dessine dans un carre de 48x48 pixels.
+
+   Mini shape preview in shape cards.
+   Shape SVG drawn in a 48x48 square.
+   ============================================================ */
+
+.shape-preview-mini {
+    display: block;
+}
+
+
+/* ============================================================
+   Indicateur visuel d'epaisseur de trait (niveaux).
+   Une barre coloree dont l'epaisseur represente le niveau.
+
+   Visual stroke thickness indicator for levels.
+   A colored bar whose height represents the level.
+   ============================================================ */
+
+.level-stroke-indicator {
+    display: block;
+    width: 60%;
+    min-height: 2px;
+    background: var(--home-color-badges, #e8a735);
+    border-radius: 2px;
+    margin-bottom: 0.3rem;
+    transition: height 0.2s ease;
+}
+
+
+/* ============================================================
+   Previsualisation du badge — fond gris clair sobre.
+   Badge preview, sober with light gray background.
+   ============================================================ */
+
+.badge-preview-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 1.5rem;
+    background: #f8f9fa;
+    border-radius: 12px;
+    min-height: 280px;
+    border: 1px solid #e8eaed;
+}
+
+.badge-preview-container svg {
+    max-width: 280px;
+    max-height: 280px;
+    width: 100%;
+    height: auto;
+}
+
+.badge-preview-empty {
+    text-align: center;
+    color: #9aa0a6;
+}
+
+
+/* ============================================================
+   Page de resultat.
+   Result page.
+   ============================================================ */
+
+.result-container {
+    text-align: center;
+}
+
+.result-title {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: #202124;
+    margin-bottom: 0.15rem;
+}
+
+.result-subtitle {
+    color: #5f6368;
+    font-size: 0.9rem;
+    margin-bottom: 1.25rem;
+}
+
+.result-badge-display {
+    display: flex;
+    justify-content: center;
+    padding: 1.5rem;
+    margin-bottom: 1.25rem;
+    background: #f8f9fa;
+    border-radius: 12px;
+    border: 1px solid #e8eaed;
+}
+
+.result-badge-display svg {
+    max-width: 320px;
+    max-height: 320px;
+    width: 100%;
+    height: auto;
+}
+
+.result-actions {
+    display: flex;
+    justify-content: center;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+}
+
+.result-actions .btn {
+    padding: 0.35rem 0.9rem;
+    font-size: 0.85rem;
+    margin: 0;
+}
+
+.result-info {
+    margin-top: 1.25rem;
+    padding: 0.75rem 1rem;
+    background: #f8f9fa;
+    border-radius: 12px;
+    border: 1px solid #e8eaed;
+    text-align: left;
+    font-size: 0.82rem;
+    color: #5f6368;
+}
+
+.result-info-swatch {
+    display: inline-block;
+    width: 12px;
+    height: 12px;
+    border-radius: 3px;
+    vertical-align: middle;
+    border: 1px solid #dfe1e5;
+}
+
+
+/* ============================================================
+   Boutons du generateur (Generer).
+   Generator buttons.
+   ============================================================ */
+
+.wizard-actions {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+}
+
+.wizard-actions .btn {
+    padding: 0.4rem 1.2rem;
+    font-size: 0.88rem;
+    margin: 0;
+}
+
+
+/* ============================================================
+   Labels de formulaire — espacement sobre.
+   Form labels — sober spacing.
+   ============================================================ */
+
+.form-group {
+    margin-bottom: 1rem;
+}
+
+.form-group label {
+    display: block;
+    font-size: 0.85rem;
+    font-weight: 500;
+    color: #202124;
+    margin-bottom: 0.3rem;
+}
+
+
+/* ============================================================
+   Messages d'erreur.
+   Error messages.
+   ============================================================ */
+
+.step-error {
+    background: #fff5f5;
+    border: 1px solid #f5c6cb;
+    border-radius: 12px;
+    padding: 0.75rem 1rem;
+    color: #842029;
+    font-size: 0.88rem;
+    margin: 0.75rem 0;
+}
+
+
+/* ============================================================
+   Responsive — Tablette.
+   La preview passe en dessous des selecteurs.
+
+   Tablet breakpoint.
+   Preview stacks below selectors.
+   ============================================================ */
+
+@media (max-width: 900px) {
+    .generator-two-columns {
+        grid-template-columns: 1fr;
+        gap: 1.5rem;
+    }
+
+    .generator-preview-panel {
+        position: static;
+        order: -1;
+    }
+
+    .category-grid {
+        grid-template-columns: repeat(4, 1fr);
+    }
+
+    .level-grid {
+        grid-template-columns: repeat(5, 1fr);
+    }
+
+    .shape-grid {
+        grid-template-columns: repeat(4, 1fr);
+    }
+
+    .badge-preview-container svg {
+        max-width: 220px;
+        max-height: 220px;
+    }
+
+    .generator-header {
+        gap: 0.75rem;
+    }
+
+    .generator-header-icon {
+        width: 60px;
+        height: 60px;
+        font-size: 1.5rem;
+    }
+
+    .generator-header-name {
+        font-size: 1.3rem;
+    }
+}
+
+
+/* ============================================================
+   Responsive — Mobile.
+   Les grilles passent en 2 colonnes.
+
+   Mobile breakpoint.
+   Grids switch to 2 columns.
+   ============================================================ */
+
+@media (max-width: 576px) {
+    .category-grid {
+        grid-template-columns: 1fr 1fr;
+        gap: 0.4rem;
+    }
+
+    .level-grid {
+        grid-template-columns: repeat(3, 1fr);
+    }
+
+    .shape-grid {
+        grid-template-columns: 1fr 1fr;
+        gap: 0.4rem;
+    }
+
+    .selection-card {
+        padding: 0.65rem 0.4rem;
+    }
+
+    .wizard-actions {
+        flex-direction: column;
+    }
+
+    .result-badge-display svg {
+        max-width: 240px;
+        max-height: 240px;
+    }
+}

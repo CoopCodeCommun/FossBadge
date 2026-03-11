@@ -1,0 +1,333 @@
+{# LOCALISATION : templates/parcours/detail.html #}
+{# Page d'affichage d'un parcours (course) avec graph Cytoscape. #}
+{# / Course/journey display page with Cytoscape graph. #}
+{% extends 'core/home/base_home.html' %}
+{% load i18n %}
+{% load pictures %}
+{% load static %}
+{% load l10n %}
+{% load custom_tags %}
+
+{% block title %}
+    {{ course.name }} — {% translate "Parcours" %} — O2Badge
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    {# Conteneur du graph Cytoscape / Cytoscape graph container #}
+    #cy-container {
+        position: relative;
+        margin: 1.5rem 0;
+        border-radius: 16px;
+        overflow: hidden;
+        border: 2px solid var(--home-color-parcours);
+        background: #fff;
+        box-shadow: 0 4px 12px rgba(177, 110, 196, 0.15);
+    }
+
+    #cy {
+        width: 100%;
+        height: 600px;
+        display: block;
+    }
+
+    {# Contrôles de zoom / Zoom controls #}
+    .parcours-zoom-controls {
+        position: absolute;
+        top: 15px;
+        right: 15px;
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+        z-index: 10;
+    }
+
+    .parcours-zoom-btn {
+        width: 36px;
+        height: 36px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: #fff;
+        border: 1px solid #e8eaed;
+        border-radius: 8px;
+        font-size: 1.25rem;
+        font-weight: 600;
+        color: #5f6368;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+
+    .parcours-zoom-btn:hover {
+        background: #f1f3f4;
+        border-color: var(--home-color-parcours);
+        color: var(--home-color-parcours);
+    }
+
+    {# En-tête du parcours / Parcours header #}
+    .parcours-header {
+        display: flex;
+        align-items: flex-start;
+        gap: 1rem;
+        margin-bottom: 1.5rem;
+        padding-bottom: 1.5rem;
+        border-bottom: 1px solid #e8eaed;
+    }
+
+    .parcours-header-icon {
+        width: 80px;
+        height: 80px;
+        flex-shrink: 0;
+        border-radius: 50%;
+        overflow: hidden;
+        border: 3px solid var(--home-color-parcours);
+        box-shadow: 0 0 15px rgba(177, 110, 196, 0.3);
+    }
+
+    .parcours-header-info {
+        flex: 1;
+        min-width: 0;
+    }
+
+    .parcours-header-name {
+        font-size: 1.5rem;
+        font-weight: 600;
+        margin-bottom: 0.5rem;
+        color: #202124;
+    }
+
+    .parcours-header-meta {
+        font-size: 0.9rem;
+        color: #5f6368;
+    }
+
+    .parcours-header-description {
+        margin-top: 0.75rem;
+        color: #5f6368;
+        line-height: 1.5;
+    }
+
+    {# Section des badges / Badges section #}
+    .parcours-badges-section {
+        margin-top: 2rem;
+    }
+
+    .parcours-badges-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+        gap: 1rem;
+        margin-top: 1rem;
+    }
+
+    .parcours-badge-card {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        padding: 1rem;
+        background: #fff;
+        border: 1px solid #e8eaed;
+        border-radius: 12px;
+        text-decoration: none;
+        color: inherit;
+        transition: all 0.2s ease;
+    }
+
+    .parcours-badge-card:hover {
+        border-color: var(--home-color-parcours);
+        box-shadow: 0 4px 12px rgba(177, 110, 196, 0.15);
+        transform: translateY(-2px);
+    }
+
+    .parcours-badge-icon {
+        width: 50px;
+        height: 50px;
+        flex-shrink: 0;
+        border-radius: 8px;
+        overflow: hidden;
+    }
+
+    .parcours-badge-info {
+        flex: 1;
+        min-width: 0;
+    }
+
+    .parcours-badge-name {
+        font-weight: 600;
+        color: #202124;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .parcours-badge-level {
+        font-size: 0.8rem;
+        color: #5f6368;
+    }
+
+    {# Responsive mobile / Mobile responsive #}
+    @media (max-width: 768px) {
+        #cy {
+            height: 400px;
+        }
+
+        .parcours-header {
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+        }
+
+        .parcours-header-icon {
+            width: 60px;
+            height: 60px;
+        }
+
+        .parcours-header-name {
+            font-size: 1.25rem;
+        }
+
+        .parcours-badges-grid {
+            grid-template-columns: 1fr;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container py-4 parcours-page-container">
+
+    {# Barre supérieure : retour / Top bar: back link #}
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <a href="/" class="home-back-link" data-testid="parcours-back-link"
+           onclick="event.preventDefault(); history.back();">
+            <span aria-hidden="true">&larr;</span> O2Badge
+        </a>
+
+        {% if can_edit %}
+        <a href="{% url 'core:course-edit' course.pk %}"
+           class="btn btn-sm btn-outline-primary"
+           data-testid="parcours-edit-btn">
+            {% translate "Modifier le parcours" %}
+        </a>
+        {% endif %}
+    </div>
+
+    {# ── En-tête du parcours / Parcours header ── #}
+    <div class="parcours-header" data-testid="parcours-header">
+        <div class="parcours-header-icon">
+            {% if course.badge and course.badge.icon %}
+                {% picture course.badge.icon img_alt=course.badge.name img_class="parcours-badge-icon" ratio="1/1" %}
+            {% else %}
+                <div class="home-result-icon-placeholder home-result-icon-placeholder-parcours" style="width: 100%; height: 100%;">
+                    <span aria-hidden="true">&#9733;</span>
+                </div>
+            {% endif %}
+        </div>
+        <div class="parcours-header-info">
+            <h1 class="parcours-header-name">{{ course.name }}</h1>
+            <p class="parcours-header-meta">
+                {% blocktranslate count counter=course.items.count %}{{ counter }} badge{% plural %}{{ counter }} badges{% endblocktranslate %}
+                {% if course.badge %}
+                    &middot; {% translate "Badge de rêve" %}
+                {% endif %}
+            </p>
+            {% if course.description %}
+            <div class="parcours-header-description">
+                {{ course.description|linebreaks }}
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    {# ── Graph Cytoscape du parcours / Cytoscape graph ── #}
+    <section aria-label="{% translate 'Visualisation du parcours' %}" data-testid="parcours-graph-section">
+        <h2 class="home-column-title">
+            {% translate "Visualisation du parcours" %}
+        </h2>
+
+        <div id="cy-container">
+            <div id="cy"></div>
+            <div class="parcours-zoom-controls">
+                <button class="parcours-zoom-btn" onclick="zoomIn()" aria-label="{% translate 'Zoom avant' %}">
+                    <span aria-hidden="true">+</span>
+                </button>
+                <button class="parcours-zoom-btn" onclick="zoomOut()" aria-label="{% translate 'Zoom arrière' %}">
+                    <span aria-hidden="true">−</span>
+                </button>
+            </div>
+        </div>
+    </section>
+
+    {# ── Liste des badges du parcours / Badges list ── #}
+    <section aria-label="{% translate 'Badges du parcours' %}" class="parcours-badges-section" data-testid="parcours-badges-section">
+        <h2 class="home-column-title">
+            {% translate "Badges du parcours" %}
+            {% if course.items.count %}
+                <span class="home-count-badge">{{ course.items.count }}</span>
+            {% endif %}
+        </h2>
+
+        {% if course.items.all %}
+        <div class="parcours-badges-grid">
+            {% for item in course.items.all %}
+            <a href="{% url 'core:home-badge-detail' badge_pk=item.badge.pk %}"
+               class="parcours-badge-card"
+               data-testid="parcours-badge-{{ item.badge.pk }}">
+                <div class="parcours-badge-icon">
+                    {% if item.badge.icon %}
+                        {% picture item.badge.icon img_alt=item.badge.name img_class="parcours-badge-icon" ratio="1/1" %}
+                    {% else %}
+                        <div class="home-result-icon-placeholder home-result-icon-placeholder-badges">
+                            <span aria-hidden="true">&#9733;</span>
+                        </div>
+                    {% endif %}
+                </div>
+                <div class="parcours-badge-info">
+                    <div class="parcours-badge-name">{{ item.badge.name }}</div>
+                    {% if item.badge.level %}
+                    <div class="parcours-badge-level">{{ item.badge.get_level_display }}</div>
+                    {% endif %}
+                </div>
+            </a>
+            {% endfor %}
+        </div>
+        {% else %}
+        <p class="home-empty-message text-muted">{% translate "Aucun badge dans ce parcours." %}</p>
+        {% endif %}
+    </section>
+
+    {# ── Lien vers le propriétaire / Owner link ── #}
+    {% if course.user %}
+    <div class="mt-4">
+        <a href="{% url 'core:home-passeport' person_pk=course.user.pk %}"
+           class="home-detail-link home-detail-link-personnes"
+           data-testid="parcours-owner-link">
+            {% translate "Voir le passeport de" %} {{ course.user.get_full_name|default:course.user.username }}
+            <span aria-hidden="true">&rarr;</span>
+        </a>
+    </div>
+    {% endif %}
+
+</div>
+
+    {% popup popup_width="80%" %}
+        <h2>Création de votre parcours : {{ course.name }}</h2>
+        <hr>
+        <h3>Badge similaire :</h3>
+        <p>Voici une liste de badge similaire à votre badge final, veuillez en sélectionner un pour commencer à créer votre parcours.</p>
+        <hr>
+
+        {% include "core/courses/partial/add_badge_popup.html" with badges=similar_badges %}
+    {% endpopup %}
+
+{% endblock %}
+
+{% block extra_js %}
+    {% include "cytoscape/graph.html" with nodes=course.get_items_for_cytoscape edges=course.get_items_connections_for_cytoscape editable=True %}
+    {% if course.items.count == 0 %}
+        <script>
+            {% popup_open %}
+        </script>
+    {% endif %}
+
+{% endblock %}

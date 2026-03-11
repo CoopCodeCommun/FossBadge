@@ -8,7 +8,7 @@
 {% load l10n %}
 {% load custom_tags %}
 
-{% block title %}{{ badge.name }} — O2Badge{% endblock %}
+{% block title %}{{ badge.name }} — openbadge.coop{% endblock %}
 
 {% block extra_css %}
 {% if structures_pks_csv %}
@@ -23,7 +23,7 @@
     <div class="d-flex justify-content-between align-items-center mb-3">
         <a href="/" class="home-back-link" data-testid="badge-page-back-link"
            onclick="event.preventDefault(); history.back();">
-            <span aria-hidden="true">&larr;</span> O2Badge
+            <span aria-hidden="true">&larr;</span> openbadge.coop
         </a>
 
         {% if is_badge_editor %}

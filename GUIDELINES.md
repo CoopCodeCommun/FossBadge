@@ -2,7 +2,7 @@
 
 ## Projet
 
-**O2Badge** est un moteur opensource de visualisation, de création et de gestion d'open badge
+**openbadge.coop** est un moteur opensource de visualisation, de création et de gestion d'open badge
 Fabrique par la Cooperative Code Commun, licence AGPLv3.
 
 Stack : Django, Python, Django REST Framework, PostgreSQL, Redis, Memcached, Celery, UV, Docker.

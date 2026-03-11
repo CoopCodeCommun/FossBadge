@@ -94,7 +94,7 @@ class HomeViewSet(viewsets.ViewSet):
         )
 
         return render(request, 'core/home/index.html', {
-            'title': 'O2Badge',
+            'title': 'openbadge.coop',
             'badge_names_for_cloud': all_badge_names_for_cloud,
         })
 
@@ -1092,7 +1092,7 @@ class BadgeViewSet(viewsets.ViewSet):
             })
 
         return render(request, 'core/badges/create.html', {
-            'title': 'O2Badge - Forger un Badge',
+            'title': 'openbadge.coop - Forger un Badge',
             'structures': structures,
             'form': form
         })

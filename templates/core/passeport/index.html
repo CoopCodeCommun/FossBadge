@@ -9,7 +9,7 @@
 {% load custom_tags %}
 
 {% block title %}
-    {% blocktranslate with name=person.get_full_name|default:person.username %}Passeport de {{ name }}{% endblocktranslate %} — O2Badge
+    {% blocktranslate with name=person.get_full_name|default:person.username %}Passeport de {{ name }}{% endblocktranslate %} — openbadge.coop
 {% endblock %}
 
 {% block extra_css %}
@@ -26,7 +26,7 @@
     <div class="d-flex justify-content-between align-items-center mb-3">
         <a href="/" class="home-back-link" data-testid="passeport-back-link"
            onclick="event.preventDefault(); history.back();">
-            <span aria-hidden="true">&larr;</span> O2Badge
+            <span aria-hidden="true">&larr;</span> openbadge.coop
         </a>
 
         {% if is_self %}

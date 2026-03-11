@@ -23,9 +23,8 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # SECURITY WARNING: keep the secret key used in production secret!
 insecure_key = 'django-insecure-&e(amkw5cizcf^2pn0v!(=ll@_z!--6f=4sg^+#j^qzl9p#zfh'
 SECRET_KEY = os.environ.get('SECRET_KEY', insecure_key)
-
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = os.environ.get('DEBUG', False)
+DEBUG = (os.getenv('DEBUG','0')=='1')
 DEBUG_SEND_EMAIL = False
 
 ALLOWED_HOSTS = ['localhost', '127.0.0.1', 'badge.codecommun.coop', 'badge.localhost', 'openbadge.coop']

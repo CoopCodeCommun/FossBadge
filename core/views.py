@@ -19,14 +19,13 @@ from .models import Structure, Badge, User, BadgeAssignment, BadgeEndorsement, B
 from .forms import BadgeForm, StructureForm, UserForm, PartialUserForm
 
 from .permissions import IsBadgeEditor, IsStructureAdmin, CanEditUser, CanAssignBadge, CanEndorseBadge, CanEditCourse
-from .validators import BadgeAssignmentValidator, BadgeEndorsementValidator, DreamBadgeValidator, InviteUserValidator, \
-    CreateCourseValidator, BadgeSelfAssignmentValidator
+from .validators import BadgeAssignmentValidator, BadgeEndorsementValidator, DreamBadgeValidator, InviteUserValidator, CreateCourseValidator, BadgeSelfAssignmentValidator
 
 
 def raise403(request, msg=None):
     """
     Return a not authorize error (403).
-    Usage example (in another method) :
+    To use in another method :
         return raise403(request)
     """
     return render(request, 'errors/403.html', status=403, context={
@@ -36,7 +35,7 @@ def raise403(request, msg=None):
 def raise404(request, msg=None):
     """
     Return a not found error (404).
-    Usage example (in another method) :
+    To use in another method :
         return raise404(request)
     """
     return render(request, 'errors/404.html', status=404, context={
@@ -44,9 +43,19 @@ def raise404(request, msg=None):
     })
 
 def reload(request):
+    """
+    Force reload fo HTMX
+    To use in another method :
+        return reload(request)
+    """
     return HttpResponseClientRedirect(request.headers['Referer'])
 
 def redirect_reload(url):
+    """
+    Forced redirection for HTMX
+    To use in another method :
+        return redirect_reload(reverse('url'))
+    """
     return HttpResponseClientRedirect(url)
 
 
@@ -195,7 +204,7 @@ class HomeViewSet(viewsets.ViewSet):
 
         # Requête classique (fallback sans JS) → retourner la page complète avec résultats
         # Regular request (no-JS fallback) → return full page with results
-        search_context['title'] = 'FossBadge — Recherche'
+        search_context['title'] = 'openbadge.coop — Recherche'
         return render(request, 'core/home/index.html', search_context)
 
     @action(detail=False, methods=["GET"], url_path="badge-focus/(?P<badge_pk>[^/.]+)")
@@ -949,7 +958,7 @@ class BadgeViewSet(viewsets.ViewSet):
         else:
             # For regular requests, return the full page
             return render(request, 'core/badges/list.html', {
-                'title': 'FossBadge - Liste des Badges',
+                'title': 'openbadge.coop - Liste des Badges',
                 'badges': badges,
                 'structures': structures,
                 'search_query': search_query,
@@ -974,7 +983,7 @@ class BadgeViewSet(viewsets.ViewSet):
             can_assign = False
 
         return render(request, 'core/badges/detail.html', {
-            'title': f'FossBadge - Badge {badge.name}',
+            'title': f'openbadge.coop - Badge {badge.name}',
             'badge': badge,
             'holders': holders,
             'is_editor': is_editor,
@@ -1340,7 +1349,7 @@ class AssignmentViewSet(viewsets.ViewSet):
         assignment = get_object_or_404(BadgeAssignment, pk=pk)
 
         return render(request, 'core/assignments/detail.html', {
-            'title': f'FossBadge - {assignment.user.username} - {assignment.badge.name}',
+            'title': f'openbadge.coop - {assignment.user.username} - {assignment.badge.name}',
             'assignment': assignment,
         })
 
@@ -1421,7 +1430,7 @@ class StructureViewSet(viewsets.ViewSet):
             badges = Badge.objects.all()
             # For regular requests, return the full page
             return render(request, 'core/structures/list.html', {
-                'title': 'FossBadge - Liste des Structures',
+                'title': 'openbadge.coop - Liste des Structures',
                 'structures': structures,
                 'badges': badges,
                 'search_query': search_query,
@@ -1441,7 +1450,7 @@ class StructureViewSet(viewsets.ViewSet):
         is_admin = structure.is_admin(request.user)
 
         return render(request, 'core/structures/detail.html', {
-            'title': f'FossBadge - Structure {structure.name}',
+            'title': f'openbadge.coop - Structure {structure.name}',
             'structure': structure,
             'issued_badges': issued_badges,
             'is_editor': is_editor,
@@ -1527,7 +1536,7 @@ class StructureViewSet(viewsets.ViewSet):
             })
 
         return render(request, 'core/structures/create.html', {
-            'title': 'FossBadge - Créer une Structure / Entreprise',
+            'title': 'openbadge.coop - Créer une Structure / Entreprise',
             'form': form
         })
 
@@ -1676,7 +1685,7 @@ class UserViewSet(viewsets.ViewSet):
 
             # For regular requests, return the full page
             return render(request, 'core/users/list.html', {
-                'title': 'FossBadge - Liste des Profils',
+                'title': 'openbadge.coop - Liste des Profils',
                 'users': users,
                 'badges': badges,
                 'structures': structures,
@@ -1698,7 +1707,7 @@ class UserViewSet(viewsets.ViewSet):
         structures = user.structures
 
         return render(request, 'core/users/detail.html', {
-            'title': f'FossBadge - Profil de {user.get_full_name() or user.username}',
+            'title': f'openbadge.coop - Profil de {user.get_full_name() or user.username}',
             'user': user,
             'badge_with_badge_assignments': badge_with_badge_assignments,
             'structures': structures
@@ -1723,7 +1732,7 @@ class UserViewSet(viewsets.ViewSet):
             form = UserForm()
 
         return render(request, 'core/users/create.html', {
-            'title': 'FossBadge - Créer un utilisateur',
+            'title': 'openbadge.coop - Créer un utilisateur',
             'form': form,
         })
 
@@ -1846,7 +1855,7 @@ class CourseViewSet(viewsets.ViewSet):
             permissions_list += [AllowAny]
         elif self.action in ['get_or_create_dream_course']:
             permissions_list += [IsAuthenticated]
-        elif self.action in ["add_badge", "remove_badge"]:
+        elif self.action in ["add_badge", "remove_badge", "edit"]:
             permissions_list += [CanEditCourse]
 
         return [permission() for permission in permissions_list]

@@ -2226,15 +2226,22 @@ picture.text-center img.badge-icon {
     .home-word-cloud-item:nth-child(5n+4) { font-size: 1.1rem; }
 }
 
-.login-button{
+
+.navbar-custom{
+    margin: 15px;
     position: relative;
-    right: 15px;
-    top:15px;
-    text-align: right;
     outline: none;
+    display: flex;
+    justify-content: space-between;
 }
 
-/* Custom class a remplcer par tailwind */
+.logo-text{
+    color:black;
+    text-decoration-line: none;
+    font-weight: 700;
+}
+
+/* Custom class a replacer par tailwind */
 
 .flex{
     display: flex;

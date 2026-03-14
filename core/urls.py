@@ -28,4 +28,9 @@ urlpatterns = [
     # Router URLs (après les routes custom)
     # / Router URLs (after custom routes)
     path('', include(router.urls)),
+
+    # Test path for the errors pages
+    path('404', views.raise404),
+    path('403', views.raise403),
+
 ]

@@ -67,9 +67,17 @@ body {
 /* Footer styles */
 footer {
     margin-top: 3rem;
-    padding: 2rem 0;
-    background-color: #f8f9fa;
-    border-top: 1px solid #e9ecef;
+    padding: 1rem 0;
+    box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.06);
+    gap: 5px;
+    display: flex;
+    justify-content: space-evenly;
+    flex-wrap: wrap;
+    text-align: center;
+    position: fixed;
+    left: 0;
+    bottom: 0;
+    width: 100%;
 }
 
 /* Accessibility improvements */

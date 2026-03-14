@@ -23,6 +23,7 @@ class IsBadgeEditor(permissions.BasePermission):
 
         return False
 
+
 class IsStructureAdmin(permissions.BasePermission):
     """
     Check if a user is structure administrator
@@ -35,6 +36,7 @@ class IsStructureAdmin(permissions.BasePermission):
         structure = Structure.objects.get(pk=pk)
 
         return is_structure_admin(user, structure)
+
 
 class CanEditUser(permissions.BasePermission):
     """
@@ -55,6 +57,7 @@ class CanEditUser(permissions.BasePermission):
             #user.is_superuser,
             edited_user == user
         ])
+
 
 class CanAssignBadge(permissions.BasePermission):
     """
@@ -81,6 +84,7 @@ class CanAssignBadge(permissions.BasePermission):
 
         return is_structure_admin(user, structure)
 
+
 class CanEndorseBadge(permissions.BasePermission):
     """
     Verifie que l'utilisateur est admin de la structure pour endosser un badge.
@@ -99,7 +103,10 @@ class CanEndorseBadge(permissions.BasePermission):
         if not user or not user.is_active or not user.is_authenticated:
             return False
 
-        structure = get_object_or_404(Structure, pk=request.POST["structure"])
+        try:
+            structure = get_object_or_404(Structure, pk=request.POST["structure"])
+        except Exception:
+            return False
 
         return is_structure_admin(user, structure)
 
@@ -112,6 +119,7 @@ class CanEditCourse(permissions.BasePermission):
             return course.user == request.user
 
         return is_structure_editor(request.user, course.structure)
+
 
 #### Methods ####
 def is_structure_editor(user, structure):
@@ -126,6 +134,7 @@ def is_structure_editor(user, structure):
         structure.is_editor(user),
         structure.is_admin(user),
     ])
+
 
 def is_structure_admin(user, structure):
     if not user:

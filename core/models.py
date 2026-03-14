@@ -220,6 +220,7 @@ class Structure(models.Model):
         ('association', 'Association'),
         ('company', 'Entreprise'),
         ('school', 'École'),
+        ('public', 'Établissement public'),
     ]
 
     ROLES = [

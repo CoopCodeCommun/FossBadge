@@ -11,11 +11,11 @@ class Marker(models.Model):
                         width_field='avatar_width', height_field='avatar_height')
     avatar_width = models.PositiveIntegerField(blank=True, null=True, editable=False)
     avatar_height = models.PositiveIntegerField(blank=True, null=True, editable=False)
-    lat = models.FloatField()
-    lng = models.FloatField()
+    latitude = models.FloatField()
+    longitude = models.FloatField()
 
     def __str__(self):
-        return f"Marker: {self.name} at ({self.lat}, {self.lng})"
+        return f"Marker: {self.name} at ({self.latitude}, {self.longitude})"
 
     @classmethod
     def import_from_kml(cls, kml_file_path):

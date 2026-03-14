@@ -16,10 +16,11 @@ from rest_framework.decorators import action,authentication_classes, permission_
 from .helpers import TokenHelper
 from .helpers.utils import get_or_create_user, invite_user_to_structure
 from .models import Structure, Badge, User, BadgeAssignment, BadgeEndorsement, BadgeHistory, BadgeCriteria, Course, CourseItem
-from .forms import BadgeForm, StructureForm, UserForm, PartialUserForm
+from .forms import BadgeForm, UserForm, PartialUserForm
 
 from .permissions import IsBadgeEditor, IsStructureAdmin, CanEditUser, CanAssignBadge, CanEndorseBadge, CanEditCourse
-from .validators import BadgeAssignmentValidator, BadgeEndorsementValidator, DreamBadgeValidator, InviteUserValidator, CreateCourseValidator, BadgeSelfAssignmentValidator
+from .validators import BadgeAssignmentValidator, BadgeEndorsementValidator, DreamBadgeValidator, InviteUserValidator, \
+    CreateCourseValidator, BadgeSelfAssignmentValidator, CreateStructureValidator
 
 
 def raise403(request, msg=None):
@@ -561,7 +562,7 @@ class HomeViewSet(viewsets.ViewSet):
                 'type': 'Feature',
                 'geometry': {
                     'type': 'Point',
-                    'coordinates': [structure.marker.lng, structure.marker.lat],
+                    'coordinates': [structure.marker.longitude, structure.marker.latitude],
                 },
                 'properties': {
                     'pk': str(structure.pk),
@@ -1460,41 +1461,35 @@ class StructureViewSet(viewsets.ViewSet):
     @action(detail=True, methods=["get","post"])
     def edit(self, request, pk=None):
         """
-        Modifie une structure existante.
-        Si requete HTMX, retourne le formulaire en partiel pour la modale.
-        / Edit an existing structure. Returns partial for HTMX modal.
-
-        LOCALISATION : core/views.py
+        Update an existing structure.
         """
-        structure = get_object_or_404(Structure, pk=pk)
-        if not structure.is_admin(request.user):
+        if not request.htmx:
             return raise403(request)
 
-        if request.method == 'POST':
-            form = StructureForm(request.POST, request.FILES, instance=structure)
-            if form.is_valid():
-                form.save()
-                # Redirige vers la page structure (HTMX ou classique)
-                # / Redirect to structure page (HTMX or classic)
-                if request.htmx:
-                    return HttpResponseClientRedirect(
-                        reverse('core:home-lieu', kwargs={'structure_pk': structure.pk})
-                    )
-                return redirect(reverse('core:structure-detail', kwargs={'pk': structure.pk}))
-        else:
-            form = StructureForm(instance=structure)
+        structure = get_object_or_404(Structure, pk=pk)
 
-        logo = None
-        if structure.logo:
-            logo = structure.logo.url
-
-        # Partiel HTMX pour la modale / HTMX partial for modal
-        if request.htmx:
-            return render(request, "core/structures/partial/edit_form.html", {
-                "form": form, "logo": logo, "structure": structure,
+        if request.method == 'GET':
+            return render(request, 'core/structures/partial/edit_form.html', {
+                'types':Structure.TYPE_CHOICES,
+                "structure":structure,
             })
 
-        return render(request,"core/structures/edit.html",{"form":form,"logo":logo})
+        validator = CreateStructureValidator(structure, data=request.data)
+        is_valid = validator.is_valid()
+
+        if not is_valid:
+            return render(request, 'core/structures/partial/edit_form.html', {
+                'types':Structure.TYPE_CHOICES,
+                "defaults": validator.data,
+                "errors" : validator.errors,
+                "structure":structure,
+            })
+
+        # Edit the structure
+        structure = validator.save()
+
+        return redirect_reload(reverse('core:home-lieu', kwargs={'structure_pk': structure.pk}))
+
 
     @action(detail=True, methods=["get","post"])
     def delete(self, request, pk=None):
@@ -1518,27 +1513,32 @@ class StructureViewSet(viewsets.ViewSet):
         """
         Create a new structure/company.
         """
+        if not request.htmx:
+            return raise403(request)
 
-        if request.method == 'POST':
-            form = StructureForm(request.POST, request.FILES)
-            if form.is_valid():
-                structure = form.save()
-                structure.admins.add(request.user)
-                structure.save()
-
-                return redirect_reload(reverse('core:home-lieu', kwargs={'structure_pk': structure.pk}))
-        else:
-            form = StructureForm()
-
-        if request.htmx:
+        if request.method == 'GET':
             return render(request, 'core/structures/partial/create_form.html', {
-                'form': form,
+                'types':Structure.TYPE_CHOICES,
             })
 
-        return render(request, 'core/structures/create.html', {
-            'title': 'openbadge.coop - Créer une Structure / Entreprise',
-            'form': form
-        })
+
+        validator = CreateStructureValidator(data=request.data)
+        is_valid = validator.is_valid()
+
+        if not is_valid:
+            return render(request, 'core/structures/partial/create_form.html', {
+                'types':Structure.TYPE_CHOICES,
+                "defaults": validator.data,
+                "errors" : validator.errors,
+            })
+
+        # Create the structure
+        structure = validator.save()
+        structure.admins.add(request.user)
+
+
+        return redirect_reload(reverse('core:home-lieu', kwargs={'structure_pk': structure.pk}))
+
 
     @action(detail=True, methods=['get','post'])
     def invite(self, request, pk):

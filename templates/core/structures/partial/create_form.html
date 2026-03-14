@@ -1,5 +1,7 @@
 {% load custom_tags %}
+{% load static %}
 
+<h2>Créer une structure</h2>
 <!-- Structure Creation Form -->
 <form method="post"
       enctype="multipart/form-data"
@@ -11,14 +13,6 @@
       data-testid="form-create-badge">
     {% csrf_token %}
 
-    {% if form.non_field_errors %}
-        <div class="alert alert-danger">
-            {% for error in form.non_field_errors %}
-                {{ error }}
-            {% endfor %}
-        </div>
-    {% endif %}
-
     <div class="row">
         <div class="col-md-6">
             <!-- Structure Information -->
@@ -26,81 +20,94 @@
 
             <!-- Structure Name -->
             <div class="mb-4">
-                <label for="{{ form.name.id_for_label }}" class="form-label fw-bold">{{ form.name.label }}</label>
-                {{ form.name }}
-                {% if form.name.errors %}
-                    <div class="invalid-feedback d-block">
-                        {% for error in form.name.errors %}
+                <label for="name" class="form-label fw-bold">Nom de la structure</label>
+                <input type="text" name="name" id="name"
+                       class="form-control form-control-lg"
+                       placeholder="Ex: Association Python France"
+                       maxlength="100" required="" value="{% if defaults.name %}{{ defaults.name }}{% endif %}">
+
+                {% if errors.name %}
+                    <p class="error">
+                        {% for error in errors.name %}
                             {{ error }}
                         {% endfor %}
-                    </div>
+                    </p>
                 {% endif %}
             </div>
 
             <!-- Structure Type -->
             <div class="mb-4">
-                <label for="{{ form.type.id_for_label }}" class="form-label fw-bold">{{ form.type.label }}</label>
-                {{ form.type }}
-                {% if form.type.errors %}
-                    <div class="invalid-feedback d-block">
-                        {% for error in form.type.errors %}
-                            {{ error }}
-                        {% endfor %}
-                    </div>
-                {% endif %}
-            </div>
+                <label for="type" class="form-label fw-bold">Type</label>
+                <select id="type" class="form-select mt-2" name="type">
+                    <option>--- Sélectionnez un type ---</option>>
+                    {%for type in types %}
+                        <option {% if defaults.type == type.0  %} selected {%endif%}
+                                value="{{type.0}}">
+                            {{type.1}}
+                        </option>
+                    {%endfor%}
+                </select>
 
-            <!-- Structure Address -->
-            <div class="mb-4">
-                <label for="{{ form.address.id_for_label }}" class="form-label fw-bold">{{ form.address.label }}</label>
-                {{ form.address }}
-                {% if form.address.errors %}
-                    <div class="invalid-feedback d-block">
-                        {% for error in form.address.errors %}
+                {% if errors.type %}
+                    <p class="error">
+                        {% for error in errors.type %}
                             {{ error }}
                         {% endfor %}
-                    </div>
+                    </p>
                 {% endif %}
             </div>
 
             <!-- Structure SIREN/SIRET -->
             <div class="mb-4">
-                <label for="{{ form.siret.id_for_label }}" class="form-label fw-bold">{{ form.siret.label }}</label>
-                {{ form.siret }}
-                {% if form.siret.errors %}
-                    <div class="invalid-feedback d-block">
-                        {% for error in form.siret.errors %}
+                <label for="siret" class="form-label fw-bold">SIRET de la structure</label>
+                <input type="text" name="siret" id="siret"
+                       class="form-control form-control-lg"
+                       placeholder="Ex: 123 456 789 00012"
+                       value="{% if defaults.siret %}{{ defaults.siret }}{% endif %}">
+
+                {% if errors.siret %}
+                    <p class="error">
+                        {% for error in errors.siret %}
                             {{ error }}
                         {% endfor %}
-                    </div>
+                    </p>
                 {% endif %}
-                <div class="form-text">Format libre, la validation sera effectuée par le système</div>
             </div>
 
             <!-- Structure Description -->
             <div class="mb-4">
-                <label for="{{ form.description.id_for_label }}" class="form-label fw-bold">{{ form.description.label }}</label>
-                {{ form.description }}
-                {% if form.description.errors %}
-                    <div class="invalid-feedback d-block">
-                        {% for error in form.description.errors %}
+                <label for="description" class="form-label fw-bold">Description</label>
+                <textarea id="description" name="description" required="" class="form-control"
+                          placeholder="Description de la structure, ses activités, sa mission..."
+                >{% if defaults.description %}{{ defaults.description }}{% endif %}</textarea>
+
+                {% if errors.description %}
+                    <p class="error">
+                        {% for error in errors.description %}
                             {{ error }}
                         {% endfor %}
-                    </div>
+                    </p>
                 {% endif %}
             </div>
 
+
             <!-- Structure Logo -->
             <div class="mb-4">
-                <label for="{{ form.logo.id_for_label }}" class="form-label fw-bold">{{ form.logo.label }}</label>
-                {{ form.logo }}
-                {% if form.logo.errors %}
-                    <div class="invalid-feedback d-block">
-                        {% for error in form.logo.errors %}
-                            {{ error }}
-                        {% endfor %}
-                    </div>
-                {% endif %}
+                        <label for="logo" class="form-label fw-bold">Logo</label>
+                        <input id="logo" class="form-control mt-2" name="logo" type="file"/>
+
+                    {% if errors.logo %}
+                        <p class="error">
+                            {% for error in errors.logo %}
+                                {{ error }}
+                            {% endfor %}
+                        </p>
+                    {% endif %}
+            </div>
+            <!-- Logo Preview -->
+            <div class="text-center mt-5">
+                <img src="{{ placeholder_image }}" alt="Aperçu du logo" class="img-fluid mb-2" style="max-width: 200px;" id="logo_preview">
+                <p class="form-text">Aperçu du logo</p>
             </div>
         </div>
 
@@ -110,87 +117,194 @@
 
             <!-- Referent Last Name -->
             <div class="mb-4">
-                <label for="{{ form.referent_last_name.id_for_label }}" class="form-label fw-bold">{{ form.referent_last_name.label }}</label>
-                {{ form.referent_last_name }}
-                {% if form.referent_last_name.errors %}
-                    <div class="invalid-feedback d-block">
-                        {% for error in form.referent_last_name.errors %}
+                <label for="referent_last_name" class="form-label fw-bold">Nom du référent</label>
+                <input type="text" name="referent_last_name" id="referent_last_name"
+                       class="form-control form-control-lg"
+                       placeholder="Nom de famille"
+                       maxlength="100" required="" value="{% if defaults.referent_last_name %}{{ defaults.referent_last_name }}{% endif %}">
+
+                {% if errors.referent_last_name %}
+                    <p class="error">
+                        {% for error in errors.referent_last_name %}
                             {{ error }}
                         {% endfor %}
-                    </div>
+                    </p>
                 {% endif %}
             </div>
 
             <!-- Referent First Name -->
             <div class="mb-4">
-                <label for="{{ form.referent_first_name.id_for_label }}" class="form-label fw-bold">{{ form.referent_first_name.label }}</label>
-                {{ form.referent_first_name }}
-                {% if form.referent_first_name.errors %}
-                    <div class="invalid-feedback d-block">
-                        {% for error in form.referent_first_name.errors %}
+                <label for="referent_first_name" class="form-label fw-bold">Prénom du référent</label>
+                <input type="text" name="referent_first_name" id="referent_first_name"
+                       class="form-control form-control-lg"
+                       placeholder="Prénom"
+                       maxlength="100" required="" value="{% if defaults.referent_first_name %}{{ defaults.referent_first_name }}{% endif %}">
+
+                {% if errors.referent_first_name %}
+                    <p class="error">
+                        {% for error in errors.referent_first_name %}
                             {{ error }}
                         {% endfor %}
-                    </div>
+                    </p>
                 {% endif %}
             </div>
 
+
             <!-- Referent Position -->
             <div class="mb-4">
-                <label for="{{ form.referent_position.id_for_label }}" class="form-label fw-bold">{{ form.referent_position.label }}</label>
-                {{ form.referent_position }}
-                {% if form.referent_position.errors %}
-                    <div class="invalid-feedback d-block">
-                        {% for error in form.referent_position.errors %}
+                <label for="referent_position" class="form-label fw-bold">Poste du référent</label>
+                <input type="text" name="referent_position" id="referent_position"
+                       class="form-control form-control-lg"
+                       placeholder="Ex: Président, Directeur, etc."
+                       maxlength="100" required="" value="{% if defaults.referent_position %}{{ defaults.referent_position }}{% endif %}">
+
+                {% if errors.referent_position %}
+                    <p class="error">
+                        {% for error in errors.referent_position %}
                             {{ error }}
                         {% endfor %}
-                    </div>
+                    </p>
                 {% endif %}
             </div>
 
             <!-- Location Information -->
-            <h3 class="mb-3 mt-4">Localisation (optionnel)</h3>
+            <h3 class="mb-3 mt-4">Localisation</h3>
 
-            <!-- Latitude -->
+            <!-- Structure Address -->
             <div class="mb-4">
-                <label for="{{ form.latitude.id_for_label }}" class="form-label fw-bold">{{ form.latitude.label }}</label>
-                {{ form.latitude }}
-                {% if form.latitude.errors %}
-                    <div class="invalid-feedback d-block">
-                        {% for error in form.latitude.errors %}
+                <label for="address" class="form-label fw-bold">Adresse de la structure</label>
+                <input type="text" name="address" id="address"
+                       class="form-control form-control-lg"
+                       placeholder="Adresse complète de la structure"
+                       maxlength="100" required="" value="{% if defaults.address %}{{ defaults.address }}{% endif %}">
+
+                {% if errors.address %}
+                    <p class="error">
+                        {% for error in errors.address %}
                             {{ error }}
                         {% endfor %}
-                    </div>
+                    </p>
                 {% endif %}
             </div>
-
-            <!-- Longitude -->
-            <div class="mb-4">
-                <label for="{{ form.longitude.id_for_label }}" class="form-label fw-bold">{{ form.longitude.label }}</label>
-                {{ form.longitude }}
-                {% if form.longitude.errors %}
-                    <div class="invalid-feedback d-block">
-                        {% for error in form.longitude.errors %}
-                            {{ error }}
-                        {% endfor %}
-                    </div>
-                {% endif %}
+            <p>Prévisualisation de la localisation :</p>
+            <div class="badge-page-map-container">
+                <div id="badge-page-map"></div>
             </div>
-
-            <!-- Logo Preview -->
-            <div class="text-center mt-5">
-                <img src="{{ placeholder_image }}" alt="Aperçu du logo" class="img-fluid mb-2" style="max-width: 200px;" id="logo_preview">
-                <p class="form-text">Aperçu du logo</p>
-            </div>
+            <input type="text" name="latitude" id="latitude"
+                   class="form-control form-control-lg d-none"
+                   placeholder="Ex: 48.8566."
+                   value="{% if defaults.latitude %}{{ defaults.latitude }}{% endif %}">
+            <input type="text" name="longitude" id="longitude"
+                   class="form-control form-control-lg d-none"
+                   placeholder="Ex: 48.8566."
+                   value="{% if defaults.longitude %}{{ defaults.longitude }}{% endif %}">
         </div>
     </div>
 
     <!-- Submit Button -->
     <div class="text-center mt-4">
         <button type="submit" class="btn btn-primary btn-lg">
-            Créer la structure / entreprise
+            Créer la structure
         </button>
         <button type="button" class="popup-cancel-btn" onclick="{% popup_close %}">
             Annuler
         </button>
     </div>
 </form>
+
+{% block extra_js %}
+    <script>
+        // Simple preview for uploaded logo
+        document.getElementById('logo').addEventListener('change', function (event) {
+            const file = event.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function (e) {
+                    document.getElementById('logo_preview').src = e.target.result;
+                }
+                reader.readAsDataURL(file);
+            }
+        });
+    </script>
+
+    <script src="{% static 'js/maplibre-gl.js' %}" onload="initMap()"></script>
+    <script>
+        let map;
+        let markers = []
+        let input;
+        let input_lat;
+        let input_lon;
+
+        function initMap(){
+            // Initialize the map
+            map = new maplibregl.Map({
+                container: 'badge-page-map',
+                style: 'https://basemaps.cartocdn.com/gl/voyager-gl-style/style.json',
+                center: [2, 47], // starting position [lng, lat]
+                zoom: 4,
+                attributionControl: false,
+            });
+
+            // Get the address input
+            input = document.querySelector("#address")
+            input_lat = document.querySelector("#latitude")
+            input_lon = document.querySelector("#longitude")
+
+            // Add an event listener to the address input.
+            // When the user don't press any key for 0.5s, fetch OSM
+            input.addEventListener("keyup",delay(fetchOSM, 500))
+
+        }
+
+        function fetchOSM() {
+            let address = input.value;
+            fetch(`https://nominatim.openstreetmap.org/search?q=${address}&format=json`)
+                .then(response => {
+                    if (!response.ok) {
+                        // ERROR
+                    }
+                    return response.json();
+                })
+                .then(json=>{
+                    // Remove old marker
+                    markers.forEach(m=>m.remove());
+
+                    // Get the first result and create a marker
+                    let place = json[0]
+                    let marker = new maplibregl.Marker()
+                        .setLngLat([place["lon"], place["lat"]])
+                        .addTo(map);
+                    markers.push(marker)
+
+                    map.flyTo({
+                        center: [place["lon"], place["lat"]],
+                        zoom: 14,
+                        speed: 5,
+                        curve: 1,
+                        easing(t) {
+                            return t;
+                        }
+                    })
+                    input_lat.value = place["lat"]
+                    input_lon.value = place["lon"]
+
+                })
+
+
+        }
+
+        function delay(callback, ms) {
+            var timer = 0;
+            return function() {
+                var context = this, args = arguments;
+                clearTimeout(timer);
+                timer = setTimeout(function () {
+                    callback.apply(context, args);
+                }, ms || 0);
+            };
+        }
+
+
+    </script>
+{% endblock %}
+

@@ -22,7 +22,11 @@
 <body hx-ext="response-targets" hx-headers='{"x-csrftoken": "{{ csrf_token }}"}'>
 
 
-    <div class="login-button">
+    <div class="navbar-custom">
+        <a class="logo-text" href="{% url 'core:home-list' %}" data-testid="navbar-home-link">
+            openbadge.coop
+        </a>
+
         {% if request.user.is_authenticated %}
             {# Utilisateur connecté : lien vers son passeport / Logged in user: link to their passport #}
             <a href="{% url 'core:home-passeport' person_pk=request.user.pk %}" data-testid="navbar-passeport-link" class="home-invite-btn">

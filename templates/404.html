@@ -1,0 +1,16 @@
+{% extends 'core/home/base_home.html' %}
+
+{% block title %}Cette page n'existe pas{% endblock %}
+
+{% block content %}
+<div id="home-search-wrapper" class="home-search-wrapper" data-testid="home-search-wrapper">
+    <div class="home-search-box" data-testid="home-search-box">
+        <h1 class="home-title text-body">Cette page n'existe pas</h1>
+        {% if message %}
+        <p class="text-center">{{message}}</p>
+        {% endif %}
+        <a href="{% url "core:home-list" %}">Retourner a l'accueil </a>
+    </div>
+</div>
+{% endblock %}
+

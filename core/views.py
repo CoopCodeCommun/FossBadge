@@ -28,7 +28,7 @@ def raise403(request, msg=None):
     To use in another method :
         return raise403(request)
     """
-    return render(request, 'errors/403.html', status=403, context={
+    return render(request, '403.html', status=403, context={
         "message": msg
     })
 
@@ -38,7 +38,7 @@ def raise404(request, msg=None):
     To use in another method :
         return raise404(request)
     """
-    return render(request, 'errors/404.html', status=404, context={
+    return render(request, '404.html', status=404, context={
         "message": msg
     })
 
@@ -1008,9 +1008,9 @@ class BadgeViewSet(viewsets.ViewSet):
                 form.save()
                 if request.htmx:
                     return HttpResponseClientRedirect(
-                        reverse('core:badge-detail', kwargs={'pk': badge.pk})
+                        reverse('core:home-badge-detail', kwargs={'badge_pk': badge.pk})
                     )
-                return redirect(reverse('core:badge-detail', kwargs={'pk': badge.pk}))
+                return redirect(reverse('core:home-badge-detail', kwargs={'badge_pk': badge.pk}))
         else:
             form = BadgeForm(instance=badge, request=request)
 

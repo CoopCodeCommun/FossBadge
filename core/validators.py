@@ -3,6 +3,7 @@ from rest_framework import serializers
 
 from core.admin import StructureAdmin
 from core.models import Badge, User, Structure
+from mapview.models import Marker
 
 
 class BadgeAssignmentValidator(serializers.Serializer):
@@ -59,6 +60,7 @@ class BadgeAssignmentValidator(serializers.Serializer):
             )
         return data
 
+
 class BadgeSelfAssignmentValidator(serializers.Serializer):
     notes = serializers.CharField(required=True)
 
@@ -111,6 +113,7 @@ class BadgeEndorsementValidator(serializers.Serializer):
             )
         return data
 
+
 class DreamBadgeValidator(serializers.Serializer):
     name = serializers.CharField(required=True)
     icon = serializers.ImageField(required=False)
@@ -124,9 +127,77 @@ class InviteUserValidator(serializers.Serializer):
     email = serializers.EmailField()
     role = serializers.ChoiceField(choices=Structure.ROLES)
 
+
 class CreateCourseValidator(serializers.Serializer):
     """
     Validator for creating a course
     """
     structure = serializers.UUIDField()
     badge = serializers.UUIDField()
+
+class CreateStructureValidator(serializers.Serializer):
+    """
+    Validator for creating a structure
+    """
+
+    def create(self, validated_data):
+        data = validated_data
+        longitude = data.pop("longitude", None)
+        latitude = data.pop("latitude", None)
+
+        structure = Structure.objects.create(**data)
+
+        if longitude and latitude:
+            marker = Marker.objects.create(latitude=latitude, longitude=longitude)
+            structure.marker = marker
+            structure.save()
+
+        return structure
+
+    def update(self, instance, validated_data):
+        longitude = validated_data.get("longitude", None)
+        latitude = validated_data.get("latitude", None)
+
+        instance.name = validated_data.get('name', instance.name)
+        instance.description = validated_data.get('description', instance.description)
+        instance.type = validated_data.get('type', instance.type)
+        instance.siret = validated_data.get('siret', instance.siret)
+        instance.referent_last_name = validated_data.get('referent_last_name', instance.referent_last_name)
+        instance.referent_first_name = validated_data.get('referent_first_name', instance.referent_first_name)
+        instance.referent_position = validated_data.get('referent_position', instance.referent_position)
+        instance.address = validated_data.get('address', instance.address)
+
+        # LOGO ?
+        instance.logo = validated_data.get('logo', instance.logo)
+
+        if longitude and latitude:
+            if instance.marker:
+                instance.marker.longitude = longitude
+                instance.marker.latitude = latitude
+                instance.marker.save()
+            else:
+                marker = Marker.objects.create(latitude=latitude, longitude=longitude)
+                instance.marker = marker
+
+        instance.save()
+        return instance
+
+    name = serializers.CharField(required=True)
+    description = serializers.CharField(required=True)
+
+    logo = serializers.ImageField(required=False)
+    type = serializers.ChoiceField(choices=Structure.TYPE_CHOICES)
+
+    siret = serializers.CharField(required=False)
+
+    # Referent info
+    referent_last_name = serializers.CharField(required=True, max_length=100)
+    referent_first_name = serializers.CharField(required=True, max_length=100)
+    referent_position = serializers.CharField(required=True, max_length=100)
+
+    # Location info
+    address = serializers.CharField(required=True)
+
+    # Marker info
+    latitude = serializers.FloatField(required=False)
+    longitude = serializers.FloatField(required=False)

@@ -1,11 +1,11 @@
 {% extends 'base.html' %}
 
-{% block title %}Créer une Structure / Entreprise{% endblock %}
+{% block title %}Créer une Structure {% endblock %}
 
 {% block content %}
     <div class="row">
         <div class="col-md-12">
-            <h1 class="display-4 mb-4">Créer une Structure / Entreprise</h1>
+            <h1 class="display-4 mb-4">Créer une Structure </h1>
         </div>
     </div>
 
@@ -21,18 +21,3 @@
     </div>
 {% endblock %}
 
-{% block extra_js %}
-    <script>
-        // Simple preview for uploaded logo
-        document.getElementById('{{ form.logo.auto_id }}').addEventListener('change', function (event) {
-            const file = event.target.files[0];
-            if (file) {
-                const reader = new FileReader();
-                reader.onload = function (e) {
-                    document.getElementById('logo_preview').src = e.target.result;
-                }
-                reader.readAsDataURL(file);
-            }
-        });
-    </script>
-{% endblock %}

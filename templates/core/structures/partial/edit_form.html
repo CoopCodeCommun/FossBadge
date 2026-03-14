@@ -1,5 +1,6 @@
 {% load custom_tags %}
 {% load l10n %}
+{% load static %}
 
 <h2>Modifier la structure</h2>
 <!-- Structure Creation Form -->
@@ -57,23 +58,6 @@
                 {% endif %}
             </div>
 
-            <!-- Structure Address -->
-            <div class="mb-4">
-                <label for="address" class="form-label fw-bold">Adresse de la structure</label>
-                <input type="text" name="address" id="address"
-                       class="form-control form-control-lg"
-                       placeholder="Adresse complète de la structure"
-                       maxlength="100" required="" value="{% if defaults.address %}{{ defaults.address }}{% elif structure.address %}{{ structure.address }}{% endif %}">
-
-                {% if errors.address %}
-                    <p class="error">
-                        {% for error in errors.address %}
-                            {{ error }}
-                        {% endfor %}
-                    </p>
-                {% endif %}
-            </div>
-
             <!-- Structure SIREN/SIRET -->
             <div class="mb-4">
                 <label for="siret" class="form-label fw-bold">SIRET de la structure</label>
@@ -120,6 +104,15 @@
                         {% endfor %}
                     </p>
                 {% endif %}
+            </div>
+            <!-- Logo Preview -->
+            <div class="text-center mt-5">
+                {% if structure.logo %}
+                    <img src="{{ structure.logo.url }}" alt="Aperçu du logo" class="img-fluid mb-2" style="max-width: 200px;" id="logo_preview">
+                {% else %}
+                    <img src="{{ placeholder_image }}" alt="Aperçu du logo" class="img-fluid mb-2" style="max-width: 200px;" id="logo_preview">
+                {% endif %}
+                <p class="form-text">Aperçu du logo</p>
             </div>
         </div>
 
@@ -183,50 +176,39 @@
             <!-- Location Information -->
             <h3 class="mb-3 mt-4">Localisation (optionnel)</h3>
 
-            <!-- Latitude -->
+            <!-- Location Information -->
+            <h3 class="mb-3 mt-4">Localisation</h3>
+
+            <!-- Structure Address -->
             <div class="mb-4">
-                <label for="latitude" class="form-label fw-bold">Latitude</label>
+                <label for="address" class="form-label fw-bold">Adresse de la structure</label>
+                <input type="text" name="address" id="address"
+                       class="form-control form-control-lg"
+                       placeholder="Adresse complète de la structure"
+                       maxlength="100" required="" value="{% if defaults.address %}{{ defaults.address }}{% elif structure.address %}{{ structure.address }}{% endif %}">
+
+                {% if errors.address %}
+                    <p class="error">
+                        {% for error in errors.address %}
+                            {{ error }}
+                        {% endfor %}
+                    </p>
+                {% endif %}
+                </div>
+                <p>Prévisualisation de la localisation :</p>
+                <div class="badge-page-map-container">
+                    <div id="badge-page-map"></div>
+                </div>
                 <input type="text" name="latitude" id="latitude"
-                       class="form-control form-control-lg"
+                       class="form-control form-control-lg d-none"
                        placeholder="Ex: 48.8566."
-                       value="{% if defaults.latitude %}{{ defaults.latitude }}{% elif structure.marker %}{% localize off %}{{ structure.marker.latitude }}{% endlocalize %}{% endif %}">
-
-
-                {% if errors.latitude %}
-                    <p class="error">
-                        {% for error in errors.latitude %}
-                            {{ error }}
-                        {% endfor %}
-                    </p>
-                {% endif %}
-            </div>
-
-            <!-- Longitude -->
-            <div class="mb-4">
-                <label for="longitude" class="form-label fw-bold">Longitude</label>
+                       value="{% if defaults.latitude %}{{ defaults.latitude|unlocalize }}{% endif %}">
                 <input type="text" name="longitude" id="longitude"
-                       class="form-control form-control-lg"
+                       class="form-control form-control-lg d-none"
                        placeholder="Ex: 48.8566."
-                       value="{% if defaults.longitude %}{{ defaults.longitude }}{% elif structure.marker %}{% localize off %}{{ structure.marker.longitude }}{% endlocalize %}{% endif %}">
-
-                {% if errors.longitude %}
-                    <p class="error">
-                        {% for error in errors.longitude %}
-                            {{ error }}
-                        {% endfor %}
-                    </p>
-                {% endif %}
+                       value="{% if defaults.longitude %}{{ defaults.longitude|unlocalize  }}{% endif %}">
             </div>
 
-            <!-- Logo Preview -->
-            <div class="text-center mt-5">
-                {% if structure.logo %}
-                <img src="{{ structure.logo.url }}" alt="Aperçu du logo" class="img-fluid mb-2" style="max-width: 200px;" id="logo_preview">
-                {% else %}
-                <img src="{{ placeholder_image }}" alt="Aperçu du logo" class="img-fluid mb-2" style="max-width: 200px;" id="logo_preview">
-                {% endif %}
-                <p class="form-text">Aperçu du logo</p>
-            </div>
         </div>
     </div>
 
@@ -255,5 +237,84 @@
             }
         });
     </script>
-{% endblock %}
 
+    <script src="{% static 'js/maplibre-gl.js' %}" onload="initMap()"></script>
+    <script>
+        let map;
+        let markers = []
+        let input;
+        let input_lat;
+        let input_lon;
+
+        function initMap(){
+            // Initialize the map
+            map = new maplibregl.Map({
+                container: 'badge-page-map',
+                style: 'https://basemaps.cartocdn.com/gl/voyager-gl-style/style.json',
+                center: [2, 47], // starting position [lng, lat]
+                zoom: 4,
+                attributionControl: false,
+            });
+
+            // Get the address input
+            input = document.querySelector("#address")
+            input_lat = document.querySelector("#latitude")
+            input_lon = document.querySelector("#longitude")
+
+            // Add an event listener to the address input.
+            // When the user don't press any key for 0.5s, fetch OSM
+            input.addEventListener("keyup",delay(fetchOSM, 500))
+
+        }
+
+        function fetchOSM() {
+            let address = input.value;
+            fetch(`https://nominatim.openstreetmap.org/search?q=${address}&format=json`)
+                .then(response => {
+                    if (!response.ok) {
+                        // ERROR
+                    }
+                    return response.json();
+                })
+                .then(json=>{
+                    // Remove old marker
+                    markers.forEach(m=>m.remove());
+
+                    // Get the first result and create a marker
+                    let place = json[0]
+                    let marker = new maplibregl.Marker()
+                        .setLngLat([place["lon"], place["lat"]])
+                        .addTo(map);
+                    markers.push(marker)
+
+                    map.flyTo({
+                        center: [place["lon"], place["lat"]],
+                        zoom: 14,
+                        speed: 5,
+                        curve: 1,
+                        easing(t) {
+                            return t;
+                        }
+                    })
+                    input_lat.value = place["lat"]
+                    input_lon.value = place["lon"]
+
+                })
+
+
+        }
+
+        function delay(callback, ms) {
+            var timer = 0;
+            return function() {
+                var context = this, args = arguments;
+                clearTimeout(timer);
+                timer = setTimeout(function () {
+                    callback.apply(context, args);
+                }, ms || 0);
+            };
+        }
+
+
+    </script>
+{% endblock %}

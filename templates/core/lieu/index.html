@@ -7,6 +7,7 @@
 {% load static %}
 {% load l10n %}
 {% load custom_tags %}
+{% load static %}
 
 {% block title %}{{ structure.name }} — openbadge.coop{% endblock %}
 
@@ -348,7 +349,7 @@
 
 {% block extra_js %}
 {% if structure.marker %}
-<script src="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.js"></script>
+<script src="{% static 'js/maplibre-gl.js' %}"></script>
 <script>
     document.addEventListener('DOMContentLoaded', function () {
         // Mini carte statique — un seul marker, pas d'interaction

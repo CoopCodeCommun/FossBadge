@@ -63,8 +63,8 @@ class Marker(models.Model):
                         # Creating the marker in the database
                         cls.objects.create(
                             name=nom_du_marqueur,
-                            lat=latitude,
-                            lng=longitude
+                            latitude=latitude,
+                            longitude=longitude
                         )
                         nombre_de_marqueurs_importes = nombre_de_marqueurs_importes + 1
                     except ValueError:

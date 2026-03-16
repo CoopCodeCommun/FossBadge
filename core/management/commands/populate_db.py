@@ -399,8 +399,6 @@ class Command(BaseCommand):
                     "referent_last_name": data["referent_last_name"],
                     "referent_first_name": data["referent_first_name"],
                     "referent_position": data["referent_position"],
-                    "latitude": data["latitude"],
-                    "longitude": data["longitude"],
                     "marker": matching_marker,
                 },
             )

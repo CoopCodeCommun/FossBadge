@@ -8,8 +8,8 @@ et section A.1 (wireframe Vue Lieu). Lis aussi CLAUDE.md.
 
 Puis lis :
 - templates/core/lieu/index.html (la vue lieu creee en phase 1a)
-- templates/core/badges/partials/badge_assignment.html (formulaire existant)
-- templates/core/badges/partials/badge_endorsement.html (formulaire existant)
+- templates/core/badge/partial/badge_assignment.html (formulaire existant)
+- templates/core/badge/partial/badge_endorsement.html (formulaire existant)
 - templates/core/structures/edit.html (formulaire edition structure existant)
 - templates/core/structures/detail.html (ancien detail — boutons editer/supprimer)
 - core/views.py (BadgeViewSet.assign, BadgeViewSet.endorse)

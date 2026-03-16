@@ -13,7 +13,7 @@ def popup(content, popup_width="40%", *args, **kwargs):
     esc_key_close = kwargs.pop("esc_key_close", True)
 
 
-    template = loader.get_template('includes/popup.html')
+    template = loader.get_template('base/includes/popup.html')
 
     return template.render({
         "content": content,

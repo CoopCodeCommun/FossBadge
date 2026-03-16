@@ -1,0 +1,50 @@
+{%include 'base/show_message.html'%}
+{% load custom_tags %}
+
+
+<div id="course-creation-form">
+    <form hx-post="{% url 'core:course-create-course' %}"
+          hx-target="#course-creation-form"
+          hx-swap="innerHTML">
+
+        <h2>Créer un parcours</h2>
+
+        {% if structures and badge %}
+            <p>Création d'un parcours à partir du badge {{ badge.name }}</p>
+            <input type="hidden" value="{{ badge.pk }}" name="badge"/>
+
+            <label for="structure"> Structure</label>
+            <select id="structure" class="form-select" name="structure">
+                <option selected>--- Sélectionnez une structure ---</option>>
+                {%for structure in structures%}
+                    <option value="{{structure.pk}}" {% if role.pk|stringformat:"s" == defaults.structure %}selected{% endif %}>{{structure.name}}</option>>
+                {%endfor%}
+            </select>
+            {% if errors.structure %}
+                <p class="error">{{errors.structure.0}}</p>
+            {% endif %}
+
+        {% endif %}
+
+        {% if badges and structure %}
+            <p>Création d'un parcours pour {{ structure.name }}</p>
+            <input type="hidden" value="{{ structure.pk }}" name="structure"/>
+
+            <label for="badge"> Badge final</label>
+            <select id="badge" class="form-select" name="badge">
+                <option selected>--- Sélectionnez un badge final ---</option>>
+                {%for badge in badges%}
+                    <option value="{{badge.pk}}" {% if badge.pk|stringformat:"s" == defaults.badge %}selected{% endif %}>{{badge.name}}</option>>
+                {%endfor%}
+            </select>
+            {% if errors.badge %}
+                <p class="error">{{errors.badge.0}}</p>
+            {% endif %}
+
+        {% endif %}
+
+        <button class="btn btn-primary">Envoyer</button>
+
+        <button class="btn btn-danger" onclick="{% popup_close %}" type="button">Annuler</button>
+    </form>
+</div>

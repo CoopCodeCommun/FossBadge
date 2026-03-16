@@ -1,0 +1,374 @@
+{# LOCALISATION : templates/core/lieu/index.html #}
+{# Page dédiée d'un lieu. Affiche en-tête, badges, membres, référent. #}
+{# / Dedicated structure page. Shows header, badges, members, referent. #}
+{% extends 'base/base.html' %}
+{% load i18n %}
+{% load pictures %}
+{% load static %}
+{% load l10n %}
+{% load custom_tags %}
+{% load static %}
+
+{% block title %}{{ structure.name }} — openbadge.coop{% endblock %}
+
+{% block extra_css %}
+{% if structure.marker %}
+<link rel="stylesheet" href="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.css">
+{% endif %}
+{% endblock %}
+
+{% block content %}
+<div class="container py-4 lieu-page-container">
+
+    {# Barre supérieure : retour + actions admin #}
+    {# Top bar: back link + admin actions #}
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <a href="/" class="home-back-link" data-testid="lieu-back-link"
+           onclick="event.preventDefault(); history.back();">
+            <span aria-hidden="true">&larr;</span> openbadge.coop
+        </a>
+
+        {% if is_admin %}
+        <div class="lieu-admin-actions" data-testid="lieu-admin-actions">
+            <button type="button"
+               class="btn btn-sm btn-outline-secondary"
+               hx-get="{% url 'core:structure-edit' pk=structure.pk %}"
+               hx-target="{% popup_content_id %}"
+               hx-swap="innerHTML"
+               hx-on:htmx:after-request="{% popup_open %}"
+               data-testid="lieu-edit-btn">
+                {% translate "Éditer" %}
+            </button>
+{#            <a href="{% url 'core:structure-delete' pk=structure.pk %}"#}
+{#               class="btn btn-sm btn-outline-danger"#}
+{#               data-testid="lieu-delete-btn">#}
+{#                {% translate "Supprimer" %}#}
+{#            </a>#}
+        </div>
+        {% endif %}
+    </div>
+
+    {# ── En-tête horizontal : logo + infos ── #}
+    {# ── Horizontal header: logo + info ── #}
+    <div class="lieu-header" data-testid="lieu-header">
+        <div class="lieu-header-logo">
+            {% if structure.logo %}
+                {% picture structure.logo img_alt=structure.name ratio="1/1" %}
+            {% else %}
+                <div class="home-result-icon-placeholder home-result-icon-placeholder-structures lieu-header-logo-placeholder">
+                    <span aria-hidden="true">&#9737;</span>
+                </div>
+            {% endif %}
+        </div>
+        <div class="lieu-header-info">
+            <h1 class="lieu-header-name">{{ structure.name }}</h1>
+            <p class="lieu-header-meta text-muted mb-1">
+                {% if structure.type %}{{ structure.get_type_display }}{% endif %}
+                {% if structure.type and structure.address %} &middot; {% endif %}
+                {% if structure.address %}{{ structure.address }}{% endif %}
+            </p>
+            {% if structure.description %}
+                <p class="lieu-header-description text-muted mb-0">
+                    {{ structure.description|truncatewords:40 }}
+                </p>
+            {% endif %}
+        </div>
+    </div>
+
+    {# ── Section Référent ── #}
+    {# ── Referent section ── #}
+    {% if structure.referent_last_name or structure.referent_first_name %}
+        <section aria-label="{% translate 'Référent' %}" class="lieu-referent mt-4">
+            <h2 class="home-column-title">{% translate "Référent" %}</h2>
+            <p class="mb-0">
+                {{ structure.referent_first_name }} {{ structure.referent_last_name }}
+                {% if structure.referent_position %}
+                    <span class="text-muted"> &middot; {{ structure.referent_position }}</span>
+                {% endif %}
+            </p>
+        </section>
+    {% endif %}
+
+
+    {# ── Mini carte MapLibre (si marker) ── #}
+    {# ── Mini MapLibre map (if marker) ── #}
+    {% if structure.marker %}
+    <div class="lieu-mini-map mt-3" data-testid="lieu-mini-map">
+        <div id="lieu-map"></div>
+    </div>
+    {% endif %}
+
+    {# ── Section Badges ── #}
+    {# ── Badges section ── #}
+    <section aria-label="{% translate 'Badges' %}" class="mt-4">
+        <h2 class="home-column-title justify-content-between flex">
+            <span>
+                {% translate "Badges" %}
+                {% if badges_total_count %}
+                    <span class="home-count-badge">{{ badges_total_count }}</span>
+                {% endif %}
+            </span>
+            {# Bouton forger un badge (admin/éditeur) — à droite du titre / Forge badge button (admin/editor) — to the right of title #}
+            {% if is_admin or is_editor %}
+                <button type="button"
+                        class="home-forge-btn"
+                        hx-get="{% url 'core:create_badge' %}?structure={{ structure.pk }}"
+                        hx-target="{% popup_content_id %}"
+                        hx-swap="innerHTML"
+                        hx-on:htmx:after-request="{% popup_open %}"
+                        data-testid="btn-forge-badge">
+                    <span aria-hidden="true">&#9874;</span>
+                    {% translate "Forger un badge" %}
+                </button>
+            {% endif %}
+        </h2>
+
+        {% if issued_badges or endorsed_badges %}
+        <div class="lieu-badges-grid" data-testid="lieu-badges-grid">
+
+            {# Badges émis par cette structure / Badges issued by this structure #}
+            {% for badge in issued_badges %}
+            <details class="lieu-badge-card" data-testid="lieu-badge-{{ badge.pk }}">
+                <summary class="home-result-item">
+                    <div class="home-result-icon">
+                        {% if badge.icon %}
+                            {% picture badge.icon img_alt=badge.name ratio="1/1" %}
+                        {% else %}
+                            <div class="home-result-icon-placeholder home-result-icon-placeholder-badges">
+                                <span aria-hidden="true">&#9733;</span>
+                            </div>
+                        {% endif %}
+                    </div>
+                    <div class="home-result-text">
+                        <span class="home-result-name lieu-badge-name-row">
+                            <span class="lieu-badge-name-text">{{ badge.name }}</span>
+                            <span class="home-relation-tag home-relation-tag-issuer">{% translate "Émis" %}</span>
+                        </span>
+                        <span class="home-result-desc text-muted">{{ badge.get_level_display }}</span>
+                    </div>
+                </summary>
+                <div class="lieu-badge-details">
+                    <p class="mb-2">{{ badge.description|truncatewords:30 }}</p>
+                    {% if badge.criteria_for_lieu %}
+                    <p class="mb-2 text-muted lieu-badge-criteria" data-testid="lieu-badge-criteria-{{ badge.pk }}">
+                        <strong>{% translate "Critères" %} :</strong> {{ badge.criteria_for_lieu.criteria }}
+                    </p>
+                    {% endif %}
+                    <div class="lieu-badge-actions">
+                        <a href="/badge/{{ badge.pk }}/" class="lieu-badge-link">
+                            {% translate "Voir le badge" %} &rarr;
+                        </a>
+                        {# Bouton Attribuer : admin/éditeur de cette structure #}
+                        {# / Assign button: admin/editor of this structure #}
+                        {% if badge.can_assign %}
+                        <button
+                            type="button"
+                            class="lieu-action-btn lieu-action-btn-assign"
+                            hx-get="{% url 'core:badge-assign' badge.pk %}?default_structure={{ structure.pk }}"
+                            hx-on:htmx:after-request="{% popup_open %}"
+                            hx-target="{% popup_content_id %}"
+                            hx-swap="innerHTML"
+                            data-testid="btn-assign-badge-{{ badge.pk }}"
+                        >
+                            <span aria-hidden="true">&#9998;</span>
+                            {% translate "Attribuer" %}
+                        </button>
+                        {% endif %}
+                        {# Bouton Endosser : visible seulement si pas encore endossé par cette structure #}
+                        {# / Endorse button: only visible if not already endorsed by this structure #}
+                        {% if badge.can_endorse %}
+                        <button
+                            type="button"
+                            class="lieu-action-btn lieu-action-btn-endorse"
+                            hx-get="{% url 'core:badge-endorse' badge.pk %}?default_structure={{ structure.pk }}"
+                            hx-on:htmx:after-request="{% popup_open %}"
+                            hx-target="{% popup_content_id %}"
+                            hx-swap="innerHTML"
+                            data-testid="btn-endorse-badge-{{ badge.pk }}"
+                        >
+                            <span aria-hidden="true">&#10003;</span>
+                            {% translate "Endosser" %}
+                        </button>
+                        {% endif %}
+                    </div>
+                </div>
+            </details>
+            {% endfor %}
+
+            {# Badges endossés par cette structure / Badges endorsed by this structure #}
+            {% for badge in endorsed_badges %}
+            <details class="lieu-badge-card" data-testid="lieu-badge-{{ badge.pk }}">
+                <summary class="home-result-item">
+                    <div class="home-result-icon">
+                        {% if badge.icon %}
+                            {% picture badge.icon img_alt=badge.name ratio="1/1" %}
+                        {% else %}
+                            <div class="home-result-icon-placeholder home-result-icon-placeholder-badges">
+                                <span aria-hidden="true">&#9733;</span>
+                            </div>
+                        {% endif %}
+                    </div>
+                    <div class="home-result-text">
+                        <span class="home-result-name lieu-badge-name-row">
+                            <span class="lieu-badge-name-text">{{ badge.name }}</span>
+                            <span class="home-relation-tag home-relation-tag-endorser">{% translate "Endossé" %}</span>
+                        </span>
+                        <span class="home-result-desc text-muted">{{ badge.get_level_display }}</span>
+                    </div>
+                </summary>
+                <div class="lieu-badge-details">
+                    <p class="mb-2">{{ badge.description|truncatewords:30 }}</p>
+                    {% if badge.criteria_for_lieu %}
+                    <p class="mb-2 text-muted lieu-badge-criteria" data-testid="lieu-badge-criteria-{{ badge.pk }}">
+                        <strong>{% translate "Critères" %} :</strong> {{ badge.criteria_for_lieu.criteria }}
+                    </p>
+                    {% endif %}
+                    <p class="mb-2 text-muted lieu-badge-issuer-note">
+                        {% translate "Émis par" %} {{ badge.issuing_structure.name }}
+                    </p>
+                    <div class="lieu-badge-actions">
+                        <a href="/badge/{{ badge.pk }}/" class="lieu-badge-link">
+                            {% translate "Voir le badge" %} &rarr;
+                        </a>
+                        {# Bouton Attribuer : admin/éditeur de cette structure #}
+                        {# / Assign button: admin/editor of this structure #}
+                        {% if badge.can_assign %}
+                        <button
+                            type="button"
+                            class="lieu-action-btn lieu-action-btn-assign"
+                            hx-get="{% url 'core:badge-assign' badge.pk %}?default_structure={{ structure.pk }}"
+                            hx-on:htmx:after-request="{% popup_open %}"
+                            hx-target="{% popup_content_id %}"
+                            hx-swap="innerHTML"
+                            data-testid="btn-assign-badge-{{ badge.pk }}"
+                        >
+                            <span aria-hidden="true">&#9998;</span>
+                            {% translate "Attribuer" %}
+                        </button>
+                        {% endif %}
+                        {# Bouton Endosser : visible seulement si pas encore endossé par cette structure #}
+                        {# / Endorse button: only visible if not already endorsed by this structure #}
+                        {% if badge.can_endorse %}
+                        <button
+                            type="button"
+                            class="lieu-action-btn lieu-action-btn-endorse"
+                            hx-get="{% url 'core:badge-endorse' badge.pk %}?default_structure={{ structure.pk }}"
+                            hx-on:htmx:after-request="{% popup_open %}"
+                            hx-target="{% popup_content_id %}"
+                            hx-swap="innerHTML"
+                            data-testid="btn-endorse-badge-{{ badge.pk }}"
+                        >
+                            <span aria-hidden="true">&#10003;</span>
+                            {% translate "Endosser" %}
+                        </button>
+                        {% endif %}
+                    </div>
+                </div>
+            </details>
+            {% endfor %}
+
+        </div>
+        {% else %}
+            <p class="home-empty-message text-muted">{% translate "Aucun badge." %}</p>
+        {% endif %}
+    </section>
+
+    {# ── Section Personnes ── #}
+    {# ── People section ── #}
+    <section aria-label="{% translate 'Personnes' %}" class="mt-4">
+        <h2 class="home-column-title justify-content-between flex">
+            <span>
+                {% translate "Personnes" %}
+                {% if members_list %}
+                    <span class="home-count-badge">{{ members_list|length }}</span>
+                {% endif %}
+            </span>
+            {# Bouton inviter un utilisateur (admin/éditeur) — à droite du titre / Invite user button (admin/editor) — to the right of title #}
+            {% if is_admin or is_editor %}
+                <button type="button"
+                        class="home-invite-btn"
+                        hx-get="{% url 'core:structure-invite' structure.pk %}"
+                        hx-on:htmx:after-request="{% popup_open %}"
+                        hx-target="{% popup_content_id %}"
+                        hx-swap="innerHTML"
+                        data-testid="btn-forge-badge">
+                    <span aria-hidden="true">&#x1F4E9;</span>
+                    {% translate "Inviter un utilisateur" %}
+                </button>
+            {% endif %}
+        </h2>
+
+        {% if members_list %}
+            <div class="lieu-badges-grid" >
+                {% for member in members_list %}
+                <a href="/passeport/{{ member.pk }}/"
+                   class="home-result-item"
+                   data-testid="lieu-member-{{ member.pk }}">
+                    <div class="home-result-icon home-result-icon-round">
+                        {% if member.avatar %}
+                            {% picture member.avatar img_alt=member.get_full_name|default:member.username ratio="1/1" %}
+                        {% else %}
+                            <div class="home-result-icon-placeholder home-result-icon-placeholder-personnes home-result-icon-round">
+                                <span aria-hidden="true">&#9679;</span>
+                            </div>
+                        {% endif %}
+                    </div>
+                    <div class="home-result-text">
+                        <span class="home-result-name">
+                            {{ member.get_full_name|default:member.username }}
+                            {% if member.is_structure_admin %}
+                                <span class="home-relation-tag home-relation-tag-issuer">{% translate "Admin" %}</span>
+                            {% elif member.is_structure_editor %}
+                                <span class="home-relation-tag home-relation-tag-endorser">{% translate "Éditeur" %}</span>
+                            {% endif %}
+                        </span>
+                        <span class="home-result-desc text-muted">
+                            {% blocktranslate count counter=member.badge_count_for_member %}{{ counter }} badge{% plural %}{{ counter }} badges{% endblocktranslate %}
+                        </span>
+                    </div>
+                </a>
+                {% endfor %}
+            </div>
+        {% else %}
+            <p class="home-empty-message text-muted">{% translate "Aucun membre." %}</p>
+        {% endif %}
+    </section>
+
+    {# SIRET discret / Discreet SIRET #}
+    {% if structure.siret %}
+    <p class="lieu-siret text-muted mt-4" data-testid="lieu-siret">
+        <small>SIRET : {{ structure.siret }}</small>
+    </p>
+    {% endif %}
+
+</div>
+
+{% popup popup_width="60%" %}{% endpopup %}
+
+{% endblock %}
+
+{% block extra_js %}
+{% if structure.marker %}
+<script src="{% static 'js/maplibre-gl.js' %}"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        // Mini carte statique — un seul marker, pas d'interaction
+        // Coordonnées forcées en notation avec point (pas de virgule locale)
+        // Static mini map — single marker, no interaction
+        // Coordinates forced to dot notation (no locale comma)
+        var longitude = {{ structure.marker.longitude|unlocalize }};
+        var latitude = {{ structure.marker.latitude|unlocalize }};
+        var map = new maplibregl.Map({
+            container: 'lieu-map',
+            style: 'https://basemaps.cartocdn.com/gl/voyager-gl-style/style.json',
+            center: [longitude, latitude],
+            zoom: 14,
+            interactive: false,
+            attributionControl: false,
+        });
+        new maplibregl.Marker().setLngLat([longitude, latitude]).addTo(map);
+    });
+</script>
+{% endif %}
+
+{% endblock %}

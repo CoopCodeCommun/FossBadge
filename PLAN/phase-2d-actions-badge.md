@@ -8,8 +8,8 @@ Lis aussi CLAUDE.md.
 
 Puis lis :
 - templates/core/badge_page/index.html (cree en phase 1c)
-- templates/core/badges/partials/badge_assignment.html
-- templates/core/badges/partials/badge_endorsement.html
+- templates/core/badge/partial/badge_assignment.html
+- templates/core/badge/partial/badge_endorsement.html
 - templates/core/badges/edit.html
 - templates/core/badges/delete.html
 - templates/core/badges/detail.html (ancien detail — voir comment les boutons
@@ -57,8 +57,8 @@ query params, modifie-les pour accepter `?badge_pk=` et `?structure=`.
 | Fichier | Action |
 |---------|--------|
 | `templates/core/badge_page/index.html` | Transformer les liens en modales HTMX |
-| `templates/core/badges/partials/badge_assignment.html` | Adapter si besoin (pre-remplissage) |
-| `templates/core/badges/partials/badge_endorsement.html` | Adapter si besoin |
+| `templates/core/badge/partial/badge_assignment.html` | Adapter si besoin (pre-remplissage) |
+| `templates/core/badge/partial/badge_endorsement.html` | Adapter si besoin |
 | `static/css/custom.css` | Styles modale si pas deja fait |
 
 ## Verification

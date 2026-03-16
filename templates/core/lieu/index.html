@@ -7,6 +7,7 @@
 {% load static %}
 {% load l10n %}
 {% load custom_tags %}
+{% load static %}
 
 {% block title %}{{ structure.name }} — openbadge.coop{% endblock %}
 
@@ -348,24 +349,24 @@
 
 {% block extra_js %}
 {% if structure.marker %}
-<script src="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.js"></script>
+<script src="{% static 'js/maplibre-gl.js' %}"></script>
 <script>
     document.addEventListener('DOMContentLoaded', function () {
         // Mini carte statique — un seul marker, pas d'interaction
         // Coordonnées forcées en notation avec point (pas de virgule locale)
         // Static mini map — single marker, no interaction
         // Coordinates forced to dot notation (no locale comma)
-        var lng = {{ structure.marker.lng|unlocalize }};
-        var lat = {{ structure.marker.lat|unlocalize }};
+        var longitude = {{ structure.marker.longitude|unlocalize }};
+        var latitude = {{ structure.marker.latitude|unlocalize }};
         var map = new maplibregl.Map({
             container: 'lieu-map',
             style: 'https://basemaps.cartocdn.com/gl/voyager-gl-style/style.json',
-            center: [lng, lat],
+            center: [longitude, latitude],
             zoom: 14,
             interactive: false,
             attributionControl: false,
         });
-        new maplibregl.Marker().setLngLat([lng, lat]).addTo(map);
+        new maplibregl.Marker().setLngLat([longitude, latitude]).addTo(map);
     });
 </script>
 {% endif %}

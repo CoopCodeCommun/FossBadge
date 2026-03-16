@@ -220,6 +220,7 @@ class Structure(models.Model):
         ('association', 'Association'),
         ('company', 'Entreprise'),
         ('school', 'École'),
+        ('public', 'Établissement public'),
     ]
 
     ROLES = [
@@ -244,15 +245,12 @@ class Structure(models.Model):
     referent_first_name = models.CharField(max_length=100, verbose_name="Prénom du référent")
     referent_position = models.CharField(max_length=100, verbose_name="Poste du référent")
 
-    # Location for map display
-    latitude = models.FloatField(blank=True, null=True, verbose_name="Latitude")
-    longitude = models.FloatField(blank=True, null=True, verbose_name="Longitude")
-
     # Relationships
     admins = models.ManyToManyField(User, related_name='structures_admins', verbose_name='Administrateurs')
     editors = models.ManyToManyField(User, related_name='structures_editors', verbose_name='Éditeurs')
     users = models.ManyToManyField(User, related_name='structures_users', blank=True, verbose_name="Utilisateurs")
 
+    # Marker for map display
     marker = models.ForeignKey('mapview.Marker', on_delete=models.SET_NULL, null=True, blank=True, related_name='structures')
 
     class Meta:

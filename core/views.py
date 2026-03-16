@@ -594,7 +594,7 @@ class HomeViewSet(viewsets.ViewSet):
         3. Récupère les badges émis et endossés (sans doublons)
         4. Récupère les membres avec leur rôle annoté (admin/éditeur) et leur nombre de badges
         5. Calcule les permissions (is_admin, is_editor) pour les boutons conditionnels
-        6. Rend la page complète core/lieu/index.html
+        6. Rend la page complète core/structure/index.html
         """
         structure = get_object_or_404(
             Structure.objects.select_related('marker'), uuid=structure_pk
@@ -662,7 +662,7 @@ class HomeViewSet(viewsets.ViewSet):
             badge_item.can_endorse = False  # Déjà endossé par cette structure / Already endorsed
             badge_item.criteria_for_lieu = all_criteria_for_structure.get(badge_item.pk)
 
-        return render(request, 'core/lieu/index.html', {
+        return render(request, 'core/structure/index.html', {
             'structure': structure,
             'issued_badges': issued_badges_list,
             'endorsed_badges': endorsed_badges_list,
@@ -689,7 +689,7 @@ class HomeViewSet(viewsets.ViewSet):
         3. Récupère tous les assignments triés du plus récent au plus ancien
         4. Collecte les structures uniques avec marker (pour la carte du parcours)
         5. Calcule les compteurs (badges, lieux)
-        6. Rend la page complète core/passeport/index.html
+        6. Rend la page complète core/user/passeport.html
         """
         person = get_object_or_404(User, uuid=person_pk)
 
@@ -743,7 +743,7 @@ class HomeViewSet(viewsets.ViewSet):
         # Is the user viewing their own passport?
         is_self = request.user.is_authenticated and request.user.pk == person.pk
 
-        return render(request, 'core/passeport/index.html', {
+        return render(request, 'core/user/passeport.html', {
             'person': person,
             'assignments': all_assignments_for_person,
             'total_badges': all_assignments_for_person.count(),
@@ -856,7 +856,7 @@ class HomeViewSet(viewsets.ViewSet):
             str(s.pk) for s in all_structures_list if s.marker_id
         )
 
-        return render(request, 'core/badge_page/index.html', {
+        return render(request, 'core/badge/index.html', {
             'badge': badge,
             'all_structures_list': all_structures_list,
             'endorsing_structures': endorsing_structures,
@@ -879,7 +879,7 @@ class HomeViewSet(viewsets.ViewSet):
         1. Reçoit GET depuis un lien /parcours/<uuid>/
         2. Charge le parcours (Course) par UUID
         3. Vérifie les permissions d'édition
-        4. Rend la page templates/parcours/detail.html
+        4. Rend la page templates/course/detail.html
         """
 
         course = get_object_or_404(Course, pk=course_pk)
@@ -890,7 +890,7 @@ class HomeViewSet(viewsets.ViewSet):
             can_edit = course.user == request.user
 
         return render(
-            request, "core/parcours/detail.html", {"course": course, "can_edit": can_edit}
+            request, "core/course/detail.html", {"course": course, "can_edit": can_edit}
         )
 
 
@@ -1021,7 +1021,7 @@ class BadgeViewSet(viewsets.ViewSet):
 
         # Partiel HTMX pour la modale / HTMX partial for modal
         if request.htmx:
-            return render(request, "core/badges/partial/edit_form.html", {
+            return render(request, "core/badge/partial/badge_edit_form.html", {
                 "form": form, "icon": icon, "badge_pk": badge.pk,
             })
 
@@ -1097,7 +1097,7 @@ class BadgeViewSet(viewsets.ViewSet):
 
         # Partiel HTMX pour la modale / HTMX partial for modal
         if request.htmx:
-            return render(request, 'core/badges/partial/create_form.html', {
+            return render(request, 'core/badge/partial/badge_create_form.html', {
                 'form': form,
             })
 
@@ -1144,7 +1144,7 @@ class BadgeViewSet(viewsets.ViewSet):
             if user_admin_not_endorsing.count() == 1 and 'structure' not in defaults:
                 defaults['structure'] = str(user_admin_not_endorsing.first().pk)
 
-            return render(request, 'core/badges/partials/badge_endorsement.html', context={
+            return render(request, 'core/badge/partial/badge_endorsement.html', context={
                 "badge_pk": pk,
                 "structures": user_admin_not_endorsing,
                 "defaults": defaults,
@@ -1153,7 +1153,7 @@ class BadgeViewSet(viewsets.ViewSet):
         validator = BadgeEndorsementValidator(data=request.POST)
 
         if not validator.is_valid():
-            return render(request, 'core/badges/partials/badge_endorsement.html',context={
+            return render(request, 'core/badge/partial/badge_endorsement.html',context={
                 "errors": validator.errors,
                 "defaults": validator.data,
                 "badge_pk": validator.data['badge'],
@@ -1205,7 +1205,7 @@ class BadgeViewSet(viewsets.ViewSet):
             if structures.count() == 1 and 'assigned_by_structure' not in defaults:
                 defaults['assigned_by_structure'] = str(structures.first().pk)
 
-            return render(request, 'core/badges/partials/badge_assignment.html', context={
+            return render(request, 'core/badge/partial/badge_assignment.html', context={
                 "badge_pk": pk,
                 "structures": structures,
                 "defaults": defaults,
@@ -1222,7 +1222,7 @@ class BadgeViewSet(viewsets.ViewSet):
         }
 
         if not is_valid:
-            return render(request, 'core/badges/partials/badge_assignment.html', context=context)
+            return render(request, 'core/badge/partial/badge_assignment.html', context=context)
 
         # Récupère ou crée l'utilisateur a partir de l'email
         # / Get or create user from email
@@ -1238,7 +1238,7 @@ class BadgeViewSet(viewsets.ViewSet):
         # / Check that the structure recognizes this badge
         if not badge.valid_structures.contains(assigned_by_structure):
             messages.add_message(request, messages.ERROR, "Veuillez sélectionner une structure valide")
-            return render(request, 'core/badges/partials/badge_assignment.html', context=context)
+            return render(request, 'core/badge/partial/badge_assignment.html', context=context)
 
         # Assigne le badge a l'utilisateur
         # / Assign the badge to the user
@@ -1246,7 +1246,7 @@ class BadgeViewSet(viewsets.ViewSet):
 
         if not created:
             messages.add_message(request, messages.INFO, "L'utilisateur possède déjà ce badge assigné par cette structure")
-            return render(request, 'core/badges/partials/badge_assignment.html', context=context)
+            return render(request, 'core/badge/partial/badge_assignment.html', context=context)
 
         messages.add_message(request, messages.SUCCESS, 'Badge assigné !')
         return reload(request)
@@ -1264,7 +1264,7 @@ class BadgeViewSet(viewsets.ViewSet):
 
         if request.method == "GET":
 
-            return render(request, 'core/badges/partials/badge_assignment.html', context={
+            return render(request, 'core/badge/partial/badge_assignment.html', context={
                 "badge_pk": pk,
                 "self_assign":True
             })
@@ -1280,7 +1280,7 @@ class BadgeViewSet(viewsets.ViewSet):
         }
 
         if not is_valid:
-            return render(request, 'core/badges/partials/badge_assignment.html', context=context)
+            return render(request, 'core/badge/partial/badge_assignment.html', context=context)
 
         notes = request.POST['notes']
 
@@ -1290,7 +1290,7 @@ class BadgeViewSet(viewsets.ViewSet):
 
         if not created:
             messages.add_message(request, messages.INFO, "Ce badge est déjà auto-assigné")
-            return render(request, 'core/badges/partials/badge_assignment.html', context=context)
+            return render(request, 'core/badge/partial/badge_assignment.html', context=context)
 
         messages.add_message(request, messages.SUCCESS, 'Badge auto-assigné !')
         return reload(request)
@@ -1305,13 +1305,13 @@ class BadgeViewSet(viewsets.ViewSet):
             return raise403(request)
 
         if request.method == "GET":
-            return render(request, 'core/badges/dream/create_dream_badge.html')
+            return render(request, 'core/badge/partial/dream_badge_create.html')
 
         validator = DreamBadgeValidator(data=request.data)
         is_valid = validator.is_valid()
 
         if not is_valid:
-            return render(request, 'core/badges/dream/create_dream_badge.html',context={
+            return render(request, 'core/badge/partial/dream_badge_create.html',context={
                 "defaults": validator.data,
                 "errors" : validator.errors,
             })
@@ -1469,7 +1469,7 @@ class StructureViewSet(viewsets.ViewSet):
         structure = get_object_or_404(Structure, pk=pk)
 
         if request.method == 'GET':
-            return render(request, 'core/structures/partial/edit_form.html', {
+            return render(request, 'core/structure/partial/structure_edit_form.html', {
                 'types':Structure.TYPE_CHOICES,
                 "structure":structure,
             })
@@ -1478,7 +1478,7 @@ class StructureViewSet(viewsets.ViewSet):
         is_valid = validator.is_valid()
 
         if not is_valid:
-            return render(request, 'core/structures/partial/edit_form.html', {
+            return render(request, 'core/structure/partial/structure_edit_form.html', {
                 'types':Structure.TYPE_CHOICES,
                 "defaults": validator.data,
                 "errors" : validator.errors,
@@ -1517,7 +1517,7 @@ class StructureViewSet(viewsets.ViewSet):
             return raise403(request)
 
         if request.method == 'GET':
-            return render(request, 'core/structures/partial/create_form.html', {
+            return render(request, 'core/structure/partial/structure_create_form.html', {
                 'types':Structure.TYPE_CHOICES,
             })
 
@@ -1526,7 +1526,7 @@ class StructureViewSet(viewsets.ViewSet):
         is_valid = validator.is_valid()
 
         if not is_valid:
-            return render(request, 'core/structures/partial/create_form.html', {
+            return render(request, 'core/structure/partial/structure_create_form.html', {
                 'types':Structure.TYPE_CHOICES,
                 "defaults": validator.data,
                 "errors" : validator.errors,
@@ -1554,7 +1554,7 @@ class StructureViewSet(viewsets.ViewSet):
         }
 
         if request.method == 'GET':
-            return render(request,"core/structures/partials/structure_invite.html",context=context)
+            return render(request,"core/structure/partial/structure_invite.html",context=context)
 
         structure = get_object_or_404(Structure, pk=pk)
 
@@ -1566,7 +1566,7 @@ class StructureViewSet(viewsets.ViewSet):
                 "errors" : validator.errors,
                 "defaults" : validator.data,
             })
-            return render(request,"core/structures/partials/structure_invite.html",context=context)
+            return render(request,"core/structure/partial/structure_invite.html",context=context)
 
         email = validator.validated_data['email']
         role = validator.validated_data['role']
@@ -1756,7 +1756,7 @@ class UserViewSet(viewsets.ViewSet):
                 return redirect_reload(reverse("core:home-passeport",kwargs={"person_pk":pk}))
 
         form = PartialUserForm(instance=user)
-        return render(request, 'core/users/partials/user_profile_edit.html', {'user': user, 'form': form})
+        return render(request, 'core/user/partial/user_profile_edit.html', {'user': user, 'form': form})
 
     @action(detail=True, methods=['post'])
     def delete(self, request, pk=None):
@@ -1981,7 +1981,7 @@ class CourseViewSet(viewsets.ViewSet):
         course = Course.objects.get(pk=pk)
         similar_badges = Badge.objects.order_by('?')[:5]
 
-        return render(request, "core/parcours/edit.html", context={
+        return render(request, "core/course/edit.html", context={
             "course":course,
             "editable":True,
             "similar_badges":similar_badges
@@ -2004,7 +2004,7 @@ class CourseViewSet(viewsets.ViewSet):
                 for badge in [item.badge for item in course.items.all()]:
                     badges = badges.exclude(course_items__badge=badge)
 
-            return render(request, "core/courses/partial/add_badge_popup.html",context={
+            return render(request, "core/course/partial/add_badge_popup.html",context={
                 "badges":badges,
                 "parent_pk":parent_pk,
                 "course":course

@@ -1,0 +1,416 @@
+{# LOCALISATION : templates/core/passeport/index.html #}
+{# Page passeport d'une personne. Timeline chronologique des badges. #}
+{# / Person passport page. Chronological badge timeline. #}
+{% extends 'base/base.html' %}
+{% load i18n %}
+{% load pictures %}
+{% load static %}
+{% load l10n %}
+{% load custom_tags %}
+
+{% block title %}
+    {% blocktranslate with name=person.get_full_name|default:person.username %}Passeport de {{ name }}{% endblocktranslate %} — openbadge.coop
+{% endblock %}
+
+{% block extra_css %}
+{% if structures_pks_csv %}
+<link rel="stylesheet" href="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.css">
+{% endif %}
+{% endblock %}
+
+{% block content %}
+<div class="container py-4 passeport-page-container">
+
+    {# Barre supérieure : retour + déconnexion #}
+    {# Top bar: back link + logout #}
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <a href="/" class="home-back-link" data-testid="passeport-back-link"
+           onclick="event.preventDefault(); history.back();">
+            <span aria-hidden="true">&larr;</span> openbadge.coop
+        </a>
+
+        {% if is_self %}
+        <a href="{% url 'core:user-logout' %}"
+           class="btn btn-sm btn-outline-secondary"
+           data-testid="passeport-logout-btn">
+            {% translate "Se d&eacute;connecter" %}
+        </a>
+        {% endif %}
+    </div>
+
+    {# ── En-tête horizontal : avatar + infos ── #}
+    {# ── Horizontal header: avatar + info ── #}
+    <div class="passeport-header" data-testid="passeport-header">
+        <div class="passeport-header-avatar">
+            {% if person.avatar %}
+                {% picture person.avatar img_alt=person.get_full_name|default:person.username ratio="1/1" %}
+            {% else %}
+                <div class="home-result-icon-placeholder home-result-icon-placeholder-personnes passeport-header-avatar-placeholder">
+                    <span aria-hidden="true">&#9679;</span>
+                </div>
+            {% endif %}
+        </div>
+        <div class="passeport-header-info">
+            <h1 class="passeport-header-name">
+                {{ person.get_full_name|default:person.username }}
+                {% if not person.is_active %}
+                    <span class="badge bg-secondary fs-6" style="vertical-align: middle;" data-testid="passeport-inactive-tag">
+                        {% translate "Inactif" %}
+                    </span>
+                {% endif %}
+            </h1>
+            <p class="passeport-header-meta text-muted mb-0">
+                {% if person.address %}{{ person.address }}{% endif %}
+                {% if person.address and total_badges %} &middot; {% endif %}
+                {% blocktranslate count counter=total_badges %}{{ counter }} badge{% plural %}{{ counter }} badges{% endblocktranslate %}
+                {% if total_places %}
+                    &middot;
+                    {% blocktranslate count counter=total_places %}{{ counter }} structure{% plural %}{{ counter }} structures{% endblocktranslate %}
+                {% endif %}
+            </p>
+            {% if is_self %}
+            <div class="mt-1 mb-1">
+                <button
+                        type="button"
+                        class="home-invite-btn"
+                        hx-get="{% url 'core:edit-profile' pk=person.pk %}"
+                        hx-on:htmx:after-request="{% popup_open %}"
+                        hx-target="{% popup_content_id %}"
+                        hx-swap="innerHTML"
+                        data-testid="passeport-edit-profile-btn">
+                    {% translate "Modifier mon profil" %}
+                </button>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    {% if is_self %}
+        <div class="mt-3">
+            <button type="button"
+                    class="home-structure-btn"
+                    hx-get="{% url 'core:create_association' %}"
+                    hx-target="{% popup_content_id %}"
+                    hx-swap="innerHTML"
+                    hx-on:htmx:after-request="{% popup_open %}"
+                    data-testid="btn-forge-badge">
+                <span aria-hidden="true">&#x1F3E4;</span>
+                {% translate "Créer une structure" %}
+            </button>
+            {% if user.structures.count > 0 %}
+                <button type="button"
+                        class="home-forge-btn"
+                        hx-get="{% url 'core:create_badge' %}"
+                        hx-target="{% popup_content_id %}"
+                        hx-swap="innerHTML"
+                        hx-on:htmx:after-request="{% popup_open %}"
+                        hx-indicator="none"
+                        data-testid="btn-forge-badge">
+                    <span aria-hidden="true">&#9874;</span>
+                    {% translate "Forger un badge" %}
+                </button>
+            {% endif %}
+        </div>
+    {% endif %}
+
+    {# ── Section Affichage du Badge de Rêve (visible par tout le monde si le badge existe) ── #}
+    {# ── Dream Badge Display Section (visible to everyone if badge exists) ── #}
+    {% if person.has_dream_badge %}
+        {% with dream_badge=person.dream_badge %}
+            <section aria-label="{% translate 'Mon badge de rêve' %}" class="passeport-dream-badge-display-section" data-testid="passeport-dream-badge-display">
+                <div class="passeport-dream-badge-display-content">
+                    <div class="passeport-dream-badge-display-header">
+                        <span class="passeport-dream-badge-display-icon" aria-hidden="true">🌟</span>
+                        <h2 class="passeport-dream-badge-display-title">{% translate "Mon badge de rêve" %}</h2>
+                        {% if person == request.user %}
+                            <a href="{% url 'core:course-edit' pk=person.dream_course.pk %}"
+                               class="passeport-parcours-btn"
+                               data-testid="passeport-parcours-btn">
+                                {% translate "Modifier mon parcours" %}
+                            </a>
+                        {% elif person.has_dream_course and person.dream_course.items.count > 0 %}
+                            <a href="{% url 'core:home-parcours-detail' course_pk=person.dream_course.pk %}"
+                               class="passeport-parcours-btn"
+                               data-testid="passeport-parcours-btn">
+                                {% translate "Voir le parcours associé" %}
+                            </a>
+                        {% endif %}
+
+                    </div>
+                    <div class="passeport-dream-badge-display-card">
+
+                        <a href="{% url 'core:home-badge-detail' badge_pk=dream_badge.pk %}" class="passeport-dream-badge-display-link" data-testid="passeport-dream-badge-link">
+                            <div class="passeport-dream-badge-display-image">
+                                {% if dream_badge.icon %}
+                                    {% picture dream_badge.icon img_alt=dream_badge.name ratio="1/1" %}
+                                {% else %}
+                                    <img src="{{ placeholder_dream_badge }}" alt="{{ dream_badge.name }}" class="badge-icon">
+                                {% endif %}
+                            </div>
+                            <div class="passeport-dream-badge-display-info">
+                                <h3 class="passeport-dream-badge-display-name">{{ dream_badge.name }}</h3>
+                                {% if dream_badge.description %}
+                                    <p class="passeport-dream-badge-display-description">{{ dream_badge.description }}</p>
+                                {% endif %}
+                            </div>
+                        </a>
+                    </div>
+                </div>
+            </section>
+        {% endwith %}
+    {% endif %}
+
+    {# ── Section Badge de Rêve (uniquement pour l'utilisateur connecté sans badge de rêve) ── #}
+    {# ── Dream Badge Section (only for logged-in user without dream badge) ── #}
+    {% if is_self and not person.has_dream_badge %}
+        <section aria-label="{% translate 'Badge de rêve' %}" class="passeport-dream-badge-section" data-testid="passeport-dream-badge-section">
+            <div class="passeport-dream-badge-content">
+                <div class="passeport-dream-badge-icon" aria-hidden="true">✨</div>
+                <h2 class="passeport-dream-badge-title">{% translate "Créez votre badge de rêve" %}</h2>
+                <p class="passeport-dream-badge-description">
+                    {% translate "Définissez l'objectif qui vous inspire et partagez votre ambition avec la communauté." %}
+                </p>
+                <button
+                        type="button"
+                        class="passeport-dream-badge-btn"
+                        hx-get="{% url 'core:badge-create-dream' %}"
+                        hx-target="#dream-badge-form-container"
+                        hx-swap="innerHTML"
+                        data-testid="passeport-create-dream-badge-btn">
+                    <span aria-hidden="true">⭐</span>
+                    {% translate "Ajouter mon badge de rêve" %}
+                </button>
+            </div>
+            {# Container pour le formulaire HTMX #}
+            {# / HTMX form container #}
+            <div id="dream-badge-form-container" class="passeport-dream-badge-form-container" style="display: none;" aria-live="polite"></div>
+        </section>
+
+        {# Script pour afficher le container quand HTMX charge le formulaire #}
+        {# / Script to show container when HTMX loads the form #}
+        <script>
+            document.addEventListener('htmx:afterSwap', function(event) {
+                if (event.detail.target.id === 'dream-badge-form-container') {
+                    event.detail.target.style.display = 'block';
+                }
+            });
+        </script>
+    {% endif %}
+
+
+
+    {# ── Section Parcours (timeline chronologique) ── #}
+    {# ── Journey section (chronological timeline) ── #}
+    <section aria-label="{% translate 'Parcours' %}" class="mt-4">
+        <h2 class="home-column-title">
+            {% translate "Parcours" %}
+            {% if total_badges %}
+                <span class="home-count-badge">{{ total_badges }}</span>
+            {% endif %}
+        </h2>
+
+        {% if assignments %}
+        <!--
+           Grille à 2 colonnes pour afficher les badges
+           2-column grid to display badges
+           
+           Le style est défini dans custom.css avec display: grid
+           Style is defined in custom.css with display: grid
+           
+           Sur grand écran : 2 colonnes
+           On large screen: 2 columns
+           
+           Sur mobile : 1 colonne (plus lisible)
+           On mobile: 1 column (more readable)
+        -->
+        <ol class="passeport-timeline" role="list" aria-label="{% translate 'Parcours' %}" data-testid="passeport-timeline">
+            {% for assignment in assignments %}
+            <!--
+               Chaque badge est une cellule de la grille
+               Each badge is a grid cell
+               
+               Sur grand écran : 2 badges par ligne
+               On large screen: 2 badges per row
+               
+               Sur mobile : 1 badge par ligne
+               On mobile: 1 badge per row
+            -->
+            <li class="passeport-timeline-item">
+                <details class="passeport-badge-card"
+                         aria-label="{{ assignment.badge.name }}"
+                         data-testid="passeport-assignment-{{ assignment.pk }}">
+                    <summary class="passeport-badge-summary">
+                        <div class="home-result-icon">
+                            {% if assignment.badge.icon %}
+                                {% picture assignment.badge.icon img_alt=assignment.badge.name ratio="1/1" %}
+                            {% else %}
+                                <div class="home-result-icon-placeholder home-result-icon-placeholder-badges">
+                                    <span aria-hidden="true">&#9733;</span>
+                                </div>
+                            {% endif %}
+                        </div>
+                        <div class="passeport-badge-info">
+                            <span class="passeport-badge-name">
+                                {{ assignment.badge.name }}
+                                {% if assignment.badge.level %}
+                                    <span class="home-level-tag home-level-{{ assignment.badge.level }}">
+                                    {{ assignment.badge.get_level_display }}
+                                </span>
+                                {% endif %}
+
+                            </span>
+                            <span class="passeport-badge-meta text-muted">
+                                <time datetime="{{ assignment.assigned_date|date:'Y-m-d' }}">
+                                    {{ assignment.assigned_date|date:"j F Y" }}
+                                </time>
+                                {% if assignment.assigned_structure %}
+                                    &middot;
+                                    {% translate "via" %}
+                                    <a href="/structure/{{ assignment.assigned_structure.pk }}/"
+                                       class="passeport-structure-link"
+                                       data-testid="passeport-lieu-link-{{ assignment.assigned_structure.pk }}">
+                                        {{ assignment.assigned_structure.name }}
+                                    </a>
+                                {% endif %}
+                                {% if assignment.assigned_by %}
+                                    &middot;
+                                    {% translate "par" %}
+                                    {{ assignment.assigned_by.display_name }}
+                                {% endif %}
+                                {% if assignment.self_assign %}
+                                    &middot;
+                                    {% translate "Auto-assigné" %}
+                                {% endif %}
+                            </span>
+                        </div>
+                    </summary>
+
+                    {# Contenu déplié : notes + liens #}
+                    {# Expanded content: notes + links #}
+                    <div class="passeport-badge-details">
+                        {% if assignment.criteria_for_passeport %}
+                            <p class="passeport-badge-criteria mb-2 text-muted" data-testid="passeport-criteria-{{ assignment.pk }}">
+                                <strong>{% translate "Critères" %} :</strong> {{ assignment.criteria_for_passeport.criteria }}
+                            </p>
+                        {% endif %}
+                        {% if assignment.notes %}
+                            <p class="passeport-badge-notes mb-2">{{ assignment.notes }}</p>
+                        {% endif %}
+
+                        <div class="passeport-badge-links">
+                            <a href="/badge/{{ assignment.badge.pk }}/"
+                               class="lieu-badge-link"
+                               data-testid="passeport-badge-link-{{ assignment.badge.pk }}">
+                                {% translate "Voir le badge" %} &rarr;
+                            </a>
+                            {% if assignment.assigned_structure %}
+                                <a href="/structure/{{ assignment.assigned_structure.pk }}/"
+                                   class="lieu-badge-link"
+                                   data-testid="passeport-lieu-detail-link-{{ assignment.assigned_structure.pk }}">
+                                    {% translate "Voir la structure" %} &rarr;
+                                </a>
+                            {% endif %}
+                        </div>
+                    </div>
+                </details>
+            </li>
+            {% endfor %}
+        </ol>
+        {% else %}
+            <p class="home-empty-message text-muted">{% translate "Aucun badge dans le parcours." %}</p>
+        {% endif %}
+    </section>
+
+    {# ── Carte du parcours (MapLibre) ── #}
+    {# ── Journey map (MapLibre) ── #}
+    {% if structures_pks_csv %}
+    <section aria-label="{% translate 'Carte du parcours' %}" class="mt-4">
+        <h2 class="home-column-title">{% translate "Carte du parcours" %}</h2>
+        <div class="passeport-map-container" data-testid="passeport-map">
+            <div id="passeport-map"></div>
+        </div>
+    </section>
+    {% endif %}
+
+    {# ── Bouton Éditer mon profil (si c'est son propre passeport) ── #}
+    {# ── Edit profile button (if viewing own passport) ── #}
+    {% if is_self %}
+
+
+    {# ── Lien discret "Désactiver mon compte" ── #}
+    {# ── Discreet "Deactivate my account" link ── #}
+    <div class="mt-4 mb-2">
+        <button class="passeport-deactivate-link" onclick="{% popup_open %}">
+            {% translate "Désactiver mon compte" %}
+        </button>
+    </div>
+    {% endif %}
+
+</div>
+
+    {% popup popup_width="80%" %}
+{#        {% include "core/users/partials/disable_account_popup.html" %}#}
+    {% endpopup %}
+
+{% endblock %}
+
+{% block extra_js %}
+{% if structures_pks_csv %}
+<script src="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        /**
+         * Carte du parcours : charge les structures via /map-data/?pks=...
+         * puis affiche un marker par structure.
+         * / Journey map: loads structures via /map-data/?pks=...
+         * then shows one marker per structure.
+         *
+         * LOCALISATION : templates/core/passeport/index.html (script inline)
+         */
+        var structuresPks = "{{ structures_pks_csv }}";
+
+        var map = new maplibregl.Map({
+            container: 'passeport-map',
+            style: 'https://basemaps.cartocdn.com/gl/voyager-gl-style/style.json',
+            center: [2.3, 46.5],
+            zoom: 5,
+            attributionControl: false,
+        });
+
+        // Charger les données GeoJSON des structures du parcours
+        // Load GeoJSON data for journey structures
+        fetch('/map-data/?pks=' + encodeURIComponent(structuresPks))
+            .then(function (response) { return response.json(); })
+            .then(function (geojson) {
+                if (!geojson.features || geojson.features.length === 0) return;
+
+                var bounds = new maplibregl.LngLatBounds();
+
+                for (var i = 0; i < geojson.features.length; i++) {
+                    var feature = geojson.features[i];
+                    var coords = feature.geometry.coordinates;
+                    var name = feature.properties.name;
+
+                    new maplibregl.Marker()
+                        .setLngLat(coords)
+                        .setPopup(new maplibregl.Popup({ offset: 25 }).setHTML(
+                            '<span class="home-map-popup-title">' + name + '</span>'
+                        ))
+                        .addTo(map);
+
+                    bounds.extend(coords);
+                }
+
+                // Ajuster la vue pour montrer tous les markers
+                // Fit view to show all markers
+                if (geojson.features.length === 1) {
+                    map.setCenter(geojson.features[0].geometry.coordinates);
+                    map.setZoom(13);
+                } else {
+                    map.fitBounds(bounds, { padding: 50, maxZoom: 14 });
+                }
+            });
+    });
+</script>
+{% endif %}
+{% endblock %}

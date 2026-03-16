@@ -1140,8 +1140,8 @@ Ce regroupement n'est pas prioritaire — phase 3 ou plus tard. En phase 1, chaq
 | `core/assignments/list_user_assignment.html` | **Remplacé** | Intégré dans le passeport (timeline chronologique) |
 | `core/badges/detail.html` | **Remplacé** par `core/badge_page/index.html` | Contenu migré vers `/badge/<uuid>/` (section B.6) |
 | `core/badges/create.html` | **Conservé** | Lié depuis "Forger un badge" |
-| `core/badges/partials/badge_assignment.html` | **Conservé** | Réutilisé en modale HTMX (phase 2) |
-| `core/badges/partials/badge_endorsement.html` | **Conservé** | Réutilisé en modale HTMX (phase 2) |
+| `core/badge/partial/badge_assignment.html` | **Conservé** | Réutilisé en modale HTMX (phase 2) |
+| `core/badge/partial/badge_endorsement.html` | **Conservé** | Réutilisé en modale HTMX (phase 2) |
 | `core/users/partials/user_profile_edit.html` | **Conservé** | Réutilisé en modale HTMX dans le passeport |
 | `authentication/login.html` | **Conservé** | Inchangé |
 

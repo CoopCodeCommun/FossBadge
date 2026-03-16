@@ -1,0 +1,78 @@
+{%include 'base/show_message.html'%}
+{% load custom_tags %}
+{% load i18n %}
+
+<div id="dream-badge-form">
+    <h2>{% translate "Créer mon badge de rêve" %}</h2>
+    <form enctype="multipart/form-data"
+          hx-post="{% url 'core:badge-create-dream' %}"
+          hx-target="#dream-badge-form"
+          hx-swap="innerHTML">
+
+        <p>
+            {% translate "Définissez l'objectif qui vous tient à cœur. Ce badge représente votre ambition et ce vers quoi vous souhaitez évoluer." %}
+        </p>
+        <hr>
+
+        <label for="name" class=" mt-2">{% translate "Nom du badge" %} :</label>
+        <input id="name" class="form-control mt-2" name="name" placeholder="{% translate 'Ex : devenir médecin' %}" value="{% if defaults.name %}{{defaults.name}}{%endif%}" />
+        {% if errors.name %}
+        <p class="error">{{errors.name.0}}</p>
+        {% endif %}
+
+        <div class="row mt-3">
+            <div class="col-md-6">
+                <label for="icon" class=" mt-2">{% translate "Icône du badge" %} :</label>
+                <input id="icon" class="form-control mt-2" name="icon" type="file"/>
+
+            </div>
+            <div class="col-md-6">
+                <div class="text-center">
+                    <img src="{{ placeholder_dream_badge }}" alt="{% translate 'Aperçu de l\'icône' %}" class="img-fluid badge-icon" id="icon_preview">
+                    <p class="form-text">{% translate "Aperçu" %}</p>
+                </div>
+            </div>
+
+        </div>
+        {% if errors.icon %}
+        <p class="error">{{errors.icon.0}}</p>
+        {% endif %}
+
+
+        <label for="description" class=" mt-2">{% translate "Description" %} :</label>
+        <textarea id="description" class="form-control mt-2" name="description">{% if defaults.description %}{{defaults.description}}{%endif%}</textarea>
+        {% if errors.description %}
+        <p class="error">{{errors.description.0}}</p>
+        {% endif %}
+
+        <hr>
+
+        {# Boutons / Buttons #}
+        <div class="mt-3 d-flex align-items-center gap-2">
+            <button type="submit" class="btn btn-primary btn-lg" data-testid="btn-submit-dream-badge">
+                {% translate "Créer le badge de reve" %}
+            </button>
+            <button type="button" class="btn btn-sm btn-outline-secondary" onclick="document.getElementById('dream-badge-form-container').style.display='none';" data-testid="btn-cancel-dream-badge">
+                {% translate "Annuler" %}
+            </button>
+        </div>
+    </form>
+</div>
+
+
+
+{% block extra_js %}
+<script>
+    // Simple preview for uploaded image
+    document.getElementById("icon").addEventListener('change', function (event) {
+        const file = event.target.files[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = function (e) {
+                document.getElementById('icon_preview').src = e.target.result;
+            }
+            reader.readAsDataURL(file);
+        }
+    });
+</script>
+{% endblock %}

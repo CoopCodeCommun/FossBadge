@@ -1,4 +1,4 @@
-{# LOCALISATION : templates/core/badge_page/index.html #}
+{# LOCALISATION : templates/core/badge/index.html #}
 {# Page dédiée d'un badge. Affiche en-tête, structures, détenteurs, actions, carte. #}
 {# / Dedicated badge page. Shows header, structures, holders, actions, map. #}
 {% extends 'base/base.html' %}
@@ -294,7 +294,7 @@
 
 {% block extra_js %}
 {% if structures_pks_csv %}
-<script src="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.js"></script>
+<script src="{% static 'js/maplibre-gl.js' %}"></script>
 <script>
     document.addEventListener('DOMContentLoaded', function () {
         // Charge les markers des structures liées à ce badge via l'API map_data

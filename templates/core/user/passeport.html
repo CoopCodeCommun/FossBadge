@@ -356,7 +356,7 @@
 
 {% block extra_js %}
 {% if structures_pks_csv %}
-<script src="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.js"></script>
+<script src="{% static 'js/maplibre-gl.js' %}"></script>
 <script>
     document.addEventListener('DOMContentLoaded', function () {
         /**

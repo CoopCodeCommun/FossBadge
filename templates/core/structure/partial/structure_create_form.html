@@ -1,6 +1,10 @@
 {% load custom_tags %}
 {% load static %}
 
+{% block extra_css %}
+    <link rel="stylesheet" href="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.css">
+{% endblock %}
+
 <h2>Créer une structure</h2>
 <!-- Structure Creation Form -->
 <form method="post"
@@ -229,11 +233,11 @@
 
     <script src="{% static 'js/maplibre-gl.js' %}" onload="initMap()"></script>
     <script>
-        let map;
-        let markers = []
-        let input;
-        let input_lat;
-        let input_lon;
+        var map;
+        var markers = []
+        var input;
+        var input_lat;
+        var input_lon;
 
         function initMap(){
             // Initialize the map

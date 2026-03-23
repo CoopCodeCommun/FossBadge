@@ -644,6 +644,8 @@ class CourseItem(models.Model):
         if parent:
             item = CourseItem.objects.get(badge=parent, course=course)
             c.parents.add(item)
+
+
 class BadgeCriteria(models.Model):
     """
     Critères d'attribution d'un badge par une structure.

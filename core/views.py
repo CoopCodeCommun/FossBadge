@@ -16,7 +16,7 @@ from rest_framework.decorators import action,authentication_classes, permission_
 from .helpers import TokenHelper
 from .helpers.utils import get_or_create_user, invite_user_to_structure
 from .models import Structure, Badge, User, BadgeAssignment, BadgeEndorsement, BadgeHistory, BadgeCriteria, Course, CourseItem
-from .forms import BadgeForm, UserForm, PartialUserForm
+from .forms import BadgeForm, PartialUserForm
 
 from .permissions import IsBadgeEditor, IsStructureAdmin, CanEditUser, CanAssignBadge, CanEndorseBadge, CanEditCourse
 from .validators import BadgeAssignmentValidator, BadgeEndorsementValidator, DreamBadgeValidator, InviteUserValidator, \
@@ -1711,29 +1711,6 @@ class UserViewSet(viewsets.ViewSet):
             'user': user,
             'badge_with_badge_assignments': badge_with_badge_assignments,
             'structures': structures
-        })
-
-    @action(detail=False, methods=['get', 'post'])
-    def create_user(self, request):
-        """
-        Create a new user.
-        """
-        return raise403(request)
-        if request.method == 'POST':
-            form = UserForm(request.POST, request.FILES)
-            if form.is_valid():
-                user = form.save(commit=False)
-                user.username = f"{form.cleaned_data['first_name']}.{form.cleaned_data['last_name']}".lower()
-                user.set_password(form.cleaned_data['password'])
-                user.save()
-
-                return redirect(reverse('core:user-detail', kwargs={'pk': user.pk}))
-        else:
-            form = UserForm()
-
-        return render(request, 'core/users/create.html', {
-            'title': 'openbadge.coop - Créer un utilisateur',
-            'form': form,
         })
 
     @action(detail=True, methods=['get', 'post'],name="edit-profile")

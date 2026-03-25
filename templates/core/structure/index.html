@@ -3,7 +3,6 @@
 {# / Dedicated structure page. Shows header, badges, members, referent. #}
 {% extends 'base/base.html' %}
 {% load i18n %}
-{% load pictures %}
 {% load static %}
 {% load l10n %}
 {% load custom_tags %}
@@ -53,7 +52,7 @@
     <div class="lieu-header" data-testid="lieu-header">
         <div class="lieu-header-logo">
             {% if structure.logo %}
-                {% picture structure.logo img_alt=structure.name ratio="1/1" %}
+                {% svg_or_picture structure.logo img_alt=structure.name ratio="1/1" %}
             {% else %}
                 <div class="home-result-icon-placeholder home-result-icon-placeholder-structures lieu-header-logo-placeholder">
                     <span aria-hidden="true">&#9737;</span>
@@ -132,7 +131,7 @@
                 <summary class="home-result-item">
                     <div class="home-result-icon">
                         {% if badge.icon %}
-                            {% picture badge.icon img_alt=badge.name ratio="1/1" %}
+                            {% svg_or_picture badge.icon img_alt=badge.name ratio="1/1" %}
                         {% else %}
                             <div class="home-result-icon-placeholder home-result-icon-placeholder-badges">
                                 <span aria-hidden="true">&#9733;</span>
@@ -201,7 +200,7 @@
                 <summary class="home-result-item">
                     <div class="home-result-icon">
                         {% if badge.icon %}
-                            {% picture badge.icon img_alt=badge.name ratio="1/1" %}
+                            {% svg_or_picture badge.icon img_alt=badge.name ratio="1/1" %}
                         {% else %}
                             <div class="home-result-icon-placeholder home-result-icon-placeholder-badges">
                                 <span aria-hidden="true">&#9733;</span>
@@ -306,7 +305,7 @@
                    data-testid="lieu-member-{{ member.pk }}">
                     <div class="home-result-icon home-result-icon-round">
                         {% if member.avatar %}
-                            {% picture member.avatar img_alt=member.get_full_name|default:member.username ratio="1/1" %}
+                            {% svg_or_picture member.avatar img_alt=member.get_full_name|default:member.username ratio="1/1" %}
                         {% else %}
                             <div class="home-result-icon-placeholder home-result-icon-placeholder-personnes home-result-icon-round">
                                 <span aria-hidden="true">&#9679;</span>

@@ -1,5 +1,5 @@
 {% extends 'base/base.html' %}
-{% load pictures %}
+{% load custom_tags %}
 
 {% block title %}Badge {{ badge.name }} assigné à {{ user.username }}{% endblock %}
 
@@ -18,7 +18,7 @@
                     <h3>Détail du badge :</h3>
                     <!-- Badge Icon -->
                     {% if badge.icon %}
-                        {% picture badge.icon img_alt=badge.name img_class="badge-icon mb-3" ratio="1/1" picture_class="text-center" %}
+                        {% svg_or_picture badge.icon img_alt=badge.name img_class="badge-icon mb-3" ratio="1/1" picture_class="text-center" %}
                     {% else %}
                         <img src="{{ placeholder_image }}" alt="{{ badge.name }}" class="badge-icon mb-3"
                              style="width: 150px; height: 150px;">
@@ -42,7 +42,7 @@
                         <div class="d-flex align-items-center justify-content-center">
                             {% if badge.issuing_structure.logo %}
                                 <div class="me-2" style="width: 50px;">
-                                    {% picture badge.issuing_structure.logo img_alt="Logo "|add:badge.issuing_structure.name img_class="img-fluid" ratio="1/1" %}
+                                    {% svg_or_picture badge.issuing_structure.logo img_alt="Logo "|add:badge.issuing_structure.name img_class="img-fluid" ratio="1/1" %}
                                 </div>
                             {% else %}
                                 <img src="{{ placeholder_image }}" alt="Logo {{ badge.issuing_structure.name }}"

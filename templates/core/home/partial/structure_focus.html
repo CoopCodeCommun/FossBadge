@@ -1,5 +1,5 @@
 {% load i18n %}
-{% load pictures %}
+{% load custom_tags %}
 
 {# Vue focus structure : la structure s'agrandit dans la colonne Structures, #}
 {# les deux autres colonnes filtrent sur les objets liés. #}
@@ -48,7 +48,7 @@
                 >
                     <div class="home-result-icon">
                         {% if badge.icon %}
-                            {% picture badge.icon img_alt=badge.name ratio="1/1" %}
+                            {% svg_or_picture badge.icon img_alt=badge.name ratio="1/1" %}
                         {% else %}
                             <div class="home-result-icon-placeholder home-result-icon-placeholder-badges">
                                 <span aria-hidden="true">&#9733;</span>
@@ -81,7 +81,7 @@
         <div class="home-badge-focus-card">
             <div class="home-badge-focus-icon">
                 {% if focused_structure.logo %}
-                    {% picture focused_structure.logo img_alt=focused_structure.name ratio="1/1" %}
+                    {% svg_or_picture focused_structure.logo img_alt=focused_structure.name ratio="1/1" %}
                 {% else %}
                     <div class="home-result-icon-placeholder home-result-icon-placeholder-structures" style="width: 120px; height: 120px; font-size: 3rem;">
                         <span aria-hidden="true">&#9737;</span>
@@ -143,7 +143,7 @@
                 >
                     <div class="home-result-icon home-result-icon-round">
                         {% if person.avatar %}
-                            {% picture person.avatar img_alt=person.get_full_name|default:person.username ratio="1/1" %}
+                            {% svg_or_picture person.avatar img_alt=person.get_full_name|default:person.username ratio="1/1" %}
                         {% else %}
                             <div class="home-result-icon-placeholder home-result-icon-placeholder-personnes home-result-icon-round">
                                 <span aria-hidden="true">&#9679;</span>

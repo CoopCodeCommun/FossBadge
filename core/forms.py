@@ -14,7 +14,7 @@ class BadgeForm(forms.ModelForm):
 
     class Meta:
         model = Badge
-        fields = ['name', 'icon', 'level', 'description', 'issuing_structure']
+        fields = ['name', 'icon', 'description', 'issuing_structure']
         widgets = {
             'name': forms.TextInput(attrs={
                 'class': 'form-control form-control-lg',
@@ -24,7 +24,7 @@ class BadgeForm(forms.ModelForm):
                 'class': 'form-control',
                 'accept': 'image/*'
             }),
-            'level': forms.RadioSelect(),
+            # 'level': forms.RadioSelect(),
             'description': forms.Textarea(attrs={
                 'class': 'form-control',
                 'rows': 4,

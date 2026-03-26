@@ -71,14 +71,11 @@
             {# Niveau (pastille colorée) #}
             {# Level (colored pill) #}
             <p class="badge-page-header-meta text-muted mb-1">
+                {% if badge.category %}
+                    <span style="border: 1px {{ badge.category.color }} solid"> {{ badge.category.icon }} {{ badge.category.name }}</span> ---
+                {% endif %}
                 {% if badge.level %}
-                    {% if badge.level == 'beginner' %}
-                        <span class="home-level-tag home-level-beginner">{{ badge.get_level_display }}</span>
-                    {% elif badge.level == 'intermediate' %}
-                        <span class="home-level-tag home-level-intermediate">{{ badge.get_level_display }}</span>
-                    {% elif badge.level == 'expert' %}
-                        <span class="home-level-tag home-level-expert">{{ badge.get_level_display }}</span>
-                    {% endif %}
+                    <span>{{ badge.level.name }}</span> --
                 {% endif %}
                 {% if badge.issuing_structure %}
                     <span class="text-muted">

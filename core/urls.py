@@ -1,6 +1,7 @@
 from django.urls import path, include
 from rest_framework.routers import DefaultRouter
 from . import views
+import badge_generator.views
 
 app_name = 'core'
 
@@ -18,7 +19,8 @@ router.register(r'courses', views.CourseViewSet, basename='course')
 # / Custom routes must come BEFORE the router to avoid being caught by "badge/<pk>/".
 urlpatterns = [
     # Creation routes
-    path('badge/create/', views.BadgeViewSet.as_view({'get': 'create_badge', 'post': 'create_badge'}), name='create_badge'),
+    path('badge/create/', badge_generator.views.BadgeGeneratorViewSet.as_view({'get': 'list', 'post': 'list'}), name='create_badge'),
+    # path('badge/create/', views.BadgeViewSet.as_view({'get': 'create_badge', 'post': 'create_badge'}), name='create_badge'),
     path('structure/create/', views.StructureViewSet.as_view({'get': 'create_association', 'post': 'create_association'}), name='create_association'),
 
     # Edition routes

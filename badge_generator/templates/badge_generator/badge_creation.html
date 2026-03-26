@@ -1,4 +1,4 @@
-{% load static badge_tags %}
+{% load static badge_tags custom_tags %}
 {% load i18n %}
 
 {% block title %}{% translate "Générateur de Badges" %} — O2Badge{% endblock %}
@@ -74,16 +74,88 @@
             <input type="hidden" id="selected-shape" name="shape" value="{{ default_shape_key }}">
 
             <!-- ====================================================
-                 Section 1 : Choisir une categorie.
+             Section 1 : Ecrire le titre et le sous-titre.
+             Chaque frappe (avec debounce 300ms) met a jour la preview.
+
+             Section 1: Write title and subtitle.
+             Each keystroke (300ms debounce) updates the preview.
+             ==================================================== -->
+            <h2 class="step-title mt-4">
+                <span class="step-number" aria-hidden="true">1</span>
+                {% translate "Texte" %}
+            </h2>
+            <p class="step-subtitle">{% translate "Donnez un titre à votre badge." %}</p>
+
+            <div class="form-group">
+                <label for="badge-title">{% translate "Titre du badge" %} *</label>
+                <input type="text"
+                       id="badge-title"
+                       name="title"
+                       class="form-control"
+                       maxlength="100"
+                       required
+                       aria-required="true"
+                       placeholder="{% translate 'Ex: Initiation Arduino' %}"
+                       data-testid="badge-title-input">
+            </div>
+
+            <div class="form-group">
+                <label for="badge-subtitle">{% translate "Sous-titre" %} <span class="text-muted">({% translate "optionnel" %})</span></label>
+                <input type="text"
+                       id="badge-subtitle"
+                       name="subtitle"
+                       class="form-control"
+                       maxlength="100"
+                       placeholder="{% translate 'Ex: Atelier du 15 mars' %}"
+                       data-testid="badge-subtitle-input">
+            </div>
+
+            <!-- ====================================================
+             Section 2 : Créateur
+
+             Section 2: Créateur
+             ==================================================== -->
+            <h2 class="step-title mt-4">
+                <span class="step-number" aria-hidden="true">2</span>
+                {% translate "Emetteur" %}
+            </h2>
+            <p class="step-subtitle">{% translate "Qui crée ce badge ? Vous ou une structure ?" %}</p>
+
+            <div class="form-group">
+                <fieldset>
+                    <legend>Créer le badge :</legend>
+                    <div>
+                        <input type="radio" name="creator_type" id="as_user" class="d-none" value="user">
+                        <label for="as_user" class="popup-cancel-btn">En tant que {{ request.user.display_name }}</label>
+                        <input type="radio" name="creator_type" id="as_structure" class="d-none" value="structure">
+                        <label for="as_structure" class="popup-cancel-btn">Pour une structure</label>
+                    </div>
+                </fieldset>
+            </div>
+
+            <div class="form-group" id="structures">
+                <label for="structure">{% translate "Structure qui crée le badge" %} *</label>
+                <select id="structure" name="structure" class="form-select mt-2" >
+                    <option>--- Sélectionnez une structure ---</option>>
+                    {%for structure in structures %}
+                        <option {% if defaults.assigned_by_structure == structure.pk|stringformat:"s"  %} selected {%endif%} value="{{structure.pk}}">
+                            {{structure.name}}
+                        </option>
+                    {%endfor%}
+                </select>
+            </div>
+
+            <!-- ====================================================
+                 Section 3 : Choisir une categorie.
                  On affiche les 8 categories en grille 4x2.
                  Chaque carte montre l'illustration SVG de la categorie
                  au lieu d'un emoji.
 
-                 Section 1: Choose a category.
+                 Section 3: Choose a category.
                  8 categories in a 4x2 grid with SVG illustration.
                  ==================================================== -->
             <h2 class="step-title">
-                <span class="step-number" aria-hidden="true">1</span>
+                <span class="step-number" aria-hidden="true">3</span>
                 {% translate "Catégorie" %}
             </h2>
             <p class="step-subtitle">{% translate "Choisissez le type de badge." %}</p>
@@ -133,14 +205,14 @@
             </div>
 
             <!-- ====================================================
-                 Section 2 : Choisir un niveau.
+                 Section 4 : Choisir un niveau.
                  5 cartes avec indicateur visuel d'epaisseur de trait.
 
-                 Section 2: Choose a level.
+                 Section 4: Choose a level.
                  5 cards with visual stroke thickness indicator.
                  ==================================================== -->
             <h2 class="step-title mt-4">
-                <span class="step-number" aria-hidden="true">2</span>
+                <span class="step-number" aria-hidden="true">4</span>
                 {% translate "Niveau" %}
             </h2>
             <p class="step-subtitle">{% translate "Choisissez le niveau du badge." %}</p>
@@ -171,17 +243,17 @@
             </div>
 
             <!-- ====================================================
-                 Section 3 : Choisir la forme du badge.
+                 Section 5 : Choisir la forme du badge.
                  On affiche les 8 formes disponibles en grille 4x2.
                  Chaque carte montre un apercu miniature de la forme.
                  La forme par defaut (starburst) est pre-selectionnee.
 
-                 Section 3: Choose the badge shape.
+                 Section 5: Choose the badge shape.
                  8 shapes in a 4x2 grid with miniature preview.
                  Default shape (starburst) is pre-selected.
                  ==================================================== -->
             <h2 class="step-title mt-4">
-                <span class="step-number" aria-hidden="true">3</span>
+                <span class="step-number" aria-hidden="true">5</span>
                 {% translate "Forme" %}
             </h2>
             <p class="step-subtitle">{% translate "Choisissez la forme du badge." %}</p>
@@ -220,41 +292,36 @@
             </div>
 
             <!-- ====================================================
-                 Section 4 : Ecrire le titre et le sous-titre.
-                 Chaque frappe (avec debounce 300ms) met a jour la preview.
-
-                 Section 4: Write title and subtitle.
-                 Each keystroke (300ms debounce) updates the preview.
+                 Section 6 : Critères
+                 Section 6: Criteria
                  ==================================================== -->
             <h2 class="step-title mt-4">
-                <span class="step-number" aria-hidden="true">4</span>
-                {% translate "Texte" %}
+                <span class="step-number" aria-hidden="true">6</span>
+                {% translate "Critères" %}
             </h2>
-            <p class="step-subtitle">{% translate "Donnez un titre à votre badge." %}</p>
+            <p class="step-subtitle">{% translate "Choisissez les caracteristiques d'attribution du badge" %}</p>
 
             <div class="form-group">
-                <label for="badge-title">{% translate "Titre du badge" %} *</label>
-                <input type="text"
-                       id="badge-title"
-                       name="title"
-                       class="form-control"
-                       maxlength="100"
-                       required
-                       aria-required="true"
-                       placeholder="{% translate 'Ex: Initiation Arduino' %}"
-                       data-testid="badge-title-input">
+                <label for="criteria">Critères *</label>
+                <textarea class="form-control" id="criteria" name="criteria"></textarea>
             </div>
 
+            <!-- ====================================================
+            Section 7 : Description
+            Section 7: Description
+            ==================================================== -->
+            <h2 class="step-title mt-4">
+                <span class="step-number" aria-hidden="true">7</span>
+                {% translate "Description" %}
+            </h2>
+            <p class="step-subtitle">{% translate "Décrivez le badge" %}</p>
+
             <div class="form-group">
-                <label for="badge-subtitle">{% translate "Sous-titre" %} <span class="text-muted">({% translate "optionnel" %})</span></label>
-                <input type="text"
-                       id="badge-subtitle"
-                       name="subtitle"
-                       class="form-control"
-                       maxlength="100"
-                       placeholder="{% translate 'Ex: Atelier du 15 mars' %}"
-                       data-testid="badge-subtitle-input">
+                <label for="description">Description *</label>
+                <textarea class="form-control" id="description" name="description"></textarea>
             </div>
+
+
 
             <!-- ====================================================
                  Bouton de generation finale.
@@ -262,12 +329,17 @@
                  ==================================================== -->
             <div class="wizard-actions mt-3">
                 <button type="button"
-                        id="generate-button"
-                        class="btn btn-primary"
-                        disabled
-                        aria-label="{% translate 'Générer le badge' %}"
-                        data-testid="generate-button">
-                    {% translate "Générer le badge" %}
+                        id="create-button"
+                        class="btn btn-primary btn-lg"
+                        aria-label="{% translate 'Créer le badge' %}"
+                        data-testid="create-button">
+                    {% translate "Créer le badge" %}
+                </button>
+                <button type="button"
+                        class="popup-cancel-btn"
+                        onclick="{% popup_close %}"
+                        aria-label="{% translate 'Annuler' %}">
+                    {% translate "Annuler" %}
                 </button>
             </div>
 
@@ -310,6 +382,7 @@
 // Pass preview URL to JavaScript.
 window.BADGE_PREVIEW_URL = "{% url 'badge_generator:badge-generator-preview' %}";
 window.BADGE_GENERATE_URL = "{% url 'badge_generator:badge-generator-generate' %}";
+window.BADGE_CREATION_URL = "{% url 'badge_generator:badge-generator-create-badge' %}";
 window.CSRF_TOKEN = "{{ csrf_token }}";
 </script>
 <script src="{% static 'badge_generator/js/badge_generator.js' %}"></script>

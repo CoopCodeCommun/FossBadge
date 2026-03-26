@@ -513,3 +513,33 @@
         max-height: 240px;
     }
 }
+
+
+#structures{
+    max-height: 0;
+    overflow: hidden;
+    animation: hideTest 0.5s forwards;
+}
+
+#structures.showed{
+    animation: showTest 0.5s forwards;
+    max-height: 100px;
+}
+
+@keyframes showTest {
+    0%{
+        max-height: 0;
+    }
+    100%{
+        max-height: 100px;
+    }
+}
+
+@keyframes hideTest {
+    0%{
+        max-height: 100px;
+    }
+    100%{
+        max-height: 0;
+    }
+}

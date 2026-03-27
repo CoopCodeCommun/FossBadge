@@ -218,37 +218,6 @@ function update_generate_button_state() {
 // Send all data to server to save. Server returns result page.
 // ================================================================
 
-function generate_badge() {
-    var category_uuid = document.getElementById("selected-category-uuid").value;
-    var level_uuid = document.getElementById("selected-level-uuid").value;
-    var shape_key = document.getElementById("selected-shape").value;
-    var title = document.getElementById("badge-title").value;
-    var subtitle = document.getElementById("badge-subtitle").value;
-
-    // On verifie que tout est rempli.
-    // Check that everything is filled.
-    if (!category_uuid || !level_uuid || !title.trim()) {
-        return;
-    }
-
-    // On envoie la requete POST avec HTMX.
-    // Le resultat remplace le contenu des deux colonnes.
-    // Send POST request with HTMX. Result replaces the two-column content.
-    if (typeof htmx !== "undefined") {
-        htmx.ajax("POST", window.BADGE_GENERATE_URL, {
-            target: ".generator-two-columns",
-            swap: "innerHTML",
-            values: {
-                "category_uuid": category_uuid,
-                "level_uuid": level_uuid,
-                "shape": shape_key,
-                "title": title,
-                "subtitle": subtitle
-            },
-        });
-    }
-}
-
 function create_badge(){
     var category_uuid = document.getElementById("selected-category-uuid").value;
     var level_uuid = document.getElementById("selected-level-uuid").value;
@@ -275,7 +244,7 @@ function create_badge(){
 
     if (typeof htmx !== "undefined") {
         htmx.ajax("POST", window.BADGE_CREATION_URL, {
-            target: ".generator-two-columns",
+            target: "#generator-page-container",
             swap: "innerHTML",
             values: {
                 "category_uuid": category_uuid,
@@ -288,11 +257,12 @@ function create_badge(){
                 "criteria":criteria,
                 "description":description
             },
+        }).then(()=>{
+            document.querySelector('#customPopup-content').scrollTo({'top': 0, 'behavior': 'smooth'})
         });
     }
-
-
 }
+
 
 // ================================================================
 // On attache les ecouteurs d'evenements.
@@ -317,12 +287,6 @@ if (subtitle_input) {
     subtitle_input.addEventListener("input", handle_text_input_with_debounce);
 }
 
-// Clic sur le bouton "Generer".
-// Generate button click.
-var generate_button = document.getElementById("generate-button");
-if (generate_button) {
-    generate_button.addEventListener("click", generate_badge);
-}
 
 var create_button = document.getElementById("create-button");
 if (create_button) {

@@ -14,17 +14,21 @@ LOCALISATION : badge_generator/views.py
 import re
 
 from django.http import HttpResponse
-from django.shortcuts import get_object_or_404, render
+from django.shortcuts import get_object_or_404, render, redirect
+from django.urls import reverse
+from django_htmx.http import HttpResponseClientRedirect
 from rest_framework import viewsets
 from rest_framework.decorators import action
 from rest_framework.permissions import AllowAny
 
 from badge_generator.models import BadgeCategory, BadgeLevel, GeneratedBadge
-from badge_generator.serializers import GenerateBadgeSerializer, PreviewBadgeSerializer,CreateBadgeValidator
+from badge_generator.serializers import GenerateBadgeSerializer, PreviewBadgeSerializer
 from badge_generator.shapes import ALL_SHAPES, DEFAULT_SHAPE_KEY
 from badge_generator.svg_engine import generate_badge_svg
 from core.models import Badge, BadgeHistory, BadgeCriteria, Structure
 from django.core.files.base import ContentFile
+
+from core.validators import CreateBadgeValidator
 
 
 class BadgeGeneratorViewSet(viewsets.ViewSet):
@@ -239,98 +243,3 @@ class BadgeGeneratorViewSet(viewsets.ViewSet):
             f'attachment; filename="badge_{safe_filename}.svg"'
         )
         return response
-
-    @action(detail=False, methods=["POST"])
-    def create_badge(self, request):
-        if not request.htmx:
-            return HttpResponse("Une erreur est survenue")
-
-        if request.method == "GET":
-            # TODO Merge this route with "list" route
-            return render(request, "badge_generator/partials/_badge_preview.html", {})
-
-        validator = CreateBadgeValidator(data=request.POST)
-        is_valid = validator.is_valid()
-        if not is_valid:
-            print(validator.errors)
-            # TODO add error display
-            return HttpResponse(validator.errors)
-
-        validated = validator.validated_data
-
-        # On cherche les objets dans la base de donnees.
-        # Find database objects.
-        chosen_category = get_object_or_404(
-            BadgeCategory, uuid=validated["category_uuid"]
-        )
-        chosen_level = get_object_or_404(
-            BadgeLevel, uuid=validated["level_uuid"]
-        )
-
-        # On recupere la forme choisie.
-        # Get the chosen shape.
-        shape_key = validated.get("shape", DEFAULT_SHAPE_KEY)
-
-        # On genere le SVG final avec la forme choisie.
-        # Generate final SVG with chosen shape.
-        svg_text = generate_badge_svg(
-            category_name=chosen_category.name,
-            category_color=chosen_category.color,
-            level_stroke_width=chosen_level.stroke_width,
-            level_posture_text=chosen_level.posture_text,
-            illustration_svg=chosen_category.illustration_svg,
-            title=validated["title"],
-            subtitle=validated.get("subtitle", ""),
-            shape_key=shape_key,
-        )
-        badge_data = {
-            "name":validated["title"],
-            "description":validated["description"],
-        }
-        if validated["creator_type"] == "structure":
-            structure = Structure.objects.get(uuid=validated["structure_uuid"])
-            badge_data["issuing_structure"] = structure
-        else:
-            badge_data["user"] = request.user
-
-        badge_data["category"] = chosen_category
-        badge_data["level"] = chosen_level
-
-
-        # Create a badge
-        badge = Badge(
-            **badge_data
-        )
-
-        try:
-            svg_file = ContentFile(svg_text.encode("utf-8"))
-            badge.icon.save("icon.svg", svg_file)
-        except TypeError:
-            print("error svg file")
-
-        badge.save()
-
-        # Create a BadgeHistory
-        badgeHistory = BadgeHistory(
-            badge=badge,
-            action="creation",
-            details="Badge crée"
-        )
-
-        if validated["creator_type"] == "structure":
-            # Create a BadgeCriteria
-            badgeCriteria = BadgeCriteria(
-                badge=badge,
-                structure=structure,
-                criteria=validated["criteria"],
-            )
-            print(badgeCriteria)
-
-
-        print(badge)
-        print(badge.icon)
-        print(badgeHistory)
-
-        # import ipdb;ipdb.set_trace()
-
-        return HttpResponse("yes")

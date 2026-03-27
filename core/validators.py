@@ -1,9 +1,12 @@
 from django.shortcuts import get_object_or_404
 from rest_framework import serializers
 
+from badge_generator.models import BadgeLevel, BadgeCategory
+from badge_generator.shapes import DEFAULT_SHAPE_KEY, ALL_SHAPES
 from core.admin import StructureAdmin
 from core.models import Badge, User, Structure
 from mapview.models import Marker
+from django.utils.translation import gettext_lazy as _
 
 
 class BadgeAssignmentValidator(serializers.Serializer):
@@ -201,3 +204,119 @@ class CreateStructureValidator(serializers.Serializer):
     # Marker info
     latitude = serializers.FloatField(required=False)
     longitude = serializers.FloatField(required=False)
+
+class CreateBadgeValidator(serializers.Serializer):
+    """
+    Validator for creating a badge and an associated icon
+    The request context MUST be populated.
+    """
+
+    category_uuid = serializers.UUIDField(
+        error_messages={
+            "required": _("Veuillez choisir une catégorie."),
+            "invalid": _("Cette catégorie n'est pas valide."),
+        }
+    )
+
+    level_uuid = serializers.UUIDField(
+        error_messages={
+            "required": _("Veuillez choisir un niveau."),
+            "invalid": _("Ce niveau n'est pas valide."),
+        }
+    )
+
+    title = serializers.CharField(
+        max_length=100,
+        error_messages={
+            "required": _("Le titre est obligatoire."),
+            "max_length": _("Le titre est trop long (100 caractères max)."),
+            "blank": _("Le titre ne peut pas être vide."),
+        }
+    )
+
+    subtitle = serializers.CharField(
+        max_length=100,
+        required=False,
+        allow_blank=True,
+        default="",
+    )
+
+    # La forme choisie par l'utilisateur. Par defaut "starburst".
+    # Shape chosen by the user. Default is "starburst".
+    shape = serializers.CharField(
+        max_length=30,
+        required=False,
+        allow_blank=True,
+        default=DEFAULT_SHAPE_KEY,
+    )
+
+    description = serializers.CharField()
+
+    criteria = serializers.CharField()
+
+    creator_type = serializers.CharField(
+        error_messages={
+            "blank" : _("Veuillez choisir une option"),
+            "invalid": _("Cette option n'est pas valide."),
+        }
+    )
+
+    structure_uuid = serializers.CharField(
+        error_messages={
+            "required": _("Veuillez choisir une structure."),
+            "invalid": _("Cette structure n'est pas valide."),
+        },
+        required=False,
+    )
+
+    def validate_category_uuid(self, value):
+        # On verifie que la categorie existe.
+        # Check that the category exists.
+        category_exists = BadgeCategory.objects.filter(uuid=value).exists()
+        if not category_exists:
+            raise serializers.ValidationError(
+                _("Cette catégorie n'existe pas.")
+            )
+        return value
+
+    def validate_level_uuid(self, value):
+        # On verifie que le niveau existe.
+        # Check that the level exists.
+        level_exists = BadgeLevel.objects.filter(uuid=value).exists()
+        if not level_exists:
+            raise serializers.ValidationError(
+                _("Ce niveau n'existe pas.")
+            )
+        return value
+
+    def validate_creator_type(self,value):
+        if value == "structure" or value == "user":
+            return value
+
+        raise serializers.ValidationError(_("Vous devez choisir qui émet ce badge."))
+
+    def validate_structure_uuid(self, value):
+        # Check if we create the badge as a structure. If so, check if the structure is valid.
+        # print(self.initial_data["user"])
+        if self.initial_data['creator_type'] == "structure":
+            structure = Structure.objects.filter(uuid=value)
+            structure_exist = structure.exists()
+            if not structure_exist:
+                raise serializers.ValidationError("Veuillez choisir une structure valide.")
+
+
+            user = self.context["request"].user
+            print(user)
+            print(structure[0])
+            print(structure[0].is_editor(user))
+            if not structure[0].is_editor(user):
+                raise serializers.ValidationError(_("Vous n'êtes pas éditeur de cette structure."))
+
+        return value
+
+    def validate_shape(self, value):
+        # Si la forme est vide ou inconnue, on prend la forme par defaut.
+        # If shape is empty or unknown, use default.
+        if not value or value not in ALL_SHAPES:
+            return DEFAULT_SHAPE_KEY
+        return value

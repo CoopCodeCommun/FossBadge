@@ -44,6 +44,10 @@ def popup_open():
 def popup_content_id():
     return f"#{POPUP_CONTENT_ID}"
 
+@register.simple_tag
+def popup_scroll_to_top():
+    return f"document.querySelector('{popup_content_id()}').scrollTo({{top: 0, behavior: 'smooth'}})"
+
 
 def is_svg(file_field):
     """Check if the file is an SVG."""

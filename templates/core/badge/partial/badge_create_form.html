@@ -62,8 +62,8 @@
                      HTMX et JavaScript les remplissent quand l'utilisateur clique.
                      Hidden fields to store selections.
                      HTMX and JavaScript fill them on user click. -->
-                <input type="hidden" id="selected-category-uuid" name="category_uuid" value="">
-                <input type="hidden" id="selected-level-uuid" name="level_uuid" value="">
+                <input type="hidden" id="selected-category-uuid" name="category_uuid" value="{{ defaults.category_uuid }}">
+                <input type="hidden" id="selected-level-uuid" name="level_uuid" value="{{ defaults.level_uuid }}">
                 <input type="hidden" id="selected-shape" name="shape" value="{{ default_shape_key }}">
 
                 <!-- ====================================================
@@ -177,7 +177,7 @@
                              L'illustration SVG de la categorie est affichee dans un mini SVG.
                              Each card is a visual radio button with the category SVG illustration. -->
                         <button type="button"
-                                class="selection-card category-card"
+                                class="selection-card category-card{% if defaults.category_uuid == category.uuid|stringformat:"s"  %} selected{% endif %}"
                                 data-category-uuid="{{ category.uuid }}"
                                 data-testid="category-card-{{ category.abbreviation }}"
                                 role="radio"
@@ -238,7 +238,7 @@
                              Plus le niveau est haut, plus la barre est epaisse.
                              Each level card shows a thickness bar. -->
                         <button type="button"
-                                class="selection-card level-card"
+                                class="selection-card level-card {% if defaults.level_uuid == level.uuid|stringformat:"s"  %} selected{% endif %}"
                                 data-level-uuid="{{ level.uuid }}"
                                 data-testid="level-card-{{ level.rank }}"
                                 role="radio"

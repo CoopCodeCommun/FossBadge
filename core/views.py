@@ -1101,6 +1101,7 @@ class BadgeViewSet(viewsets.ViewSet):
             context.update({
                 "errors" : validator.errors,
                 "defaults" : validator.data,
+                "default_shape_key":validator.data["shape"]
             })
             return render(request, "core/badge/partial/badge_create_form.html", context=context)
 

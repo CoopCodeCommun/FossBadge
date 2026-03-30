@@ -7,7 +7,7 @@ from badge_generator.illustrations import ILLUSTRATIONS_BY_ABBREVIATION
 
 def populate_badge_level_and_category(apps, schema_editor):
     create_categories(apps, schema_editor)
-    create_categories(apps, schema_editor)
+    create_levels(apps, schema_editor)
 
 def create_levels(apps, schema_editor):
 

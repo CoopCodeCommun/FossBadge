@@ -1094,8 +1094,9 @@ class BadgeViewSet(viewsets.ViewSet):
 
 
         # Validate the data received from the POST request
-        validator = CreateBadgeValidator(data=request.POST,context={"request":request})
+        validator = CreateBadgeValidator(data=request.data,context={"request":request})
         is_valid = validator.is_valid()
+
         if not is_valid:
             # Update the context with errors and defaults values
             context.update({
@@ -1116,23 +1117,6 @@ class BadgeViewSet(viewsets.ViewSet):
             BadgeLevel, uuid=validated["level_uuid"]
         )
 
-        # On recupere la forme choisie.
-        # Get the chosen shape.
-        shape_key = validated.get("shape", DEFAULT_SHAPE_KEY)
-
-        # On genere le SVG final avec la forme choisie.
-        # Generate final SVG with chosen shape.
-        svg_text = generate_badge_svg(
-            category_name=chosen_category.name,
-            category_color=chosen_category.color,
-            level_stroke_width=chosen_level.stroke_width,
-            level_posture_text=chosen_level.posture_text,
-            illustration_svg=chosen_category.illustration_svg,
-            title=validated["title"],
-            subtitle=validated.get("subtitle", ""),
-            shape_key=shape_key,
-        )
-
         # Create a dict with the badge data
         badge_data = {
             "name":validated["title"],
@@ -1141,16 +1125,10 @@ class BadgeViewSet(viewsets.ViewSet):
             "level":chosen_level,
         }
 
-
-
         # Check the creator type and populate the badge_data accordingly
         if validated["creator_type"] == "structure":
             structure = Structure.objects.get(uuid=validated["structure_uuid"])
             badge_data["issuing_structure"] = structure
-
-            # Check if the user is editor of the structure
-            if not structure.is_editor(request.user):
-                return render(request, "core/badge/partial/badge_create_form.html", context=context)
         else:
             badge_data["user"] = request.user
 
@@ -1159,14 +1137,35 @@ class BadgeViewSet(viewsets.ViewSet):
             **badge_data
         )
 
-        # Saving the svg file like that make an exception but save it anyway
-        try:
-            svg_file = ContentFile(svg_text.encode("utf-8"))
-            badge.icon.save("icon.svg", svg_file)
-        except TypeError:
-            print("error svg file")
+        if validated["icon_type"] == "generate":
+            # On recupere la forme choisie.
+            # Get the chosen shape.
+            shape_key = validated.get("shape", DEFAULT_SHAPE_KEY)
 
-        # Save the badge to db
+            # On genere le SVG final avec la forme choisie.
+            # Generate final SVG with chosen shape.
+            svg_text = generate_badge_svg(
+                category_name=chosen_category.name,
+                category_color=chosen_category.color,
+                level_stroke_width=chosen_level.stroke_width,
+                level_posture_text=chosen_level.posture_text,
+                illustration_svg=chosen_category.illustration_svg,
+                title=validated["title"],
+                subtitle=validated.get("subtitle", ""),
+                shape_key=shape_key,
+            )
+
+            # Saving the svg file like that make an exception but save it anyway
+            try:
+                svg_file = ContentFile(svg_text.encode("utf-8"))
+                badge.icon.save("icon.svg", svg_file)
+            except TypeError:
+                print("error svg file")
+
+            # Save the badge to db
+        elif validated["icon_type"] == "import" and validated["imported_icon"]:
+            badge.icon = validated["imported_icon"]
+
         badge.save()
 
         # Create a BadgeHistory

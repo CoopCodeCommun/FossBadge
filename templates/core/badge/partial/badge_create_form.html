@@ -42,7 +42,7 @@
 
         <!-- ============================================================
              Mise en page deux colonnes.
-             Gauche : selecteurs (categorie, niveau, forme, texte).
+             Gauche : selecteurs (categorie, niveau, we, texte).
              Droite : previsualisation du badge en temps reel.
 
              Two-column layout.
@@ -50,7 +50,12 @@
              Right: real-time badge preview.
              ============================================================ -->
 
-        <div class="generator-two-columns mt-4">
+        <form class="generator-two-columns mt-4"
+        hx-post="{% url 'core:create_badge' %}"
+        hx-target="#generator-page-container"
+        enctype="multipart/form-data"
+        hx-swap="innerHTML show:top"
+        >
 
             <!-- ========================================================
                  Colonne gauche : les selecteurs.
@@ -65,6 +70,42 @@
                 <input type="hidden" id="selected-category-uuid" name="category_uuid" value="{{ defaults.category_uuid }}">
                 <input type="hidden" id="selected-level-uuid" name="level_uuid" value="{{ defaults.level_uuid }}">
                 <input type="hidden" id="selected-shape" name="shape" value="{{ default_shape_key }}">
+
+
+                <!-- ====================================================
+                 Section 0 : Choisir si on importe une icon, ou on en génère une
+
+                 Section 0: Write title and subtitle.
+                 Each keystroke (300ms debounce) updates the preview.
+                 ==================================================== -->
+                <h2 class="step-title mt-4">
+                    <span class="step-number" aria-hidden="true">0</span>
+                    {% translate "Icône" %}
+                </h2>
+                <p class="step-subtitle">{% translate "Choisissez l'icône de votre badge." %}</p>
+
+                <div class="form-group">
+                    <fieldset>
+                        <div>
+                            <input type="radio" name="icon_type" id="icon_generate" class="d-none" value="generate" {% if defaults.icon_type == "generate" %}checked{% endif %}>
+                            <label for="icon_generate" class="{% if defaults.icon_type == "generate" %}btn btn-primary btn-lg{% else %}popup-cancel-btn{% endif %}">Générer une icône (automatique)</label>
+                            <input type="radio" name="icon_type" id="icon_import" class="d-none" value="import" {% if defaults.icon_type == "import" %}checked{% endif %}>
+                            <label for="icon_import" class="{% if defaults.icon_type == "import" %}btn btn-primary btn-lg{% else %}popup-cancel-btn{% endif %}">Importer une icône (manuel)</label>
+                        </div>
+                    </fieldset>
+                    {% if errors.icon_type %}
+                        <p class="error">{{errors.icon_type.0}}</p>
+                    {% endif %}
+                </div>
+                <div class="form-group {% if defaults.icon_type == "import" %}showed{% endif %} " id="form_icon_import">
+                    <label for="imported_icon">{% translate "Icône" %} <span class="text-muted">({% translate "optionnel" %})</span></label>
+                    <input type="file" class="form-control" name="imported_icon" id="imported_icon">
+                    {% if errors.imported_icon %}
+                        <p class="error">{{errors.imported_icon.0}}</p>
+                    {% endif %}
+                </div>
+
+
 
                 <!-- ====================================================
                  Section 1 : Ecrire le titre et le sous-titre.
@@ -108,7 +149,7 @@
                            data-testid="badge-subtitle-input"
                            value="{% if defaults.subtitle %}{{ defaults.subtitle }}{% endif %}">
                 </div>
-                {% if errors.structure %}
+                {% if errors.subtitle %}
                     <p class="error">{{errors.subtitle.0}}</p>
                 {% endif %}
 
@@ -140,8 +181,8 @@
                 </div>
 
                 <div class="form-group {% if defaults.creator_type == "structure" %}showed{% endif %} " id="structures">
-                    <label for="structure">{% translate "Structure qui crée le badge" %} *</label>
-                    <select id="structure" name="structure" class="form-select mt-2" >
+                    <label for="structure_uuid">{% translate "Structure qui crée le badge" %} *</label>
+                    <select id="structure_uuid" name="structure_uuid" class="form-select mt-2" >
                         <option>--- Sélectionnez une structure ---</option>
                         {%for structure in structures %}
                             <option {% if defaults.structure_uuid == structure.pk|stringformat:"s"  %} selected {%endif%} value="{{structure.pk}}">
@@ -306,6 +347,9 @@
                             <span class="selection-card-title">{{ shape.name }}</span>
                         </button>
                     {% endfor %}
+                    {% if errors.shape %}
+                        <p class="error">{{errors.shape.0}}</p>
+                    {% endif %}
                 </div>
 
                 <!-- ====================================================
@@ -316,11 +360,11 @@
                     <span class="step-number" aria-hidden="true">6</span>
                     {% translate "Critères" %}
                 </h2>
-                <p class="step-subtitle">{% translate "Choisissez les caracteristiques d'attribution du badge" %}</p>
+                <p class="step-subtitle">{% translate "Définissez les caractéristiques d'attribution du badge" %}</p>
 
                 <div class="form-group">
                     <label for="criteria">Critères *</label>
-                    <textarea class="form-control" id="criteria" name="criteria"></textarea>
+                    <textarea class="form-control" id="criteria" name="criteria">{% if defaults.criteria %}{{ defaults.criteria }}{% endif %}</textarea>
 
                     {% if errors.criteria %}
                         <p class="error">{{errors.criteria.0}}</p>
@@ -340,7 +384,7 @@
 
                 <div class="form-group">
                     <label for="description">Description *</label>
-                    <textarea class="form-control" id="description" name="description"></textarea>
+                    <textarea class="form-control" id="description" name="description">{% if defaults.description %}{{ defaults.description }}{% endif %}</textarea>
 
                     {% if errors.description %}
                         <p class="error">{{errors.description.0}}</p>
@@ -354,7 +398,7 @@
                      Final generate button.
                      ==================================================== -->
                 <div class="wizard-actions mt-3">
-                    <button type="button"
+                    <button type="submit"
                             id="create-button"
                             class="btn btn-primary btn-lg"
                             aria-label="{% translate 'Créer le badge' %}"
@@ -396,7 +440,7 @@
                 </div>
             </div>
 
-        </div>
+        </form>
 
     </div>
 

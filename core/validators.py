@@ -254,6 +254,17 @@ class CreateBadgeValidator(serializers.Serializer):
 
     criteria = serializers.CharField()
 
+    # Icon related
+    icon_type = serializers.CharField(
+        error_messages={
+            "blank" : _("Veuillez choisir une option"),
+            "invalid": _("Cette option n'est pas valide."),
+        }
+    )
+
+    imported_icon = serializers.ImageField(required=False)
+
+    # Badge creator related
     creator_type = serializers.CharField(
         error_messages={
             "blank" : _("Veuillez choisir une option"),
@@ -289,27 +300,32 @@ class CreateBadgeValidator(serializers.Serializer):
             )
         return value
 
+    def validate_icon_type(self,value):
+        # Check if the icon type is valide
+        if value == "import" or value == "generate":
+            return value
+
+        return serializers.ValidationError(_("Vous devez choisir un type d'icône."))
+
     def validate_creator_type(self,value):
+        # Check if the creator type is valide
         if value == "structure" or value == "user":
             return value
 
         raise serializers.ValidationError(_("Vous devez choisir qui émet ce badge."))
 
     def validate_structure_uuid(self, value):
-        # Check if we create the badge as a structure. If so, check if the structure is valid.
-        # print(self.initial_data["user"])
-        if self.initial_data['creator_type'] == "structure":
+        # Check if we create the badge as a structure. If so, check if the structure is valid and the user is editor
+        if self.initial_data.get("creator_type",None) == "structure":
             structure = Structure.objects.filter(uuid=value)
             structure_exist = structure.exists()
             if not structure_exist:
                 raise serializers.ValidationError("Veuillez choisir une structure valide.")
 
-
+            # Get the user from the given context
             user = self.context["request"].user
-            print(user)
-            print(structure[0])
-            print(structure[0].is_editor(user))
-            if not structure[0].is_editor(user):
+
+            if not structure[0].is_editor(user) and not structure[0].is_admin(user):
                 raise serializers.ValidationError(_("Vous n'êtes pas éditeur de cette structure."))
 
         return value
@@ -318,5 +334,5 @@ class CreateBadgeValidator(serializers.Serializer):
         # Si la forme est vide ou inconnue, on prend la forme par defaut.
         # If shape is empty or unknown, use default.
         if not value or value not in ALL_SHAPES:
-            return DEFAULT_SHAPE_KEY
+            raise serializers.ValidationError(_("Veuillez choisir une forme."))
         return value

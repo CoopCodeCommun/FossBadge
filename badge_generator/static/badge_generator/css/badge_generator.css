@@ -514,7 +514,6 @@
     }
 }
 
-
 #structures{
     max-height: 0;
     overflow: hidden;
@@ -522,6 +521,18 @@
 }
 
 #structures.showed{
+    animation: showTest 0.5s forwards;
+    max-height: 100px;
+}
+
+
+#form_icon_import{
+    max-height: 0;
+    overflow: hidden;
+    animation: hideTest 0.5s forwards;
+}
+
+#form_icon_import.showed{
     animation: showTest 0.5s forwards;
     max-height: 100px;
 }

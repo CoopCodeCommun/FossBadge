@@ -7,6 +7,7 @@ register = template.Library()
 
 POPUP_CLOSE_JS_FUNCTION = "closePopup"
 POPUP_OPEN_JS_FUNCTION = "openPopup"
+POPUP_SCROLL_TOP_JS_FUNCTION="scrollToTopContent"
 POPUP_CONTENT_ID = "customPopup-content"
 
 
@@ -22,6 +23,7 @@ def popup(content, popup_width="40%", *args, **kwargs):
             "content": content,
             "open_func_name": POPUP_OPEN_JS_FUNCTION,
             "close_func_name": POPUP_CLOSE_JS_FUNCTION,
+            "scroll_top_func_name":POPUP_SCROLL_TOP_JS_FUNCTION,
             "popup_content_id": POPUP_CONTENT_ID,
             "popup_width": popup_width,
             "outside_click_close": outside_click_close,
@@ -46,7 +48,7 @@ def popup_content_id():
 
 @register.simple_tag
 def popup_scroll_to_top():
-    return f"document.querySelector('{popup_content_id()}').scrollTo({{top: 0, behavior: 'smooth'}})"
+    return f"{POPUP_SCROLL_TOP_JS_FUNCTION}()"
 
 
 def is_svg(file_field):

@@ -220,6 +220,10 @@
         popup.classList.remove("showed")
     }
 
+    function {{ scroll_top_func_name }}(){
+        document.querySelector('#{{ popup_content_id }}').scrollTo({top: 0, behavior: 'smooth'})
+    }
+
     {% if outside_click_close %}
         document.querySelector("#customPopup-bg").addEventListener("click",{{ close_func_name }})
     {% endif %}

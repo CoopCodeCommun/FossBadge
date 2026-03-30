@@ -109,6 +109,11 @@ function handle_card_selection(click_event) {
 // ================================================================
 
 function request_badge_preview() {
+    var generate_icon = document.getElementById("icon_generate").checked
+    if (!generate_icon){
+        return;
+    }
+
     // On rassemble tous les parametres.
     // Gather all parameters.
     var category_uuid = document.getElementById("selected-category-uuid").value;
@@ -210,61 +215,6 @@ function update_generate_button_state() {
 
 
 // ================================================================
-// Fonction : generer le badge (appel POST final).
-// On envoie toutes les donnees au serveur pour sauvegarder.
-// Le serveur renvoie la page de resultat.
-//
-// Generate the badge (final POST call).
-// Send all data to server to save. Server returns result page.
-// ================================================================
-
-function create_badge(){
-    var category_uuid = document.getElementById("selected-category-uuid").value;
-    var level_uuid = document.getElementById("selected-level-uuid").value;
-    var shape_key = document.getElementById("selected-shape").value;
-    var title = document.getElementById("badge-title").value;
-    var subtitle = document.getElementById("badge-subtitle").value;
-
-    var structure = document.getElementById("structure").value;
-    var description = document.getElementById("description").value;
-    var criteria = document.getElementById("criteria").value;
-
-    var create_as_structure = document.getElementById("as_structure").checked;
-    var create_as_user = document.getElementById("as_user").checked;
-    var creator_type = ""
-
-    if (create_as_structure){
-        creator_type = "structure"
-    }
-    if (create_as_user){
-        creator_type = "user"
-    }
-
-
-
-    if (typeof htmx !== "undefined") {
-        htmx.ajax("POST", window.BADGE_CREATION_URL, {
-            target: "#generator-page-container",
-            swap: "innerHTML",
-            values: {
-                "category_uuid": category_uuid,
-                "level_uuid": level_uuid,
-                "shape": shape_key,
-                "title": title,
-                "subtitle": subtitle,
-                "creator_type":creator_type,
-                "structure_uuid":structure,
-                "criteria":criteria,
-                "description":description
-            },
-        }).then(()=>{
-            document.querySelector('#customPopup-content').scrollTo({'top': 0, 'behavior': 'smooth'})
-        });
-    }
-}
-
-
-// ================================================================
 // On attache les ecouteurs d'evenements.
 // Attach event listeners.
 // ================================================================
@@ -286,14 +236,6 @@ var subtitle_input = document.getElementById("badge-subtitle");
 if (subtitle_input) {
     subtitle_input.addEventListener("input", handle_text_input_with_debounce);
 }
-
-
-var create_button = document.getElementById("create-button");
-if (create_button) {
-    create_button.addEventListener("click", create_badge);
-}
-
-
 
 
 //
@@ -331,3 +273,52 @@ var creator_type = document.querySelectorAll("input[name='creator_type']")
 creator_type.forEach((radio)=>{
     radio.addEventListener("change",set_creator_type)
 })
+
+function set_import_type(event){
+    // Get the inputs radio label
+    var icon_import = document.querySelector("label[for='icon_import']");
+    var icon_generate = document.querySelector("label[for='icon_generate']");
+
+    // Get the div containing the structure select
+    var div_icon_import = document.querySelector("#form_icon_import");
+
+    // Display the `structure_div` only if 'structure' input radio is selected
+    // And change the labels style accordingly
+    if(event.target.value === "generate")
+    {
+        div_icon_import.classList.remove("showed")
+        icon_generate.className = selected_classes
+        icon_import.className = not_selected_classes
+    }
+    else if(event.target.value === "import")
+    {
+        div_icon_import.classList.add("showed")
+        icon_generate.className = not_selected_classes
+        icon_import.className = selected_classes
+    }
+}
+
+var icon_type = document.querySelectorAll("input[name='icon_type']")
+icon_type.forEach((radio)=>{
+    radio.addEventListener("change",set_import_type)
+})
+
+
+// Simple preview for uploaded logo
+document.getElementById('imported_icon').addEventListener('change', function (event) {
+    const file = event.target.files[0];
+    if (file) {
+        const reader = new FileReader();
+        reader.onload = function (e) {
+            let img = document.createElement("img")
+            img.src = e.target.result;
+            img.alt = "Icon preview";
+            img.style.maxWidth = "280px";
+
+            var img_container = document.getElementById('badge-preview-container');
+            img_container.innerHTML = ""
+            img_container.appendChild(img);
+        }
+        reader.readAsDataURL(file);
+    }
+});

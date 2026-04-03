@@ -14,11 +14,11 @@ def migrate_level_to_level(apps, schema_editor):
     for badge in Badge.objects.all():
         if badge.level is not None:
             if badge.level == "beginner":
-                badge.level = beginner
+                badge.new_level = beginner
             elif badge.level == "intermediate":
-                badge.level = intermediate
+                badge.new_level = intermediate
             elif badge.level == "expert":
-                badge.level = expert
+                badge.new_level = expert
         badge.save()
 
 

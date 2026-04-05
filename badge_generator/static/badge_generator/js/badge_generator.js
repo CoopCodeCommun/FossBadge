@@ -289,6 +289,9 @@ function set_import_type(event){
         div_icon_import.classList.remove("showed")
         icon_generate.className = selected_classes
         icon_import.className = not_selected_classes
+
+        // Update the badge preview
+        request_badge_preview()
     }
     else if(event.target.value === "import")
     {

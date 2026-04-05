@@ -5,7 +5,7 @@
 {% load i18n %}
 {% load static %}
 {% load l10n %}
-{% load custom_tags %}
+{% load custom_tags popup_tags %}
 
 {% block title %}
     {% blocktranslate with name=person.get_full_name|default:person.username %}Passeport de {{ name }}{% endblocktranslate %} — openbadge.coop

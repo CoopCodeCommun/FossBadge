@@ -1,8 +1,18 @@
-{# LOCALISATION : templates/includes/popup.html #}
-{# Système de popup/modale réutilisable pour les formulaires HTMX. #}
-{# Le contenu est injecté par hx-target="{% popup_content_id %}". #}
-{# / Reusable popup/modal system for HTMX forms. #}
-{# Content is injected via hx-target="{% popup_content_id %}". #}
+{% comment %}
+Template for the reusable popup system, it has been built to be used with HTMX.
+To use you need to load "popup_tags" at the top of your template : {% load popup_tags %}
+Then you need to append the popup html to the template : {% popup %}
+And finally you can open/close the popup using an htmx button for example :
+<button type="button"
+   hx-get="{% url 'obj-detail' pk=obj.pk %}"
+   hx-target="{% popup_content_id %}" # Set the htmx target to the popup content
+   hx-swap="innerHTML"
+   hx-on:htmx:after-request="{% popup_open %}" # Open the popup after the request end
+    Détail
+</button>
+
+
+{% endcomment %}
 
 <div id="customPopup" aria-modal="true" role="dialog">
     <div id="{{ popup_content_id }}">
@@ -36,7 +46,7 @@
         min-height:10%;
         min-width:400px;
     }
-  
+
     /* Fond semi-transparent / Semi-transparent backdrop */
     #customPopup-bg {
         position: absolute;

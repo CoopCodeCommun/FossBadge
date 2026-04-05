@@ -54,6 +54,7 @@ INSTALLED_APPS = [
     "rest_framework",
     "pictures",
     "mapview",
+    "popup",
 
     "django_cleanup.apps.CleanupConfig",  # Toujours en dernier
 ]

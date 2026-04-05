@@ -2637,3 +2637,8 @@ picture.text-center img.badge-icon {
         padding: 0.85rem 1.5rem;
     }
 }
+
+.badge-svg-icon{
+    width: 100%;
+    height: 100%;
+}

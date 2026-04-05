@@ -1,5 +1,5 @@
 {% extends 'base/base.html' %}
-{% load pictures %}
+{% load custom_tags popup_tags %}
 {% load humanize %}
 {% load custom_filters %}
 
@@ -129,7 +129,7 @@
                     <div class="col-md-3 text-center">
                         {% if user and user.avatar %}
                             <div class="mb-3" style="width: 150px; height: 150px; margin: 0 auto;">
-                                {% picture user.avatar img_alt="Avatar de "|add:user.get_full_name|default:user.username img_class="img-fluid rounded-circle" ratio="1/1" %}
+                                {% svg_or_picture user.avatar img_alt="Avatar de "|add:user.get_full_name|default:user.username img_class="img-fluid rounded-circle" ratio="1/1" %}
                             </div>
                         {% else %}
                             <i class="fas fa-user-circle fa-8x text-primary"></i>

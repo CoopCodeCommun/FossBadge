@@ -18,6 +18,7 @@ from rest_framework import serializers
 
 from badge_generator.models import BadgeCategory, BadgeLevel
 from badge_generator.shapes import ALL_SHAPES, DEFAULT_SHAPE_KEY
+from core.models import Structure
 
 
 # ============================================================================
@@ -183,3 +184,7 @@ class GenerateBadgeSerializer(serializers.Serializer):
         if not value or value not in ALL_SHAPES:
             return DEFAULT_SHAPE_KEY
         return value
+
+
+
+

@@ -14,7 +14,7 @@ class BadgeForm(forms.ModelForm):
 
     class Meta:
         model = Badge
-        fields = ['name', 'icon', 'level', 'description', 'issuing_structure']
+        fields = ['name', 'icon', 'description', 'issuing_structure']
         widgets = {
             'name': forms.TextInput(attrs={
                 'class': 'form-control form-control-lg',
@@ -24,7 +24,7 @@ class BadgeForm(forms.ModelForm):
                 'class': 'form-control',
                 'accept': 'image/*'
             }),
-            'level': forms.RadioSelect(),
+            # 'level': forms.RadioSelect(),
             'description': forms.Textarea(attrs={
                 'class': 'form-control',
                 'rows': 4,
@@ -34,57 +34,6 @@ class BadgeForm(forms.ModelForm):
                 'class': 'form-select'
             }),
         }
-
-class UserForm(forms.ModelForm):
-    """
-    Form for creating and updating users profiles
-    """
-    class Meta:
-        model = User
-        fields = ["first_name", "last_name", "email", "password", "avatar", "address"]
-        widgets = {
-            'first_name': forms.TextInput(attrs={
-                'class': 'form-control form-control-lg',
-                'placeholder': 'Prénom'
-            }),
-            'last_name': forms.TextInput(attrs={
-                'class': 'form-control form-control-lg',
-                'placeholder': 'Nom de famille'
-            }),
-            'email': forms.TextInput(attrs={
-                'class': 'form-control form-control-lg',
-                'placeholder': 'Email'
-            }),
-            'password': forms.PasswordInput(attrs={
-                'class': 'form-control form-control-lg',
-                'placeholder': 'Mot de passe'
-            }),
-            'address': forms.TextInput(attrs={
-                'class': 'form-control form-control-lg',
-                'placeholder': 'Adresse ...'
-            }),
-            'avatar': forms.FileInput(attrs={
-                'class': 'form-control',
-                'accept': 'image/*'
-            }),
-        }
-
-    password_confirm = forms.CharField(widget=forms.PasswordInput(
-        attrs={
-            'class': 'form-control form-control-lg',
-            'placeholder': 'Confirmation du mot de passe'
-        }), label='Confirmation du mot de passe')
-
-    def clean(self):
-        """Check if password and password_confirm are matching"""
-        cleaned_data = super().clean()
-        password = cleaned_data.get('password')
-        password_confirm = cleaned_data.get('password_confirm')
-        if password != password_confirm:
-            self.add_error(None, 'Les mots de passes ne correspondent pas')
-
-        return cleaned_data
-
 
 class PartialUserForm(forms.ModelForm):
     """

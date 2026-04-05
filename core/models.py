@@ -4,6 +4,7 @@ from django.contrib.auth.models import AbstractUser
 from django.utils import timezone
 from pictures.models import PictureField
 from django.db.models import Q, CheckConstraint
+from badge_generator.models import BadgeLevel, BadgeCategory
 
 # Create your models here.
 
@@ -301,12 +302,14 @@ class Badge(models.Model):
         ('expert', 'Expert'),
     ]
 
+    level = models.ForeignKey(BadgeLevel, on_delete=models.SET_NULL, related_name='badges', verbose_name="Niveau",null=True, blank=True)
+    category = models.ForeignKey(BadgeCategory, on_delete=models.SET_NULL, related_name='badges', verbose_name="Type",null=True, blank=True)
+
     name = models.CharField(max_length=100, verbose_name="Nom")
     icon_width = models.PositiveIntegerField(blank=True, null=True, editable=False)
     icon_height = models.PositiveIntegerField(blank=True, null=True, editable=False)
     icon = PictureField(upload_to='badges/icons/', blank=True, null=True, verbose_name="Icône", 
                        aspect_ratios=[None, "1/1"], width_field='icon_width', height_field='icon_height')
-    level = models.CharField(max_length=20, choices=LEVEL_CHOICES, verbose_name="Niveau",null=True, blank=True)
     description = models.TextField(verbose_name="Description")
 
     is_dream_badge = models.BooleanField(default=False, verbose_name="Badge de rêve")
@@ -329,8 +332,8 @@ class Badge(models.Model):
         verbose_name_plural = "Badges"
         ordering = ['name']
 
-    def __str__(self):
-        return f"{self.name} ({self.get_level_display()})"
+    # def __str__(self):
+    #     return f"{self.name} ({self.get_level_display()})"
 
     @property
     def valid_structures(self):
@@ -644,6 +647,8 @@ class CourseItem(models.Model):
         if parent:
             item = CourseItem.objects.get(badge=parent, course=course)
             c.parents.add(item)
+
+
 class BadgeCriteria(models.Model):
     """
     Critères d'attribution d'un badge par une structure.

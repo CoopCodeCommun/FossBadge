@@ -2,6 +2,7 @@ from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth import logout, get_user_model, authenticate, login
 from django.core.exceptions import ValidationError, PermissionDenied
+from django.core.files.base import ContentFile
 from django.core.signing import SignatureExpired
 from django.core.validators import validate_email
 from django.http import HttpResponse, JsonResponse
@@ -12,15 +13,18 @@ from django_htmx.http import HttpResponseClientRedirect
 from rest_framework import viewsets
 from rest_framework.authentication import SessionAuthentication
 from rest_framework.permissions import IsAuthenticated, AllowAny
-from rest_framework.decorators import action,authentication_classes, permission_classes
+from rest_framework.decorators import action
+from badge_generator.models import BadgeCategory, BadgeLevel
+from badge_generator.shapes import ALL_SHAPES, DEFAULT_SHAPE_KEY
+from badge_generator.svg_engine import generate_badge_svg
 from .helpers import TokenHelper
 from .helpers.utils import get_or_create_user, invite_user_to_structure
 from .models import Structure, Badge, User, BadgeAssignment, BadgeEndorsement, BadgeHistory, BadgeCriteria, Course, CourseItem
-from .forms import BadgeForm, UserForm, PartialUserForm
+from .forms import BadgeForm, PartialUserForm
 
 from .permissions import IsBadgeEditor, IsStructureAdmin, CanEditUser, CanAssignBadge, CanEndorseBadge, CanEditCourse
 from .validators import BadgeAssignmentValidator, BadgeEndorsementValidator, DreamBadgeValidator, InviteUserValidator, \
-    CreateCourseValidator, BadgeSelfAssignmentValidator, CreateStructureValidator
+    CreateCourseValidator, BadgeSelfAssignmentValidator, CreateStructureValidator, CreateBadgeValidator
 
 
 def raise403(request, msg=None):
@@ -1053,59 +1057,132 @@ class BadgeViewSet(viewsets.ViewSet):
     @action(detail=False, methods=['get', 'post'])
     def create_badge(self, request):
         """
-        Cree un nouveau badge.
-        Si requete HTMX, retourne le formulaire en partiel pour la modale.
-        / Create a new badge. Returns partial for HTMX modal.
-
-        LOCALISATION : core/views.py
+        Create a new badge and an icon for it.
         """
+        if not request.htmx:
+            return raise403(request)
 
-        # Pre-remplir le formulaire depuis les query params (recherche ou page lieu)
-        # / Pre-fill form from query params (search or structure page)
-        default_structure = request.GET.get('structure', '')
-        default_name = request.GET.get('name', '')
+        # Get all categories and levels
+        all_categories = BadgeCategory.objects.all()
+        all_levels = BadgeLevel.objects.all()
 
-        if request.method == 'POST':
-            form = BadgeForm(request.POST, request.FILES, request=request)
-            if form.is_valid():
-                badge = form.save()
-                # Cree une entree historique pour la creation du badge
-                # / Create a history entry for badge creation
-                BadgeHistory.objects.create(
-                    badge=badge,
-                    action="creation",
-                    details="Badge crée"
-                )
-                # Redirige vers la page badge (HTMX ou classique)
-                # / Redirect to badge page (HTMX or classic)
-                messages.success(request,"Badge ajouté avec succès ! ")
-                if request.htmx:
-                    return HttpResponseClientRedirect(
-                        reverse('core:home-badge-detail', kwargs={'badge_pk': badge.pk})
-                    )
-                return redirect(reverse('core:home-badge-detail', kwargs={'badge_pk': badge.pk}))
-        else:
-            initial_data = {}
-            if default_structure:
-                initial_data['issuing_structure'] = default_structure
-            if default_name:
-                initial_data['name'] = default_name
-            form = BadgeForm(initial=initial_data, request=request)
-
-        # Toutes les structures pour le dropdown / All structures for dropdown
-        structures = Structure.objects.all()
-
-        # Partiel HTMX pour la modale / HTMX partial for modal
-        if request.htmx:
-            return render(request, 'core/badge/partial/badge_create_form.html', {
-                'form': form,
+        # On prepare la liste des formes disponibles pour le template.
+        # Build shape list for the template.
+        all_available_shapes = []
+        for shape_key, shape_data in ALL_SHAPES.items():
+            all_available_shapes.append({
+                "key": shape_key,
+                "name": shape_data["name"],
+                "description": shape_data["description"],
+                "path": shape_data["path"],
             })
 
-        return render(request, 'core/badges/create.html', {
-            'title': 'openbadge.coop - Forger un Badge',
-            'structures': structures,
-            'form': form
-        })
+        structures = request.user.structures
+
+        # Prepare the context
+        context = {
+            "categories": all_categories,
+            "levels": all_levels,
+            "shapes": all_available_shapes,
+            "default_shape_key": DEFAULT_SHAPE_KEY,
+            "structures": structures,
+        }
+
+        # return the template if the method is GET
+        if request.method == "GET":
+            return render(request, "core/badge/partial/badge_create_form.html", context=context)
+
+
+        # Validate the data received from the POST request
+        validator = CreateBadgeValidator(data=request.data,context={"request":request})
+        is_valid = validator.is_valid()
+
+        if not is_valid:
+            # Update the context with errors and defaults values
+            context.update({
+                "errors" : validator.errors,
+                "defaults" : validator.data,
+                "default_shape_key":validator.data["shape"]
+            })
+            return render(request, "core/badge/partial/badge_create_form.html", context=context)
+
+        validated = validator.validated_data
+
+        # On cherche les objets dans la base de donnees.
+        # Find database objects.
+        chosen_category = get_object_or_404(
+            BadgeCategory, uuid=validated["category_uuid"]
+        )
+        chosen_level = get_object_or_404(
+            BadgeLevel, uuid=validated["level_uuid"]
+        )
+
+        # Create a dict with the badge data
+        badge_data = {
+            "name":validated["title"],
+            "description":validated["description"],
+            "category":chosen_category,
+            "level":chosen_level,
+        }
+
+        # Check the creator type and populate the badge_data accordingly
+        if validated["creator_type"] == "structure":
+            structure = Structure.objects.get(uuid=validated["structure_uuid"])
+            badge_data["issuing_structure"] = structure
+        else:
+            badge_data["user"] = request.user
+
+        # Create the badge
+        badge = Badge(
+            **badge_data
+        )
+
+        if validated["icon_type"] == "generate":
+            # On recupere la forme choisie.
+            # Get the chosen shape.
+            shape_key = validated.get("shape", DEFAULT_SHAPE_KEY)
+
+            # On genere le SVG final avec la forme choisie.
+            # Generate final SVG with chosen shape.
+            svg_text = generate_badge_svg(
+                category_name=chosen_category.name,
+                category_color=chosen_category.color,
+                level_stroke_width=chosen_level.stroke_width,
+                level_posture_text=chosen_level.posture_text,
+                illustration_svg=chosen_category.illustration_svg,
+                title=validated["title"],
+                subtitle=validated.get("subtitle", ""),
+                shape_key=shape_key,
+            )
+
+            # Saving the svg file like that make an exception but save it anyway
+            try:
+                svg_file = ContentFile(svg_text.encode("utf-8"))
+                badge.icon.save("icon.svg", svg_file)
+            except TypeError:
+                print("error svg file")
+
+            # Save the badge to db
+        elif validated["icon_type"] == "import" and validated["imported_icon"]:
+            badge.icon = validated["imported_icon"]
+
+        badge.save()
+
+        # Create a BadgeHistory
+        badgeHistory = BadgeHistory(
+            badge=badge,
+            action="creation",
+            details="Badge crée"
+        )
+
+        if validated["creator_type"] == "structure":
+            # Create a BadgeCriteria
+            badgeCriteria = BadgeCriteria(
+                badge=badge,
+                structure=structure,
+                criteria=validated["criteria"],
+            )
+        return redirect_reload(reverse('core:home-badge-detail', kwargs={'badge_pk': badge.pk}))
 
     @action(detail=True, methods=["get", "post"])
     def endorse(self, request, pk=None):
@@ -1711,29 +1788,6 @@ class UserViewSet(viewsets.ViewSet):
             'user': user,
             'badge_with_badge_assignments': badge_with_badge_assignments,
             'structures': structures
-        })
-
-    @action(detail=False, methods=['get', 'post'])
-    def create_user(self, request):
-        """
-        Create a new user.
-        """
-        return raise403(request)
-        if request.method == 'POST':
-            form = UserForm(request.POST, request.FILES)
-            if form.is_valid():
-                user = form.save(commit=False)
-                user.username = f"{form.cleaned_data['first_name']}.{form.cleaned_data['last_name']}".lower()
-                user.set_password(form.cleaned_data['password'])
-                user.save()
-
-                return redirect(reverse('core:user-detail', kwargs={'pk': user.pk}))
-        else:
-            form = UserForm()
-
-        return render(request, 'core/users/create.html', {
-            'title': 'openbadge.coop - Créer un utilisateur',
-            'form': form,
         })
 
     @action(detail=True, methods=['get', 'post'],name="edit-profile")

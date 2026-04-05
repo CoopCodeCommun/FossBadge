@@ -1,5 +1,5 @@
 {% load i18n %}
-{% load pictures %}
+{% load custom_tags popup_tags %}
 
 {# Vue multi-focus : 2 ou 3 items sélectionnés (cartes détail). #}
 {# Avec 2 items : la 3e colonne affiche l'intersection. #}
@@ -86,7 +86,7 @@
 
                 <div class="home-badge-focus-icon">
                     {% if selected_badge.icon %}
-                        {% picture selected_badge.icon img_alt=selected_badge.name ratio="1/1" %}
+                        {% svg_or_picture selected_badge.icon img_alt=selected_badge.name ratio="1/1" %}
                     {% else %}
                         <div class="home-result-icon-placeholder home-result-icon-placeholder-badges" style="width: 120px; height: 120px; font-size: 3rem;">
                             <span aria-hidden="true">&#9733;</span>
@@ -121,7 +121,7 @@
                         <span class="home-badge-focus-issuer-link">
                         {% if selected_badge.issuing_structure.logo %}
                             <span class="home-badge-focus-issuer-logo">
-                                {% picture selected_badge.issuing_structure.logo img_alt=selected_badge.issuing_structure.name ratio="1/1" %}
+                                {% svg_or_picture selected_badge.issuing_structure.logo img_alt=selected_badge.issuing_structure.name ratio="1/1" %}
                             </span>
                         {% endif %}
                             {{ selected_badge.issuing_structure.name }}
@@ -135,7 +135,7 @@
                                 class="home-badge-focus-issuer-link">
                             {% if selected_badge.user.avatar %}
                                 <div class="home-badge-focus-issuer-logo">
-                                    {% picture selected_badge.user.avatar img_alt=selected_badge.user.first_name ratio="1/1" %}
+                                    {% svg_or_picture selected_badge.user.avatar img_alt=selected_badge.user.first_name ratio="1/1" %}
                                 </div>
                             {% endif %}
                             {{ selected_badge.user.first_name }}
@@ -179,7 +179,7 @@
                     >
                         <div class="home-result-icon">
                             {% if badge.icon %}
-                                {% picture badge.icon img_alt=badge.name ratio="1/1" %}
+                                {% svg_or_picture badge.icon img_alt=badge.name ratio="1/1" %}
                             {% else %}
                                 <div class="home-result-icon-placeholder home-result-icon-placeholder-badges">
                                     <span aria-hidden="true">&#9733;</span>
@@ -258,7 +258,7 @@
 
                 <div class="home-badge-focus-icon">
                     {% if selected_structure.logo %}
-                        {% picture selected_structure.logo img_alt=selected_structure.name ratio="1/1" %}
+                        {% svg_or_picture selected_structure.logo img_alt=selected_structure.name ratio="1/1" %}
                     {% else %}
                         <div class="home-result-icon-placeholder home-result-icon-placeholder-structures" style="width: 120px; height: 120px; font-size: 3rem;">
                             <span aria-hidden="true">&#9737;</span>
@@ -313,7 +313,7 @@
                     >
                         <div class="home-result-icon">
                             {% if structure.logo %}
-                                {% picture structure.logo img_alt=structure.name ratio="1/1" %}
+                                {% svg_or_picture structure.logo img_alt=structure.name ratio="1/1" %}
                             {% else %}
                                 <div class="home-result-icon-placeholder home-result-icon-placeholder-structures">
                                     <span aria-hidden="true">&#9737;</span>
@@ -392,7 +392,7 @@
 
                 <div class="home-badge-focus-icon home-result-icon-round" style="border-radius: 50%;">
                     {% if selected_person.avatar %}
-                        {% picture selected_person.avatar img_alt=selected_person.get_full_name|default:selected_person.username ratio="1/1" %}
+                        {% svg_or_picture selected_person.avatar img_alt=selected_person.get_full_name|default:selected_person.username ratio="1/1" %}
                     {% else %}
                         <div class="home-result-icon-placeholder home-result-icon-placeholder-personnes home-result-icon-round" style="width: 120px; height: 120px; font-size: 3rem;">
                             <span aria-hidden="true">&#9679;</span>
@@ -436,7 +436,7 @@
                     >
                         <div class="home-result-icon home-result-icon-round">
                             {% if person.avatar %}
-                                {% picture person.avatar img_alt=person.get_full_name|default:person.username ratio="1/1" %}
+                                {% svg_or_picture person.avatar img_alt=person.get_full_name|default:person.username ratio="1/1" %}
                             {% else %}
                                 <div class="home-result-icon-placeholder home-result-icon-placeholder-personnes home-result-icon-round">
                                     <span aria-hidden="true">&#9679;</span>

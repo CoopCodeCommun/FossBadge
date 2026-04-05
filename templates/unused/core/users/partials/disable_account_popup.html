@@ -1,5 +1,5 @@
 {%include 'base/show_message.html'%}
-{% load custom_tags %}
+{% load custom_tags popup_tags %}
 
 <div id="structure-invite-form">
     <form hx-post="{% url 'core:user-delete' user.pk %}"

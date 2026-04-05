@@ -1,4 +1,4 @@
-{% load pictures %}
+{% load custom_tags popup_tags %}
 
 {% comment %}
 
@@ -19,7 +19,7 @@
                     {% endif %}
                     {% if badge.icon %}
                         <div class="badge-icon-container">
-                            {% picture badge.icon img_alt=badge.name img_class="badge-icon" ratio="1/1" %}
+                            {% svg_or_picture badge.icon img_alt=badge.name img_class="badge-icon" ratio="1/1" %}
                         </div>
                     {% else %}
                         <img src="{{ placeholder_image }}" alt="{{ badge.name }}" class="badge-icon">

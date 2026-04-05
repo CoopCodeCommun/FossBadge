@@ -3,10 +3,9 @@
 {# / Person passport page. Chronological badge timeline. #}
 {% extends 'base/base.html' %}
 {% load i18n %}
-{% load pictures %}
 {% load static %}
 {% load l10n %}
-{% load custom_tags %}
+{% load custom_tags popup_tags %}
 
 {% block title %}
     {% blocktranslate with name=person.get_full_name|default:person.username %}Passeport de {{ name }}{% endblocktranslate %} — openbadge.coop
@@ -43,7 +42,7 @@
     <div class="passeport-header" data-testid="passeport-header">
         <div class="passeport-header-avatar">
             {% if person.avatar %}
-                {% picture person.avatar img_alt=person.get_full_name|default:person.username ratio="1/1" %}
+                {% svg_or_picture person.avatar img_alt=person.get_full_name|default:person.username ratio="1/1" %}
             {% else %}
                 <div class="home-result-icon-placeholder home-result-icon-placeholder-personnes passeport-header-avatar-placeholder">
                     <span aria-hidden="true">&#9679;</span>
@@ -142,7 +141,7 @@
                         <a href="{% url 'core:home-badge-detail' badge_pk=dream_badge.pk %}" class="passeport-dream-badge-display-link" data-testid="passeport-dream-badge-link">
                             <div class="passeport-dream-badge-display-image">
                                 {% if dream_badge.icon %}
-                                    {% picture dream_badge.icon img_alt=dream_badge.name ratio="1/1" %}
+                                    {% svg_or_picture dream_badge.icon img_alt=dream_badge.name ratio="1/1" %}
                                 {% else %}
                                     <img src="{{ placeholder_dream_badge }}" alt="{{ dream_badge.name }}" class="badge-icon">
                                 {% endif %}
@@ -242,7 +241,7 @@
                     <summary class="passeport-badge-summary">
                         <div class="home-result-icon">
                             {% if assignment.badge.icon %}
-                                {% picture assignment.badge.icon img_alt=assignment.badge.name ratio="1/1" %}
+                                {% svg_or_picture assignment.badge.icon img_alt=assignment.badge.name ratio="1/1" %}
                             {% else %}
                                 <div class="home-result-icon-placeholder home-result-icon-placeholder-badges">
                                     <span aria-hidden="true">&#9733;</span>

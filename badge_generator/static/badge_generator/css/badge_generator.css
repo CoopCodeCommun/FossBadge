@@ -18,6 +18,7 @@
 
 .generator-page-container {
     max-width: 1100px;
+    counter-reset: section-count;
 }
 
 
@@ -99,7 +100,12 @@
     gap: 0.5rem;
 }
 
-.step-number {
+section:not(.hide):has(.step-title){
+    counter-increment: section-count;
+}
+
+section:not(.hide) > .step-title:before{
+    content: counter(section-count);
     display: inline-flex;
     align-items: center;
     justify-content: center;
@@ -111,6 +117,10 @@
     font-size: 0.72rem;
     font-weight: 700;
     flex-shrink: 0;
+}
+
+section.hide{
+    display: none;
 }
 
 .step-subtitle {

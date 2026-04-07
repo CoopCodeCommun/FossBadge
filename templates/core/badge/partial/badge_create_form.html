@@ -77,33 +77,33 @@
 
                  Section 0: Choose if we import an icon or if we generate one
                  ==================================================== -->
-                <h2 class="step-title mt-4">
-                    <span class="step-number" aria-hidden="true">0</span>
-                    {% translate "Icône" %}
-                </h2>
-                <p class="step-subtitle">{% translate "Choisissez l'icône de votre badge." %}</p>
+                <section>
+                    <h2 class="step-title mt-4">
+                        {% translate "Icône" %}
+                    </h2>
+                    <p class="step-subtitle">{% translate "Choisissez l'icône de votre badge." %}</p>
 
-                <div class="form-group">
-                    <fieldset>
-                        <div>
-                            <input type="radio" name="icon_type" id="icon_generate" class="d-none" value="generate" {% if defaults.icon_type == "generate" %}checked{% endif %}>
-                            <label for="icon_generate" class="{% if defaults.icon_type == "generate" %}btn btn-primary btn-lg{% else %}popup-cancel-btn{% endif %}">Générer une icône (automatique)</label>
-                            <input type="radio" name="icon_type" id="icon_import" class="d-none" value="import" {% if defaults.icon_type == "import" %}checked{% endif %}>
-                            <label for="icon_import" class="{% if defaults.icon_type == "import" %}btn btn-primary btn-lg{% else %}popup-cancel-btn{% endif %}">Importer une icône (manuel)</label>
-                        </div>
-                    </fieldset>
-                    {% if errors.icon_type %}
-                        <p class="error">{{errors.icon_type.0}}</p>
-                    {% endif %}
-                </div>
-                <div class="form-group {% if defaults.icon_type == "import" %}showed{% endif %} " id="form_icon_import">
-                    <label for="imported_icon">{% translate "Icône" %} <span class="text-muted">({% translate "optionnel" %})</span></label>
-                    <input type="file" class="form-control" name="imported_icon" id="imported_icon">
-                    {% if errors.imported_icon %}
-                        <p class="error">{{errors.imported_icon.0}}</p>
-                    {% endif %}
-                </div>
-
+                    <div class="form-group">
+                        <fieldset>
+                            <div>
+                                <input type="radio" name="icon_type" id="icon_generate" class="d-none" value="generate" {% if defaults.icon_type == "generate" %}checked{% endif %}>
+                                <label for="icon_generate" class="{% if defaults.icon_type == "generate" %}btn btn-primary btn-lg{% else %}popup-cancel-btn{% endif %}">Générer une icône (automatique)</label>
+                                <input type="radio" name="icon_type" id="icon_import" class="d-none" value="import" {% if defaults.icon_type == "import" %}checked{% endif %}>
+                                <label for="icon_import" class="{% if defaults.icon_type == "import" %}btn btn-primary btn-lg{% else %}popup-cancel-btn{% endif %}">Importer une icône (manuel)</label>
+                            </div>
+                        </fieldset>
+                        {% if errors.icon_type %}
+                            <p class="error">{{errors.icon_type.0}}</p>
+                        {% endif %}
+                    </div>
+                    <div class="form-group {% if defaults.icon_type == "import" %}showed{% endif %} " id="form_icon_import">
+                        <label for="imported_icon">{% translate "Icône" %} <span class="text-muted">({% translate "optionnel" %})</span></label>
+                        <input type="file" class="form-control" name="imported_icon" id="imported_icon">
+                        {% if errors.imported_icon %}
+                            <p class="error">{{errors.imported_icon.0}}</p>
+                        {% endif %}
+                    </div>
+                </section>
 
 
                 <!-- ====================================================
@@ -113,44 +113,45 @@
                  Section 1: Write title and subtitle.
                  Each keystroke (300ms debounce) updates the preview.
                  ==================================================== -->
-                <h2 class="step-title mt-4">
-                    <span class="step-number" aria-hidden="true">1</span>
-                    {% translate "Texte" %}
-                </h2>
-                <p class="step-subtitle">{% translate "Donnez un titre à votre badge." %}</p>
+                <section>
+                    <h2 class="step-title mt-4">
+                        {% translate "Texte" %}
+                    </h2>
+                    <p class="step-subtitle">{% translate "Donnez un titre à votre badge." %}</p>
 
-                <div class="form-group">
-                    <label for="badge-title">{% translate "Titre du badge" %} *</label>
-                    <input type="text"
-                           id="badge-title"
-                           name="title"
-                           class="form-control"
-                           maxlength="100"
-                           required
-                           aria-required="true"
-                           placeholder="{% translate 'Ex: Initiation Arduino' %}"
-                           data-testid="badge-title-input"
-                           value="{% if defaults.title %}{{ defaults.title }}{% endif %}">
-                </div>
-                {% if errors.title %}
-                    <p class="error">{{errors.title.0}}</p>
-                {% endif %}
+                    <div class="form-group">
+                        <label for="badge-title">{% translate "Titre du badge" %} *</label>
+                        <input type="text"
+                               id="badge-title"
+                               name="title"
+                               class="form-control"
+                               maxlength="100"
+                               required
+                               aria-required="true"
+                               placeholder="{% translate 'Ex: Initiation Arduino' %}"
+                               data-testid="badge-title-input"
+                               value="{% if defaults.title %}{{ defaults.title }}{% endif %}">
+                    </div>
+                    {% if errors.title %}
+                        <p class="error">{{errors.title.0}}</p>
+                    {% endif %}
 
 
-                <div class="form-group">
-                    <label for="badge-subtitle">{% translate "Sous-titre" %} <span class="text-muted">({% translate "optionnel" %})</span></label>
-                    <input type="text"
-                           id="badge-subtitle"
-                           name="subtitle"
-                           class="form-control"
-                           maxlength="100"
-                           placeholder="{% translate 'Ex: Atelier du 15 mars' %}"
-                           data-testid="badge-subtitle-input"
-                           value="{% if defaults.subtitle %}{{ defaults.subtitle }}{% endif %}">
-                </div>
-                {% if errors.subtitle %}
-                    <p class="error">{{errors.subtitle.0}}</p>
-                {% endif %}
+                    <div class="form-group">
+                        <label for="badge-subtitle">{% translate "Sous-titre" %} <span class="text-muted">({% translate "optionnel" %})</span></label>
+                        <input type="text"
+                               id="badge-subtitle"
+                               name="subtitle"
+                               class="form-control"
+                               maxlength="100"
+                               placeholder="{% translate 'Ex: Atelier du 15 mars' %}"
+                               data-testid="badge-subtitle-input"
+                               value="{% if defaults.subtitle %}{{ defaults.subtitle }}{% endif %}">
+                    </div>
+                    {% if errors.subtitle %}
+                        <p class="error">{{errors.subtitle.0}}</p>
+                    {% endif %}
+                </section>
 
 
                 <!-- ====================================================
@@ -158,41 +159,42 @@
 
                  Section 2: Créateur
                  ==================================================== -->
-                <h2 class="step-title mt-4">
-                    <span class="step-number" aria-hidden="true">2</span>
-                    {% translate "Emetteur" %}
-                </h2>
-                <p class="step-subtitle">{% translate "Qui crée ce badge ? Vous ou une structure ?" %}</p>
+                <section>
+                    <h2 class="step-title mt-4">
+                        {% translate "Emetteur" %}
+                    </h2>
+                    <p class="step-subtitle">{% translate "Qui crée ce badge ? Vous ou une structure ?" %}</p>
 
-                <div class="form-group">
-                    <fieldset>
-                        <div>
-                            <input type="radio" name="creator_type" id="as_user" class="d-none" value="user" {% if defaults.creator_type == "user" %}checked{% endif %}>
-                            <label for="as_user" class="{% if defaults.creator_type == "user" %}btn btn-primary btn-lg{% else %}popup-cancel-btn{% endif %}">Créer en tant que {{ request.user.display_name }}</label>
-                            <input type="radio" name="creator_type" id="as_structure" class="d-none" value="structure" {% if defaults.creator_type == "structure" %}checked{% endif %}>
-                            <label for="as_structure" class="{% if defaults.creator_type == "structure" %}btn btn-primary btn-lg{% else %}popup-cancel-btn{% endif %}">Créer pour une structure</label>
-                        </div>
-                    </fieldset>
-                    {% if errors.creator_type %}
-                        <p class="error">{{errors.creator_type.0}}</p>
-                    {% endif %}
+                    <div class="form-group">
+                        <fieldset>
+                            <div>
+                                <input type="radio" name="creator_type" id="as_user" class="d-none" value="user" {% if defaults.creator_type == "user" %}checked{% endif %}>
+                                <label for="as_user" class="{% if defaults.creator_type == "user" %}btn btn-primary btn-lg{% else %}popup-cancel-btn{% endif %}">Créer en tant que {{ request.user.display_name }}</label>
+                                <input type="radio" name="creator_type" id="as_structure" class="d-none" value="structure" {% if defaults.creator_type == "structure" %}checked{% endif %}>
+                                <label for="as_structure" class="{% if defaults.creator_type == "structure" %}btn btn-primary btn-lg{% else %}popup-cancel-btn{% endif %}">Créer pour une structure</label>
+                            </div>
+                        </fieldset>
+                        {% if errors.creator_type %}
+                            <p class="error">{{errors.creator_type.0}}</p>
+                        {% endif %}
 
-                </div>
+                    </div>
 
-                <div class="form-group {% if defaults.creator_type == "structure" %}showed{% endif %} " id="structures">
-                    <label for="structure_uuid">{% translate "Structure qui crée le badge" %} *</label>
-                    <select id="structure_uuid" name="structure_uuid" class="form-select mt-2" >
-                        <option>--- Sélectionnez une structure ---</option>
-                        {%for structure in structures %}
-                            <option {% if defaults.structure_uuid == structure.pk|stringformat:"s"  %} selected {%endif%} value="{{structure.pk}}">
-                                {{structure.name}}
-                            </option>
-                        {%endfor%}
-                    </select>
-                    {% if errors.structure_uuid %}
-                        <p class="error">{{errors.structure_uuid.0}}</p>
-                    {% endif %}
-                </div>
+                    <div class="form-group {% if defaults.creator_type == "structure" %}showed{% endif %} " id="structures">
+                        <label for="structure_uuid">{% translate "Structure qui crée le badge" %} *</label>
+                        <select id="structure_uuid" name="structure_uuid" class="form-select mt-2" >
+                            <option>--- Sélectionnez une structure ---</option>
+                            {%for structure in structures %}
+                                <option {% if defaults.structure_uuid == structure.pk|stringformat:"s"  %} selected {%endif%} value="{{structure.pk}}">
+                                    {{structure.name}}
+                                </option>
+                            {%endfor%}
+                        </select>
+                        {% if errors.structure_uuid %}
+                            <p class="error">{{errors.structure_uuid.0}}</p>
+                        {% endif %}
+                    </div>
+                </section>
 
                 <!-- ====================================================
                      Section 3 : Choisir une categorie.
@@ -203,33 +205,33 @@
                      Section 3: Choose a category.
                      8 categories in a 4x2 grid with SVG illustration.
                      ==================================================== -->
-                <h2 class="step-title">
-                    <span class="step-number" aria-hidden="true">3</span>
-                    {% translate "Catégorie" %}
-                </h2>
-                <p class="step-subtitle">{% translate "Choisissez le type de badge." %}</p>
+                <section>
+                    <h2 class="step-title">
+                        {% translate "Catégorie" %}
+                    </h2>
+                    <p class="step-subtitle">{% translate "Choisissez le type de badge." %}</p>
 
-                <div class="selection-grid category-grid"
-                     role="radiogroup"
-                     aria-label="{% translate 'Choix de la catégorie' %}">
-                    {% for category in categories %}
-                        <!-- Chaque carte est un bouton radio visuel.
-                             L'illustration SVG de la categorie est affichee dans un mini SVG.
-                             Each card is a visual radio button with the category SVG illustration. -->
-                        <button type="button"
-                                class="selection-card category-card{% if defaults.category_uuid == category.uuid|stringformat:"s"  %} selected{% endif %}"
-                                data-category-uuid="{{ category.uuid }}"
-                                data-testid="category-card-{{ category.abbreviation }}"
-                                role="radio"
-                                aria-checked="false"
-                                aria-label="{{ category.name }}"
-                                style="border-left: 4px solid {{ category.color }};">
-                            <!-- Illustration SVG de la categorie.
-                                 On l'affiche dans un petit SVG de 40x40 pixels.
-                                 Si la categorie n'a pas d'illustration, on affiche un point colore.
-                                 Category SVG illustration in a 40x40 mini SVG.
-                                 Falls back to a colored dot if no illustration. -->
-                            <span class="selection-card-icon" aria-hidden="true">
+                    <div class="selection-grid category-grid"
+                         role="radiogroup"
+                         aria-label="{% translate 'Choix de la catégorie' %}">
+                        {% for category in categories %}
+                            <!-- Chaque carte est un bouton radio visuel.
+                                 L'illustration SVG de la categorie est affichee dans un mini SVG.
+                                 Each card is a visual radio button with the category SVG illustration. -->
+                            <button type="button"
+                                    class="selection-card category-card{% if defaults.category_uuid == category.uuid|stringformat:"s"  %} selected{% endif %}"
+                                    data-category-uuid="{{ category.uuid }}"
+                                    data-testid="category-card-{{ category.abbreviation }}"
+                                    role="radio"
+                                    aria-checked="false"
+                                    aria-label="{{ category.name }}"
+                                    style="border-left: 4px solid {{ category.color }};">
+                                <!-- Illustration SVG de la categorie.
+                                     On l'affiche dans un petit SVG de 40x40 pixels.
+                                     Si la categorie n'a pas d'illustration, on affiche un point colore.
+                                     Category SVG illustration in a 40x40 mini SVG.
+                                     Falls back to a colored dot if no illustration. -->
+                                <span class="selection-card-icon" aria-hidden="true">
                         {% if category.illustration_svg %}
                             <svg xmlns="http://www.w3.org/2000/svg"
                                  viewBox="0 0 100 100"
@@ -247,15 +249,16 @@
                                   style="background: {{ category.color }};"></span>
                         {% endif %}
                             </span>
-                            <span class="selection-card-title">{{ category.name }}</span>
-                            <span class="selection-card-abbr">{{ category.abbreviation }}</span>
-                        </button>
-                    {% endfor %}
-                    {% if errors.category_uuid %}
-                        <p class="error">{{errors.category_uuid.0}}</p>
-                    {% endif %}
+                                <span class="selection-card-title">{{ category.name }}</span>
+                                <span class="selection-card-abbr">{{ category.abbreviation }}</span>
+                            </button>
+                        {% endfor %}
+                        {% if errors.category_uuid %}
+                            <p class="error">{{errors.category_uuid.0}}</p>
+                        {% endif %}
 
-                </div>
+                    </div>
+                </section>
 
                 <!-- ====================================================
                      Section 4 : Choisir un niveau.
@@ -264,40 +267,41 @@
                      Section 4: Choose a level.
                      5 cards with visual stroke thickness indicator.
                      ==================================================== -->
-                <h2 class="step-title mt-4">
-                    <span class="step-number" aria-hidden="true">4</span>
-                    {% translate "Niveau" %}
-                </h2>
-                <p class="step-subtitle">{% translate "Choisissez le niveau du badge." %}</p>
+                <section>
+                    <h2 class="step-title mt-4">
+                        {% translate "Niveau" %}
+                    </h2>
+                    <p class="step-subtitle">{% translate "Choisissez le niveau du badge." %}</p>
 
-                <div class="selection-grid level-grid"
-                     role="radiogroup"
-                     aria-label="{% translate 'Choix du niveau' %}">
-                    {% for level in levels %}
-                        <!-- Chaque carte de niveau montre une barre d'epaisseur.
-                             Plus le niveau est haut, plus la barre est epaisse.
-                             Each level card shows a thickness bar. -->
-                        <button type="button"
-                                class="selection-card level-card {% if defaults.level_uuid == level.uuid|stringformat:"s"  %} selected{% endif %}"
-                                data-level-uuid="{{ level.uuid }}"
-                                data-testid="level-card-{{ level.rank }}"
-                                role="radio"
-                                aria-checked="false"
-                                aria-label="{{ level.name }} — {{ level.posture_text }}">
-                            <!-- Indicateur visuel d'epaisseur.
-                                 Visual thickness indicator. -->
-                            <span class="level-stroke-indicator"
-                                  aria-hidden="true"
-                                  style="height: {{ level.stroke_width }}px;"></span>
-                            <span class="selection-card-title">{{ level.name }}</span>
-                            <span class="selection-card-desc">{{ level.posture_text }}</span>
-                        </button>
-                    {% endfor %}
-                    {% if errors.level_uuid %}
-                        <p class="error">{{errors.level_uuid.0}}</p>
-                    {% endif %}
+                    <div class="selection-grid level-grid"
+                         role="radiogroup"
+                         aria-label="{% translate 'Choix du niveau' %}">
+                        {% for level in levels %}
+                            <!-- Chaque carte de niveau montre une barre d'epaisseur.
+                                 Plus le niveau est haut, plus la barre est epaisse.
+                                 Each level card shows a thickness bar. -->
+                            <button type="button"
+                                    class="selection-card level-card {% if defaults.level_uuid == level.uuid|stringformat:"s"  %} selected{% endif %}"
+                                    data-level-uuid="{{ level.uuid }}"
+                                    data-testid="level-card-{{ level.rank }}"
+                                    role="radio"
+                                    aria-checked="false"
+                                    aria-label="{{ level.name }} — {{ level.posture_text }}">
+                                <!-- Indicateur visuel d'epaisseur.
+                                     Visual thickness indicator. -->
+                                <span class="level-stroke-indicator"
+                                      aria-hidden="true"
+                                      style="height: {{ level.stroke_width }}px;"></span>
+                                <span class="selection-card-title">{{ level.name }}</span>
+                                <span class="selection-card-desc">{{ level.posture_text }}</span>
+                            </button>
+                        {% endfor %}
+                        {% if errors.level_uuid %}
+                            <p class="error">{{errors.level_uuid.0}}</p>
+                        {% endif %}
 
-                </div>
+                    </div>
+                </section>
 
                 <!-- ====================================================
                      Section 5 : Choisir la forme du badge.
@@ -309,30 +313,30 @@
                      8 shapes in a 4x2 grid with miniature preview.
                      Default shape (starburst) is pre-selected.
                      ==================================================== -->
-                <h2 class="step-title mt-4">
-                    <span class="step-number" aria-hidden="true">5</span>
-                    {% translate "Forme" %}
-                </h2>
-                <p class="step-subtitle">{% translate "Choisissez la forme du badge." %}</p>
+                <section hide-if="import">
+                    <h2 class="step-title mt-4">
+                        {% translate "Forme" %}
+                    </h2>
+                    <p class="step-subtitle">{% translate "Choisissez la forme du badge. (Seulement si vous generez une icone)" %}</p>
 
-                <div class="selection-grid shape-grid"
-                     role="radiogroup"
-                     aria-label="{% translate 'Choix de la forme' %}">
-                    {% for shape in shapes %}
-                        <!-- Chaque carte montre un apercu de la forme en miniature.
-                             Le chemin SVG est dessine dans un petit carre.
-                             Each card shows a miniature shape preview. -->
-                        <button type="button"
-                                class="selection-card shape-card {% if shape.key == default_shape_key %}selected{% endif %}"
-                                data-shape-key="{{ shape.key }}"
-                                data-testid="shape-card-{{ shape.key }}"
-                                role="radio"
-                                aria-checked="{% if shape.key == default_shape_key %}true{% else %}false{% endif %}"
-                                aria-label="{{ shape.name }}">
-                            <!-- Apercu miniature de la forme.
-                                 Mini SVG with the shape path.
-                                 On utilise un viewBox 0 0 500 500 pour afficher la forme. -->
-                            <span class="selection-card-icon" aria-hidden="true">
+                    <div class="selection-grid shape-grid"
+                         role="radiogroup"
+                         aria-label="{% translate 'Choix de la forme' %}">
+                        {% for shape in shapes %}
+                            <!-- Chaque carte montre un apercu de la forme en miniature.
+                                 Le chemin SVG est dessine dans un petit carre.
+                                 Each card shows a miniature shape preview. -->
+                            <button type="button"
+                                    class="selection-card shape-card {% if shape.key == default_shape_key %}selected{% endif %}"
+                                    data-shape-key="{{ shape.key }}"
+                                    data-testid="shape-card-{{ shape.key }}"
+                                    role="radio"
+                                    aria-checked="{% if shape.key == default_shape_key %}true{% else %}false{% endif %}"
+                                    aria-label="{{ shape.name }}">
+                                <!-- Apercu miniature de la forme.
+                                     Mini SVG with the shape path.
+                                     On utilise un viewBox 0 0 500 500 pour afficher la forme. -->
+                                <span class="selection-card-icon" aria-hidden="true">
                         <svg xmlns="http://www.w3.org/2000/svg"
                              viewBox="0 0 500 500"
                              width="48" height="48"
@@ -343,54 +347,55 @@
                                   stroke-width="4"/>
                         </svg>
                     </span>
-                            <span class="selection-card-title">{{ shape.name }}</span>
-                        </button>
-                    {% endfor %}
-                    {% if errors.shape %}
-                        <p class="error">{{errors.shape.0}}</p>
-                    {% endif %}
-                </div>
+                                <span class="selection-card-title">{{ shape.name }}</span>
+                            </button>
+                        {% endfor %}
+                        {% if errors.shape %}
+                            <p class="error">{{errors.shape.0}}</p>
+                        {% endif %}
+                    </div>
+                </section>
 
                 <!-- ====================================================
                      Section 6 : Critères
                      Section 6: Criteria
                      ==================================================== -->
-                <h2 class="step-title mt-4">
-                    <span class="step-number" aria-hidden="true">6</span>
-                    {% translate "Critères" %}
-                </h2>
-                <p class="step-subtitle">{% translate "Définissez les caractéristiques d'attribution du badge" %}</p>
+                <section hide-if="user">
+                    <h2 class="step-title mt-4">
+                        {% translate "Critères" %}
+                    </h2>
+                    <p class="step-subtitle">{% translate "Définissez les caractéristiques d'attribution du badge (Seulement si vous creez en tant que structure)" %}</p>
 
-                <div class="form-group">
-                    <label for="criteria">Critères *</label>
-                    <textarea class="form-control" id="criteria" name="criteria">{% if defaults.criteria %}{{ defaults.criteria }}{% endif %}</textarea>
+                    <div class="form-group">
+                        <label for="criteria">Critères *</label>
+                        <textarea class="form-control" id="criteria" name="criteria">{% if defaults.criteria %}{{ defaults.criteria }}{% endif %}</textarea>
 
-                    {% if errors.criteria %}
-                        <p class="error">{{errors.criteria.0}}</p>
-                    {% endif %}
-                </div>
+                        {% if errors.criteria %}
+                            <p class="error">{{errors.criteria.0}}</p>
+                        {% endif %}
+                    </div>
+                </section>
 
 
                 <!-- ====================================================
                 Section 7 : Description
                 Section 7: Description
                 ==================================================== -->
-                <h2 class="step-title mt-4">
-                    <span class="step-number" aria-hidden="true">7</span>
-                    {% translate "Description" %}
-                </h2>
-                <p class="step-subtitle">{% translate "Décrivez le badge" %}</p>
+                <section>
+                    <h2 class="step-title mt-4">
+                        {% translate "Description" %}
+                    </h2>
+                    <p class="step-subtitle">{% translate "Décrivez le badge" %}</p>
 
-                <div class="form-group">
-                    <label for="description">Description *</label>
-                    <textarea class="form-control" id="description" name="description">{% if defaults.description %}{{ defaults.description }}{% endif %}</textarea>
+                    <div class="form-group">
+                        <label for="description">Description *</label>
+                        <textarea class="form-control" id="description" name="description">{% if defaults.description %}{{ defaults.description }}{% endif %}</textarea>
 
-                    {% if errors.description %}
-                        <p class="error">{{errors.description.0}}</p>
-                    {% endif %}
-                </div>
-
-
+                        {% if errors.description %}
+                            <p class="error">{{errors.description.0}}</p>
+                        {% endif %}
+                    </div>
+                </section>
 
                 <!-- ====================================================
                      Bouton de generation finale.

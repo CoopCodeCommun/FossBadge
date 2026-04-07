@@ -42,6 +42,38 @@ var DEBOUNCE_DELAY_IN_MILLISECONDS = 300;
 // Handles 3 card types: category, level, shape.
 // ================================================================
 
+// Dynamic code to hide or show section
+// To use it :
+// First : add the "hide-if" attribute to a section in the form and set its value to a string (why it should be hidden for ex)
+// Second : use hide_section("user") (and show_sections()) in the JS, and replace "user" by the same keyword that you put in the "hide-if" attribute
+//
+// PS : This is not a const because we use htmx, if the form has an error, the JS is re-called and the const is re-defined which crash the JS ¯\_(ツ)_/¯
+var DYNAMIC_HIDE_SECTION = document.querySelectorAll("section[hide-if]")
+
+function hide_sections(selector){
+    DYNAMIC_HIDE_SECTION.forEach(e=>{
+        if(e.attributes["hide-if"].value===selector){
+            e.classList.add("hide")
+        }
+    })
+}
+
+function show_sections(selector){
+    DYNAMIC_HIDE_SECTION.forEach(e=>{
+        if(e.attributes["hide-if"].value===selector){
+            e.classList.remove("hide")
+        }
+    })
+}
+
+if(document.querySelector("#icon_import").checked){
+    hide_sections("import")
+}
+
+if(document.querySelector("#as_user").checked){
+    hide_sections("user")
+}
+
 function handle_card_selection(click_event) {
     var clicked_element = click_event.target.closest(".selection-card");
 
@@ -260,12 +292,16 @@ function set_creator_type(event){
         structure_div.classList.remove("showed")
         user_label.className = selected_classes
         structure_label.className = not_selected_classes
+
+        hide_sections("user")
     }
     else if(event.target.value === "structure")
     {
         structure_div.classList.add("showed")
         user_label.className = not_selected_classes
         structure_label.className = selected_classes
+
+        show_sections("user")
     }
 }
 
@@ -292,12 +328,15 @@ function set_import_type(event){
 
         // Update the badge preview
         request_badge_preview()
+        show_sections("import")
+
     }
     else if(event.target.value === "import")
     {
         div_icon_import.classList.add("showed")
         icon_generate.className = not_selected_classes
         icon_import.className = selected_classes
+        hide_sections("import")
     }
 }
 

@@ -252,7 +252,11 @@ class CreateBadgeValidator(serializers.Serializer):
 
     description = serializers.CharField()
 
-    criteria = serializers.CharField()
+    criteria = serializers.CharField(
+        # Si on enlève le "allow_blank", le validate associé n'est pas appelé ???? ¯\_(ツ)_/¯
+        required=False,
+        allow_blank=True,
+    )
 
     # Icon related
     icon_type = serializers.CharField(
@@ -327,6 +331,13 @@ class CreateBadgeValidator(serializers.Serializer):
 
             if not structure[0].is_editor(user) and not structure[0].is_admin(user):
                 raise serializers.ValidationError(_("Vous n'êtes pas éditeur de cette structure."))
+
+        return value
+
+    def validate_criteria(self, value):
+        if self.initial_data.get("creator_type",None) == "structure":
+            if not value:
+                raise serializers.ValidationError(_("Ce champ est requis."))
 
         return value
 

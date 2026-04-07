@@ -1162,22 +1162,21 @@ class BadgeViewSet(viewsets.ViewSet):
             except TypeError:
                 print("error svg file")
 
-            # Save the badge to db
-        elif validated["icon_type"] == "import" and validated["imported_icon"]:
+        elif validated["icon_type"] == "import" and validated.get("imported_icon",None):
             badge.icon = validated["imported_icon"]
 
+        # Save the badge to db
         badge.save()
 
         # Create a BadgeHistory
-        badgeHistory = BadgeHistory(
+        badgeHistory = BadgeHistory.objects.create(
             badge=badge,
             action="creation",
             details="Badge crée"
         )
-
         if validated["creator_type"] == "structure":
             # Create a BadgeCriteria
-            badgeCriteria = BadgeCriteria(
+            badgeCriteria = BadgeCriteria.objects.create(
                 badge=badge,
                 structure=structure,
                 criteria=validated["criteria"],

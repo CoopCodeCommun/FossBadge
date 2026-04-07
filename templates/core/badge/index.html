@@ -3,10 +3,9 @@
 {# / Dedicated badge page. Shows header, structures, holders, actions, map. #}
 {% extends 'base/base.html' %}
 {% load i18n %}
-{% load pictures %}
 {% load static %}
 {% load l10n %}
-{% load custom_tags %}
+{% load custom_tags popup_tags %}
 
 {% block title %}{{ badge.name }} — openbadge.coop{% endblock %}
 
@@ -51,7 +50,7 @@
     <div class="badge-page-header" data-testid="badge-page-header">
         <div class="badge-page-header-icon">
             {% if badge.icon %}
-                {% picture badge.icon img_alt=badge.name ratio="1/1" %}
+                {% svg_or_picture badge.icon img_alt=badge.name ratio="1/1" %}
             {% else %}
                 <div class="home-result-icon-placeholder home-result-icon-placeholder-badges badge-page-header-icon-placeholder">
                     <span aria-hidden="true">&#9733;</span>
@@ -72,14 +71,36 @@
             {# Niveau (pastille colorée) #}
             {# Level (colored pill) #}
             <p class="badge-page-header-meta text-muted mb-1">
+                {% if badge.category %}
+                    {% comment %}
+                    Set the "style" attribute using the category color's. The 20 at the end if for the 8 digits hexadecimal notation:
+                    #RRGGBBAA
+                    Red Green Blue Opacity(A)
+
+                    Unsure of the support, but it looks well supported after all :
+                    https://caniuse.com/css-rrggbbaa
+
+                    Reading about it :
+                    https://www.w3.org/TR/css-color-4/#hex-notation
+                    https://www.quackit.com/css/color/values/css_hex_color_notation_8_digits.cfm
+                    {% endcomment %}
+                    <span class="home-level-tag" style="color:{{ badge.category.color }};background: {{ badge.category.color }}20">
+                        {{ badge.category.icon }} {{ badge.category.name }}
+                    </span>
+                    |
+                {% endif %}
                 {% if badge.level %}
-                    {% if badge.level == 'beginner' %}
-                        <span class="home-level-tag home-level-beginner">{{ badge.get_level_display }}</span>
-                    {% elif badge.level == 'intermediate' %}
-                        <span class="home-level-tag home-level-intermediate">{{ badge.get_level_display }}</span>
-                    {% elif badge.level == 'expert' %}
-                        <span class="home-level-tag home-level-expert">{{ badge.get_level_display }}</span>
-                    {% endif %}
+                    {{ badge.level.name }} (Niveau {{ badge.level.rank }}/5)
+                    {% comment %}
+                    {% for i in "12345" %}
+                        {% if i|get_digit:1 <= badge.level.rank %}
+                            <span class="">X</span>
+                        {% else %}
+                            <span class="">O</span>
+                        {% endif %}
+                    {% endfor %}
+                    {% endcomment %}
+                    |
                 {% endif %}
                 {% if badge.issuing_structure %}
                     <span class="text-muted">
@@ -189,7 +210,7 @@
                    class="home-result-item">
                     <div class="home-result-icon">
                         {% if structure.logo %}
-                            {% picture structure.logo img_alt=structure.name ratio="1/1" %}
+                            {% svg_or_picture structure.logo img_alt=structure.name ratio="1/1" %}
                         {% else %}
                             <div class="home-result-icon-placeholder home-result-icon-placeholder-structures">
                                 <span aria-hidden="true">&#9737;</span>
@@ -242,7 +263,7 @@
                data-testid="badge-page-holder-{{ assignment.user.pk }}">
                 <div class="home-result-icon home-result-icon-round">
                     {% if assignment.user.avatar %}
-                        {% picture assignment.user.avatar img_alt=assignment.user.get_full_name|default:assignment.user.username ratio="1/1" %}
+                        {% svg_or_picture assignment.user.avatar img_alt=assignment.user.get_full_name|default:assignment.user.username ratio="1/1" %}
                     {% else %}
                         <div class="home-result-icon-placeholder home-result-icon-placeholder-personnes home-result-icon-round">
                             <span aria-hidden="true">&#9679;</span>

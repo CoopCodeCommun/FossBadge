@@ -1,5 +1,5 @@
 {% load i18n %}
-{% load pictures %}
+{% load custom_tags popup_tags %}
 
 {# Vue focus badge : le badge s'agrandit dans la colonne Badges, #}
 {# les deux autres colonnes filtrent sur les objets liés au badge. #}
@@ -33,7 +33,7 @@
         <div class="home-badge-focus-card">
             <div class="home-badge-focus-icon">
                 {% if focused_badge.icon %}
-                    {% picture focused_badge.icon img_alt=focused_badge.name ratio="1/1" %}
+                    {% svg_or_picture focused_badge.icon img_alt=focused_badge.name ratio="1/1" %}
                 {% else %}
                     <div class="home-result-icon-placeholder home-result-icon-placeholder-badges" style="width: 120px; height: 120px; font-size: 3rem;">
                         <span aria-hidden="true">&#9733;</span>
@@ -50,17 +50,19 @@
             </span>
             {% endif %}
 
-            {% if focused_badge.level %}
-                <div class="home-badge-focus-level">
-                    {% if focused_badge.level == 'beginner' %}
-                        <span class="home-level-tag home-level-beginner">{{ focused_badge.get_level_display }}</span>
-                    {% elif focused_badge.level == 'intermediate' %}
-                        <span class="home-level-tag home-level-intermediate">{{ focused_badge.get_level_display }}</span>
-                    {% elif focused_badge.level == 'expert' %}
-                        <span class="home-level-tag home-level-expert">{{ focused_badge.get_level_display }}</span>
-                    {% endif %}
-                </div>
-            {% endif %}
+            <div class="home-badge-focus-level">
+                {% if focused_badge.category %}
+                    <span class="home-level-tag" style="color:{{ focused_badge.category.color }};background: {{ focused_badge.category.color }}20">
+                            {{ focused_badge.category.icon }} {{ focused_badge.category.name }}
+                        </span>
+                {% endif %}
+                {% if focused_badge.level %}
+                    <span class="home-level-tag">
+                        {{ focused_badge.level.name }} (Niveau {{ focused_badge.level.rank }}/5)
+                        </span>
+                {% endif %}
+            </div>
+
 
             {% if focused_badge.issuing_structure %}
                 <div class="home-badge-focus-issuer">
@@ -75,7 +77,7 @@
                             class="home-badge-focus-issuer-link">
                         {% if focused_badge.issuing_structure.logo %}
                             <div class="home-badge-focus-issuer-logo">
-                                {% picture focused_badge.issuing_structure.logo img_alt=focused_badge.issuing_structure.name ratio="1/1" %}
+                                {% svg_or_picture focused_badge.issuing_structure.logo img_alt=focused_badge.issuing_structure.name ratio="1/1" %}
                             </div>
                         {% endif %}
                         {{ focused_badge.issuing_structure.name }}
@@ -89,7 +91,7 @@
                             class="home-badge-focus-issuer-link">
                         {% if focused_badge.user.avatar %}
                             <div class="home-badge-focus-issuer-logo">
-                                {% picture focused_badge.user.avatar img_alt=focused_badge.user.first_name ratio="1/1" %}
+                                {% svg_or_picture focused_badge.user.avatar img_alt=focused_badge.user.first_name ratio="1/1" %}
                             </div>
                         {% endif %}
                         {{ focused_badge.user.first_name }}
@@ -140,7 +142,7 @@
                 >
                     <div class="home-result-icon">
                         {% if structure.logo %}
-                            {% picture structure.logo img_alt=structure.name ratio="1/1" %}
+                            {% svg_or_picture structure.logo img_alt=structure.name ratio="1/1" %}
                         {% else %}
                             <div class="home-result-icon-placeholder home-result-icon-placeholder-structures">
                                 <span aria-hidden="true">&#9737;</span>
@@ -189,7 +191,7 @@
                 >
                     <div class="home-result-icon home-result-icon-round">
                         {% if person.avatar %}
-                            {% picture person.avatar img_alt=person.get_full_name|default:person.username ratio="1/1" %}
+                            {% svg_or_picture person.avatar img_alt=person.get_full_name|default:person.username ratio="1/1" %}
                         {% else %}
                             <div class="home-result-icon-placeholder home-result-icon-placeholder-personnes home-result-icon-round">
                                 <span aria-hidden="true">&#9679;</span>

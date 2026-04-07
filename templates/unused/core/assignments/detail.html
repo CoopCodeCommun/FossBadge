@@ -1,5 +1,5 @@
 {% extends 'base/base.html' %}
-{% load pictures %}
+{% load custom_tags popup_tags %}
 
 {% block title %} Badge {{ assignment.badge.name }}{% endblock %}
 
@@ -20,7 +20,7 @@
                 <div class="card-body text-center">
                     <!-- Badge Icon -->
                     {% if badge.icon %}
-                        {% picture badge.icon img_alt=badge.name img_class="badge-icon mb-3" ratio="1/1" picture_class="text-center" %}
+                        {% svg_or_picture badge.icon img_alt=badge.name img_class="badge-icon mb-3" ratio="1/1" picture_class="text-center" %}
                     {% else %}
                         <img src="{{ placeholder_image }}" alt="{{ badge.name }}" class="badge-icon mb-3"
                              style="width: 150px; height: 150px;">
@@ -33,7 +33,7 @@
                         <p class="mb-1 fw-bold">QR Code:</p>
                         {% if assignment.qr_code %}
                             <div class="mb-2" style="max-width: 200px; margin: 0 auto;">
-                                {% picture assignment.qr_code img_alt="QR Code du badge" img_class="img-fluid" ratio="1/1" %}
+                                {% svg_or_picture assignment.qr_code img_alt="QR Code du badge" img_class="img-fluid" ratio="1/1" %}
                             </div>
                             <div>
                                 <a href="{{ assignment.qr_code.url }}" class="btn btn-primary" download>Télécharger le QR Code</a>

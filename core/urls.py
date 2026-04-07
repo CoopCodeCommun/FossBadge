@@ -1,6 +1,7 @@
 from django.urls import path, include
 from rest_framework.routers import DefaultRouter
 from . import views
+import badge_generator.views
 
 app_name = 'core'
 
@@ -19,8 +20,8 @@ router.register(r'courses', views.CourseViewSet, basename='course')
 urlpatterns = [
     # Creation routes
     path('badge/create/', views.BadgeViewSet.as_view({'get': 'create_badge', 'post': 'create_badge'}), name='create_badge'),
+    # path('badge/create/', views.BadgeViewSet.as_view({'get': 'create_badge', 'post': 'create_badge'}), name='create_badge'),
     path('structure/create/', views.StructureViewSet.as_view({'get': 'create_association', 'post': 'create_association'}), name='create_association'),
-    path('user/create/', views.UserViewSet.as_view({'get': 'create_user', 'post': 'create_user'}), name='create_user'),
 
     # Edition routes
     path('users/<uuid:pk>/edit', views.UserViewSet.as_view({'get': 'edit', 'post': 'edit'}), name='edit-profile'),

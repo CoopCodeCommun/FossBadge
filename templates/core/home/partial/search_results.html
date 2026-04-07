@@ -1,6 +1,5 @@
 {% load i18n %}
-{% load pictures %}
-{% load custom_tags %}
+{% load custom_tags popup_tags %}
 
 {# Résultats de recherche en colonnes dynamiques : Badges / Structures / Personnes #}
 {# Search results in dynamic columns: Badges / Structures / People #}
@@ -53,7 +52,7 @@
                 >
                     <div class="home-result-icon">
                         {% if badge.icon %}
-                            {% picture badge.icon img_alt=badge.name ratio="1/1" %}
+                            {% svg_or_picture badge.icon img_alt=badge.name ratio="1/1" %}
                         {% else %}
                             <div class="home-result-icon-placeholder home-result-icon-placeholder-badges">
                                 <span aria-hidden="true">&#9733;</span>
@@ -130,7 +129,7 @@
                 >
                     <div class="home-result-icon">
                         {% if structure.logo %}
-                            {% picture structure.logo img_alt=structure.name ratio="1/1" %}
+                            {% svg_or_picture structure.logo img_alt=structure.name ratio="1/1" %}
                         {% else %}
                             <div class="home-result-icon-placeholder home-result-icon-placeholder-structures">
                                 <span aria-hidden="true">&#9737;</span>
@@ -174,7 +173,7 @@
                     data-testid="home-result-person-{{ person.pk }}">
                     <div class="home-result-icon home-result-icon-round">
                         {% if person.avatar %}
-                            {% picture person.avatar img_alt=person.get_full_name|default:person.username ratio="1/1" %}
+                            {% svg_or_picture person.avatar img_alt=person.get_full_name|default:person.username ratio="1/1" %}
                         {% else %}
                             <div class="home-result-icon-placeholder home-result-icon-placeholder-personnes home-result-icon-round">
                                 <span aria-hidden="true">&#9679;</span>

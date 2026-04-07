@@ -14,7 +14,9 @@ LOCALISATION : badge_generator/views.py
 import re
 
 from django.http import HttpResponse
-from django.shortcuts import get_object_or_404, render
+from django.shortcuts import get_object_or_404, render, redirect
+from django.urls import reverse
+from django_htmx.http import HttpResponseClientRedirect
 from rest_framework import viewsets
 from rest_framework.decorators import action
 from rest_framework.permissions import AllowAny
@@ -23,6 +25,10 @@ from badge_generator.models import BadgeCategory, BadgeLevel, GeneratedBadge
 from badge_generator.serializers import GenerateBadgeSerializer, PreviewBadgeSerializer
 from badge_generator.shapes import ALL_SHAPES, DEFAULT_SHAPE_KEY
 from badge_generator.svg_engine import generate_badge_svg
+from core.models import Badge, BadgeHistory, BadgeCriteria, Structure
+from django.core.files.base import ContentFile
+
+from core.validators import CreateBadgeValidator
 
 
 class BadgeGeneratorViewSet(viewsets.ViewSet):
@@ -65,12 +71,15 @@ class BadgeGeneratorViewSet(viewsets.ViewSet):
                 "path": shape_data["path"],
             })
 
-        return render(request, "badge_generator/home.html", {
+        structures = request.user.structures
+
+        return render(request, "badge_generator/badge_creation.html", {
             "categories": all_categories,
             "levels": all_levels,
             "total_badges_generated": total_badges_generated,
             "shapes": all_available_shapes,
             "default_shape_key": DEFAULT_SHAPE_KEY,
+            "structures": structures,
         })
 
     # ========================================================================

@@ -3,10 +3,9 @@
 {# / Course/journey display page with Cytoscape graph. #}
 {% extends 'base/base.html' %}
 {% load i18n %}
-{% load pictures %}
 {% load static %}
 {% load l10n %}
-{% load custom_tags %}
+{% load custom_tags popup_tags %}
 
 {% block title %}
     {{ course.name }} — {% translate "Parcours" %} — openbadge.coop
@@ -216,7 +215,7 @@
     <div class="parcours-header" data-testid="parcours-header">
         <div class="parcours-header-icon">
             {% if course.badge and course.badge.icon %}
-                {% picture course.badge.icon img_alt=course.badge.name img_class="parcours-badge-icon" ratio="1/1" %}
+                {% svg_or_picture course.badge.icon img_alt=course.badge.name img_class="parcours-badge-icon" ratio="1/1" %}
             {% else %}
                 <div class="home-result-icon-placeholder home-result-icon-placeholder-parcours" style="width: 100%; height: 100%;">
                     <span aria-hidden="true">&#9733;</span>
@@ -275,7 +274,7 @@
                data-testid="parcours-badge-{{ item.badge.pk }}">
                 <div class="parcours-badge-icon">
                     {% if item.badge.icon %}
-                        {% picture item.badge.icon img_alt=item.badge.name img_class="parcours-badge-icon" ratio="1/1" %}
+                        {% svg_or_picture item.badge.icon img_alt=item.badge.name img_class="parcours-badge-icon" ratio="1/1" %}
                     {% else %}
                         <div class="home-result-icon-placeholder home-result-icon-placeholder-badges">
                             <span aria-hidden="true">&#9733;</span>

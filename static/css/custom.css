@@ -1,9 +1,21 @@
 /* FossBadge Custom CSS */
 
 /* General styles for FALC (Facile à Lire et à Comprendre) */
+html{
+    height: 100%;
+}
+
 body {
     font-size: 1.1rem;
     line-height: 1.6;
+    height: 100%;
+}
+
+.grid-wrapper{
+    height: 100%;
+    display: grid;
+    grid-template-rows: auto 1fr auto;
+
 }
 
 /* Increase contrast for better readability */
@@ -2636,4 +2648,9 @@ picture.text-center img.badge-icon {
         justify-content: center;
         padding: 0.85rem 1.5rem;
     }
+}
+
+.badge-svg-icon{
+    width: 100%;
+    height: 100%;
 }

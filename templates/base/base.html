@@ -21,13 +21,14 @@
 </head>
 <body hx-ext="response-targets" hx-headers='{"x-csrftoken": "{{ csrf_token }}"}'>
 
-    {% include "base/includes/menu.html" %}
+    <div class="grid-wrapper">
+        {% include "base/includes/menu.html" %}
 
-    {% block content %}{% endblock %}
+        {% block content %}{% endblock %}
 
-    {% include "base/includes/footer.html" %}
+        {% include "base/includes/footer.html" %}
 
-
+    </div>
     <!-- Bootstrap 5 JS Bundle -->
     <script src="{% static 'bootstrap/js/bootstrap.bundle.min.js' %}"></script>
 

@@ -72,10 +72,35 @@
             {# Level (colored pill) #}
             <p class="badge-page-header-meta text-muted mb-1">
                 {% if badge.category %}
-                    <span style="border: 1px {{ badge.category.color }} solid"> {{ badge.category.icon }} {{ badge.category.name }}</span> ---
+                    {% comment %}
+                    Set the "style" attribute using the category color's. The 20 at the end if for the 8 digits hexadecimal notation:
+                    #RRGGBBAA
+                    Red Green Blue Opacity(A)
+
+                    Unsure of the support, but it looks well supported after all :
+                    https://caniuse.com/css-rrggbbaa
+
+                    Reading about it :
+                    https://www.w3.org/TR/css-color-4/#hex-notation
+                    https://www.quackit.com/css/color/values/css_hex_color_notation_8_digits.cfm
+                    {% endcomment %}
+                    <span class="home-level-tag" style="color:{{ badge.category.color }};background: {{ badge.category.color }}20">
+                        {{ badge.category.icon }} {{ badge.category.name }}
+                    </span>
+                    |
                 {% endif %}
                 {% if badge.level %}
-                    <span>{{ badge.level.name }}</span> --
+                    {{ badge.level.name }} (Niveau {{ badge.level.rank }}/5)
+                    {% comment %}
+                    {% for i in "12345" %}
+                        {% if i|get_digit:1 <= badge.level.rank %}
+                            <span class="">X</span>
+                        {% else %}
+                            <span class="">O</span>
+                        {% endif %}
+                    {% endfor %}
+                    {% endcomment %}
+                    |
                 {% endif %}
                 {% if badge.issuing_structure %}
                     <span class="text-muted">

@@ -50,17 +50,19 @@
             </span>
             {% endif %}
 
-            {% if focused_badge.level %}
-                <div class="home-badge-focus-level">
-                    {% if focused_badge.level == 'beginner' %}
-                        <span class="home-level-tag home-level-beginner">{{ focused_badge.get_level_display }}</span>
-                    {% elif focused_badge.level == 'intermediate' %}
-                        <span class="home-level-tag home-level-intermediate">{{ focused_badge.get_level_display }}</span>
-                    {% elif focused_badge.level == 'expert' %}
-                        <span class="home-level-tag home-level-expert">{{ focused_badge.get_level_display }}</span>
-                    {% endif %}
-                </div>
-            {% endif %}
+            <div class="home-badge-focus-level">
+                {% if focused_badge.category %}
+                    <span class="home-level-tag" style="color:{{ focused_badge.category.color }};background: {{ focused_badge.category.color }}20">
+                            {{ focused_badge.category.icon }} {{ focused_badge.category.name }}
+                        </span>
+                {% endif %}
+                {% if focused_badge.level %}
+                    <span class="home-level-tag">
+                        {{ focused_badge.level.name }} (Niveau {{ focused_badge.level.rank }}/5)
+                        </span>
+                {% endif %}
+            </div>
+
 
             {% if focused_badge.issuing_structure %}
                 <div class="home-badge-focus-issuer">

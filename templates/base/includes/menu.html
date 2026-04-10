@@ -1,13 +1,39 @@
 {% load i18n %}
+{% load popup_tags %}
 
 <div class="navbar-custom">
     <a class="logo-text" href="{% url 'core:home-list' %}" data-testid="navbar-home-link">
         openbadge.coop
     </a>
-
+    <div>
     {% if request.user.is_authenticated %}
+
+        <button type="button"
+                class="home-forge-btn m-2"
+                hx-get="{% url 'core:create_badge' %}"
+                hx-target="{% popup_content_id %}"
+                hx-swap="innerHTML"
+                hx-on:htmx:after-request="{% popup_open width="80%" %}"
+                hx-indicator="none"
+                data-testid="btn-forge-badge">
+            <span aria-hidden="true">&#9874;</span>
+            {% translate "Forger un badge" %}
+        </button>
+
+        <button type="button"
+                class="home-structure-btn m-2"
+                hx-get="{% url 'core:create_association' %}"
+                hx-target="{% popup_content_id %}"
+                hx-swap="innerHTML"
+                hx-on:htmx:after-request="{% popup_open width="80%" %}"
+                hx-indicator="none"
+                data-testid="btn-forge-badge">
+            <span aria-hidden="true">&#x1F3E4;</span>
+            {% translate "Créer une structure" %}
+        </button>
+
         {# Utilisateur connecté : lien vers son passeport / Logged in user: link to their passport #}
-        <a href="{% url 'core:home-passeport' person_pk=request.user.pk %}" data-testid="navbar-passeport-link" class="home-invite-btn">
+        <a href="{% url 'core:home-passeport' person_pk=request.user.pk %}" data-testid="navbar-passeport-link" class="home-invite-btn m-2">
             <i class="bi bi-person-badge" aria-hidden="true">&#x1F4D6;</i>
             {% translate "Mon passeport" %}
         </a>
@@ -24,6 +50,7 @@
             {% translate "Se connecter" %}
         </button>
     {% endif %}
+    </div>
 </div>
 
 {% comment %}
@@ -50,3 +77,4 @@
             {% include 'authentication/login.html' %}
         </div>
     </div>
+    {% popup width="80%" %}{% endpopup %}

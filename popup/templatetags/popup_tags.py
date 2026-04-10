@@ -13,7 +13,7 @@ POPUP_CONTENT_ID = "customPopup-content"
 
 
 @register.simple_block_tag
-def popup(content, popup_width="40%", *args, **kwargs):
+def popup(content, width="40%", *args, **kwargs):
     outside_click_close = kwargs.pop("outside_click_close", False)
     esc_key_close = kwargs.pop("esc_key_close", True)
 
@@ -26,7 +26,7 @@ def popup(content, popup_width="40%", *args, **kwargs):
             "close_func_name": POPUP_CLOSE_JS_FUNCTION,
             "scroll_top_func_name":POPUP_SCROLL_TOP_JS_FUNCTION,
             "popup_content_id": POPUP_CONTENT_ID,
-            "popup_width": popup_width,
+            "width": width,
             "outside_click_close": outside_click_close,
             "esc_key_close": esc_key_close,
         }
@@ -39,8 +39,8 @@ def popup_close():
 
 
 @register.simple_tag
-def popup_open():
-    return f"{POPUP_OPEN_JS_FUNCTION}()"
+def popup_open(width=None):
+    return f"{POPUP_OPEN_JS_FUNCTION}('{width}')"
 
 
 @register.simple_tag

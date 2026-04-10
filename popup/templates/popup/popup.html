@@ -42,7 +42,7 @@ And finally you can open/close the popup using an htmx button for example :
     }
 
     #customPopup #customPopup-content{
-        width:{{ popup_width }};
+        width:{{ width }};
         min-height:10%;
         min-width:400px;
     }
@@ -220,7 +220,10 @@ And finally you can open/close the popup using an htmx button for example :
 </style>
 
 <script>
-    function {{ open_func_name }}(){
+    function {{ open_func_name }}(width){
+        if (width!=="None"){
+            document.querySelector('#{{ popup_content_id }}').style.width = width
+        }
         let popup = document.querySelector("#customPopup")
         popup.classList.add("showed")
     }

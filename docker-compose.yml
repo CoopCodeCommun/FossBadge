@@ -53,9 +53,6 @@ services:
     restart: always
     env_file: .env
     user: fossbadge
-    ports:
-      - "8000:8000"
-#    links:
     volumes:
       - ./ssh:/home/fossbadge/.ssh
       - ./:/home/fossbadge/FossBadge

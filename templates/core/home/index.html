@@ -127,10 +127,10 @@
         {# disparait quand les resultats s'affichent (classe .has-results) #}
         {# / Badge word cloud — visible only in initial state, #}
         {# disappears when results appear (.has-results class) #}
-        {% if badge_names_for_cloud %}
+        {% if all_badge_for_cloud %}
         <div class="home-word-cloud" aria-hidden="true" data-testid="home-word-cloud">
-            {% for name in badge_names_for_cloud %}
-                <span class="home-word-cloud-item">{{ name }}</span>
+            {% for item in all_badge_for_cloud %}
+                <a class="home-word-cloud-item" href="{% url 'core:home-badge-detail' badge_pk=item.pk %}">{{ item.name }}</a>
             {% endfor %}
         </div>
         {% endif %}

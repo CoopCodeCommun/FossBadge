@@ -103,13 +103,14 @@ class HomeViewSet(viewsets.ViewSet):
 
         # Tous les noms de badges pour le nuage de mots
         # / All badge names for the word cloud
-        all_badge_names_for_cloud = list(
-            Badge.objects.values_list('name', flat=True).order_by('?')
-        )
+        all_badges = Badge.objects.values_list("pk","name").order_by('?')
+        all_badge_for_cloud = list()
+        for badge in all_badges:
+            all_badge_for_cloud.append({"pk":badge[0], "name":badge[1]})
 
         return render(request, 'core/home/index.html', {
             'title': 'openbadge.coop',
-            'badge_names_for_cloud': all_badge_names_for_cloud,
+            'all_badge_for_cloud': all_badge_for_cloud,
         })
 
     @action(detail=False, methods=["GET"])

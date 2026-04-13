@@ -86,7 +86,6 @@ footer {
     justify-content: space-evenly;
     flex-wrap: wrap;
     text-align: center;
-    position: fixed;
     bottom: 0;
     width: 100%;
     background-color: white;

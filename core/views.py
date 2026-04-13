@@ -667,6 +667,11 @@ class HomeViewSet(viewsets.ViewSet):
             badge_item.can_endorse = False  # Déjà endossé par cette structure / Already endorsed
             badge_item.criteria_for_lieu = all_criteria_for_structure.get(badge_item.pk)
 
+
+        # Get the action from the url
+        # Possible value : edit,
+        action = request.GET.get('action')
+
         return render(request, 'core/structure/index.html', {
             'structure': structure,
             'issued_badges': issued_badges_list,
@@ -675,6 +680,7 @@ class HomeViewSet(viewsets.ViewSet):
             'members_list': members_list,
             'is_admin': is_admin,
             'is_editor': is_editor,
+            'action': action,
         })
 
     @action(detail=False, methods=["GET"], url_path="passeport/(?P<person_pk>[^/.]+)")
@@ -748,12 +754,24 @@ class HomeViewSet(viewsets.ViewSet):
         # Is the user viewing their own passport?
         is_self = request.user.is_authenticated and request.user.pk == person.pk
 
+        # Add two flags checking whether a user is admin or editor
+        structures = person.structures.annotate(
+            is_structure_admin=Exists(
+                person.structures_admins.filter(pk=OuterRef('pk'))
+            ),
+            is_structure_editor=Exists(
+                person.structures_editors.filter(pk=OuterRef('pk'))
+            ),
+        ).distinct()
+
+
         return render(request, 'core/user/passeport.html', {
             'person': person,
             'assignments': all_assignments_for_person,
             'total_badges': all_assignments_for_person.count(),
             'total_places': total_places,
             'structures_pks_csv': structures_pks_csv,
+            'structures':structures,
             'is_self': is_self,
         })
 

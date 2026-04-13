@@ -34,8 +34,9 @@
                hx-get="{% url 'core:structure-edit' pk=structure.pk %}"
                hx-target="{% popup_content_id %}"
                hx-swap="innerHTML"
-               hx-on:htmx:after-request="{% popup_open %}"
-               data-testid="lieu-edit-btn">
+               hx-on:htmx:after-request="{% popup_open width="80%" %}"
+               data-testid="lieu-edit-btn"
+               id="lieu-edit-btn">
                 {% translate "Éditer" %}
             </button>
 {#            <a href="{% url 'core:structure-delete' pk=structure.pk %}"#}
@@ -315,6 +316,8 @@
                     <div class="home-result-text">
                         <span class="home-result-name">
                             {{ member.get_full_name|default:member.username }}
+
+                            {# Member.is_structure_admin come from the view, it is added with annotate #}
                             {% if member.is_structure_admin %}
                                 <span class="home-relation-tag home-relation-tag-issuer">{% translate "Admin" %}</span>
                             {% elif member.is_structure_editor %}
@@ -368,6 +371,14 @@
         new maplibregl.Marker().setLngLat([longitude, latitude]).addTo(map);
     });
 </script>
+{% endif %}
+
+{% if action == "edit" %}
+    <script>
+    window.onload = function() {
+        document.querySelector("#lieu-edit-btn").click()
+    };
+    </script>
 {% endif %}
 
 {% endblock %}

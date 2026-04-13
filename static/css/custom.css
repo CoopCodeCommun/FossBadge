@@ -86,7 +86,6 @@ footer {
     justify-content: space-evenly;
     flex-wrap: wrap;
     text-align: center;
-    position: fixed;
     bottom: 0;
     width: 100%;
     background-color: white;
@@ -2654,4 +2653,13 @@ picture.text-center img.badge-icon {
 .badge-svg-icon{
     width: 100%;
     height: 100%;
+}
+
+a{
+    text-decoration: none;
+    color:inherit;
+}
+
+.justify-between{
+    justify-content: space-between;
 }

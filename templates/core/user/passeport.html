@@ -197,6 +197,56 @@
     {% endif %}
 
 
+    {# Section structures de la personne  #}
+    <section class="mt-2">
+        <details>
+            <summary>
+                {% if is_self %}
+                    Mes structures
+                {% else %}
+                    Structures de {{ person.display_name }}
+                {% endif %}
+            </summary>
+            {% for structure in structures %}
+                <div class="home-result-item justify-between">
+                    <a href="{% url 'core:home-lieu' structure_pk=structure.pk %}" class="home-result-item" data-testid="home-result-structure-{{ structure.pk }}">
+                        <div class="home-result-icon">
+                            {% if structure.logo %}
+                                {% svg_or_picture structure.logo img_alt=structure.name ratio="1/1" %}
+                            {% else %}
+                                <div class="home-result-icon-placeholder home-result-icon-placeholder-structures">
+                                    <span aria-hidden="true">&#9737;</span>
+                                </div>
+                            {% endif %}
+                        </div>
+                        <div class="home-result-text">
+                            <span class="homew-result-name">
+                            {{ structure.name }}
+
+                                {# structure.is_structure_admin come from the view, it is added with annotate #}
+                                {% if structure.is_structure_admin %}
+                                    <span class="home-relation-tag home-relation-tag-issuer">{% translate "Admin" %}</span>
+                                {% elif structure.is_structure_editor %}
+                                    <span class="home-relation-tag home-relation-tag-endorser">{% translate "Éditeur" %}</span>
+                                {% endif %}
+                            </span>
+                                <span class="home-result-desc text-muted">
+                                {{ structure.description|truncatewords:12 }}
+                            </span>
+                        </div>
+                    </a>
+                    {% if is_self and structure.is_structure_admin  %}
+                        <div>
+                            <a href="{% url 'core:home-lieu' structure_pk=structure.pk %}?action=edit"><span class="material-icons">edit</span></a>
+                        </div>
+                    {% endif %}
+
+
+                </div>
+            {% endfor %}
+
+        </details>
+    </section>
 
     {# ── Section Parcours (timeline chronologique) ── #}
     {# ── Journey section (chronological timeline) ── #}

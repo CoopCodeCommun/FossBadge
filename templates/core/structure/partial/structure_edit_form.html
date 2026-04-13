@@ -240,11 +240,12 @@
 
     <script src="{% static 'js/maplibre-gl.js' %}" onload="initMap()"></script>
     <script>
-        let map;
-        let markers = []
-        let input;
-        let input_lat;
-        let input_lon;
+        // Change to var because of htmx
+        var map;
+        var markers = []
+        var input;
+        var input_lat;
+        var input_lon;
 
         function initMap(){
             // Initialize the map

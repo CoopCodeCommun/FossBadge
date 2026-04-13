@@ -47,6 +47,11 @@
     transition: box-shadow 0.2s ease, transform 0.2s ease;
 }
 
+.course-badge-item img{
+    max-width:64px;
+    max-height: 64px;
+}
+
 .course-badge-item:hover {
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
     transform: translateY(-2px);
@@ -78,6 +83,7 @@
 <div class="course-badge-grid">
     {% for badge in badges %}
     <div class="course-badge-item">
+        {% if badge.icon %}
             {% svg_or_picture badge.icon img_alt=badge.name picture_class="course-badge-icon" img_class="course-badge-icon" ratio="1/1" %}
         {% else %}
             <img src="{{ placeholder_image }}" alt="{{ badge.name }}" class="course-badge-icon">

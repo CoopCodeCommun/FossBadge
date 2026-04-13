@@ -2,6 +2,7 @@ from django import template
 from django.template import loader
 from pictures.templatetags.pictures import picture
 from django.utils.html import format_html
+from django.utils.safestring import mark_safe
 
 register = template.Library()
 
@@ -40,14 +41,14 @@ def popup_close():
 
 @register.simple_tag
 def popup_open(width=None):
-    return f"{POPUP_OPEN_JS_FUNCTION}('{width}')"
+    return mark_safe(f"{POPUP_OPEN_JS_FUNCTION}('{width}')")
 
 
 @register.simple_tag
 def popup_content_id():
-    return f"#{POPUP_CONTENT_ID}"
+    return mark_safe(f"#{POPUP_CONTENT_ID}")
 
 
 @register.simple_tag
 def popup_scroll_to_top():
-    return f"{POPUP_SCROLL_TOP_JS_FUNCTION}()"
+    return mark_safe(f"{POPUP_SCROLL_TOP_JS_FUNCTION}()")

@@ -78,7 +78,6 @@
 <div class="course-badge-grid">
     {% for badge in badges %}
     <div class="course-badge-item">
-        {% if badge.icon %}
             {% svg_or_picture badge.icon img_alt=badge.name picture_class="course-badge-icon" img_class="course-badge-icon" ratio="1/1" %}
         {% else %}
             <img src="{{ placeholder_image }}" alt="{{ badge.name }}" class="course-badge-icon">

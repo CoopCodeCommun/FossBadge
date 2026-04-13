@@ -309,7 +309,7 @@
 
 </div>
 
-    {% popup width="80%" %}
+    {% popup width="80%" esc_key_close=False %}
         <h2>Création de votre parcours : {{ course.name }}</h2>
         <hr>
         <h3>Badge similaire :</h3>
@@ -325,7 +325,7 @@
     {% include "cytoscape/graph.html" with nodes=course.get_items_for_cytoscape edges=course.get_items_connections_for_cytoscape editable=True %}
     {% if course.items.count == 0 %}
         <script>
-            {% popup_open %}
+            {% popup_open width="80%" %}
         </script>
     {% endif %}
 

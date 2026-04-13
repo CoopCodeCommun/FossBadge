@@ -11,9 +11,9 @@
         <button type="button"
                 class="home-forge-btn m-2"
                 hx-get="{% url 'core:create_badge' %}"
-                hx-target="{% popup_content_id %}"
+                hx-target="{% popup_content_id name="menu-popup" %}"
                 hx-swap="innerHTML"
-                hx-on:htmx:after-request="{% popup_open width="80%" %}"
+                hx-on:htmx:after-request="{% popup_open width="80%" name="menu-popup" %}"
                 hx-indicator="none"
                 data-testid="btn-forge-badge">
             <span aria-hidden="true">&#9874;</span>
@@ -23,9 +23,9 @@
         <button type="button"
                 class="home-structure-btn m-2"
                 hx-get="{% url 'core:create_association' %}"
-                hx-target="{% popup_content_id %}"
+                hx-target="{% popup_content_id name="menu-popup" %}"
                 hx-swap="innerHTML"
-                hx-on:htmx:after-request="{% popup_open width="80%" %}"
+                hx-on:htmx:after-request="{% popup_open width="80%" name="menu-popup" %}"
                 hx-indicator="none"
                 data-testid="btn-forge-badge">
             <span aria-hidden="true">&#x1F3E4;</span>
@@ -77,4 +77,4 @@
             {% include 'authentication/login.html' %}
         </div>
     </div>
-    {% popup width="80%" %}{% endpopup %}
+    {% popup width="80%" name="menu-popup" %}{% endpopup %}

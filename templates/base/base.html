@@ -1,6 +1,7 @@
 {% load static %}
 {% load django_htmx %}
 {% load i18n %}
+{% load popup_tags %}
 <!DOCTYPE html>
 <html lang="fr">
 <head>
@@ -19,6 +20,8 @@
     <!-- HTMX -->
     {% htmx_script %}
     <script src="{% static 'js/htmx-ext-response-targets@2.0.4.4' %}" defer></script>
+
+    {% popup_common %}
 </head>
 <body hx-ext="response-targets" hx-headers='{"x-csrftoken": "{{ csrf_token }}"}'>
 

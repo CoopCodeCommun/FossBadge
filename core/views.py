@@ -1882,8 +1882,8 @@ class UserViewSet(viewsets.ViewSet):
 
     @action(detail=False, methods=['get'])
     def login_from_email(self, request):
-        token = request.GET['token']
         try:
+            token = request.GET.get('token','')
             user_pk = TokenHelper.is_user_token_valid(token)
             if user_pk is None:
                 raise Exception()

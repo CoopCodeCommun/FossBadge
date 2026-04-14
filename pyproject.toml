@@ -28,6 +28,7 @@ dev = [
     "ipdb>=0.13.13,<0.14",
     "django-extensions>=4.1,<5",
     "werkzeug>=3.1.3,<4",
+    "pytest-django>=4.12.0",
 ]
 
 [tool.uv]
@@ -39,3 +40,8 @@ pyopenbadges = { path = "temp-dependancies/pyopenbadges-0.1.0-py3-none-any.whl" 
 [build-system]
 requires = ["hatchling"]
 build-backend = "hatchling.build"
+
+[tool.pytest.ini_options]
+DJANGO_SETTINGS_MODULE = "fossbadge.settings"
+# Ignore the database's volume folder because else it's create errors
+addopts = "--ignore=o2badge_dev_db"

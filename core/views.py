@@ -791,7 +791,7 @@ class HomeViewSet(viewsets.ViewSet):
         2. Charge le badge avec sa structure émettrice et son marker (select_related)
         3. Récupère les structures qui endossent ce badge
         4. Récupère les détenteurs avec leur structure d'attribution
-        5. Calcule les permissions (is_badge_editor, can_assign, can_endorse)
+        5. Calcule les permissions (is_badge_editor, can_endorse)
         6. Rend la page complète core/badge_page/index.html
         """
         badge = get_object_or_404(
@@ -845,7 +845,6 @@ class HomeViewSet(viewsets.ViewSet):
         # Permissions
         # / Permissions
         is_badge_editor = False
-        can_assign = False
         can_endorse = False
         if request.user.is_authenticated:
             # L'utilisateur peut éditer s'il est admin ou éditeur de la structure émettrice
@@ -859,13 +858,6 @@ class HomeViewSet(viewsets.ViewSet):
                 is_badge_editor = (
                     badge.user == request.user
                 )
-
-            # L'utilisateur peut assigner s'il est admin/éditeur d'une structure liée (émettrice ou endosseuse)
-            # User can assign if admin/editor of a related structure (issuer or endorser)
-            can_assign = Structure.objects.filter(
-                Q(endorsements__badge=badge) | Q(issued_badges=badge),
-                Q(admins=request.user) | Q(editors=request.user),
-            ).exists()
 
             # L'utilisateur peut endosser s'il a au moins une structure
             # User can endorse if they have at least one structure
@@ -885,7 +877,6 @@ class HomeViewSet(viewsets.ViewSet):
             'endorsing_structures': endorsing_structures,
             'holders_assignments': holders_assignments,
             'is_badge_editor': is_badge_editor,
-            'can_assign': can_assign,
             'can_endorse': can_endorse,
             'can_self_assign': badge.can_self_assign(request.user),
             'structures_pks_csv': structures_pks_csv,
@@ -1286,6 +1277,11 @@ class BadgeViewSet(viewsets.ViewSet):
         user_admin_structures = Structure.objects.filter(admins=request.user)
         structures_endorsing_badge = request.user.get_structures_endorsing_badge(badge)
         structures = structures_endorsing_badge.filter(pk__in=user_admin_structures)
+        can_structure_assign = Structure.objects.filter(
+            Q(endorsements__badge=badge) | Q(issued_badges=badge),
+            Q(admins=request.user) | Q(editors=request.user),
+            ).exists()
+
 
         if request.method == "GET":
             # Pre-remplissage optionnel de la structure (utilise par la page lieu)
@@ -1300,10 +1296,12 @@ class BadgeViewSet(viewsets.ViewSet):
             if structures.count() == 1 and 'assigned_by_structure' not in defaults:
                 defaults['assigned_by_structure'] = str(structures.first().pk)
 
+
             return render(request, 'core/badge/partial/badge_assignment.html', context={
                 "badge_pk": pk,
                 "structures": structures,
                 "defaults": defaults,
+                "can_structure_assign":can_structure_assign
             })
 
         validator = BadgeAssignmentValidator(data=request.POST)
@@ -1314,6 +1312,7 @@ class BadgeViewSet(viewsets.ViewSet):
             "defaults": validator.data,
             "badge_pk": pk,
             "structures": structures,
+            "can_structure_assign":can_structure_assign,
         }
 
         if not is_valid:
@@ -1324,20 +1323,20 @@ class BadgeViewSet(viewsets.ViewSet):
         assigned_email = validator.validated_data["assigned_email"]
         assigned_user = get_or_create_user(assigned_email)
 
-        assigned_by_structure = get_object_or_404(Structure, pk=validator.validated_data["assigned_by_structure"])
         assigned_by_user = get_object_or_404(User, pk=validator.validated_data["assigned_by_user"])
 
         notes = request.POST['notes']
 
-        # Vérifie que la structure est dans les structures qui reconnaissent le badge
-        # / Check that the structure recognizes this badge
-        if not badge.valid_structures.contains(assigned_by_structure):
-            messages.add_message(request, messages.ERROR, "Veuillez sélectionner une structure valide")
-            return render(request, 'core/badge/partial/badge_assignment.html', context=context)
-
         # Assigne le badge a l'utilisateur
         # / Assign the badge to the user
+        if validator.validated_data["attributor_type"] == "structure":
+            assigned_by_structure = get_object_or_404(Structure, pk=validator.validated_data["assigned_by_structure"])
+        else:
+            assigned_by_structure = None
+
         assignment, created = badge.add_holder(assigned_user, assigned_by_user, assigned_by_structure, notes)
+
+
 
         if not created:
             messages.add_message(request, messages.INFO, "L'utilisateur possède déjà ce badge assigné par cette structure")

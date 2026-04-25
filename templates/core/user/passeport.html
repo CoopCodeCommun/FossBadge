@@ -324,7 +324,11 @@
                                 {% if assignment.assigned_by %}
                                     &middot;
                                     {% translate "par" %}
-                                    {{ assignment.assigned_by.display_name }}
+                                    <a href="/passeport/{{ assignment.assigned_by.pk }}/"
+                                    class="passeport-structure-link"
+                                    data-testid="passeport-user-link-{{ assignment.assigned_by.pk }}">
+                                        {{ assignment.assigned_by.display_name }}
+                                    </a>
                                 {% endif %}
                                 {% if assignment.self_assign %}
                                     &middot;

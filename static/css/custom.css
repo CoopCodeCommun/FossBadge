@@ -2253,6 +2253,7 @@ picture.text-center img.badge-icon {
     outline: none;
     display: flex;
     justify-content: space-between;
+    flex-wrap: wrap;
 }
 
 .logo-text{
@@ -2662,4 +2663,10 @@ a{
 
 .justify-between{
     justify-content: space-between;
+}
+
+.alert-info{
+    background-color: #cce5ff;
+    border-radius : 15px;
+    padding: 20px;
 }

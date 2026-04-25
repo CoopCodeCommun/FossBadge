@@ -90,17 +90,7 @@
                     |
                 {% endif %}
                 {% if badge.level %}
-                    {{ badge.level.name }} (Niveau {{ badge.level.rank }}/5)
-                    {% comment %}
-                    {% for i in "12345" %}
-                        {% if i|get_digit:1 <= badge.level.rank %}
-                            <span class="">X</span>
-                        {% else %}
-                            <span class="">O</span>
-                        {% endif %}
-                    {% endfor %}
-                    {% endcomment %}
-                    |
+                    {{ badge.level.name }} (Niveau {{ badge.level.rank }}/5) |
                 {% endif %}
                 {% if badge.issuing_structure %}
                     <span class="text-muted">
@@ -139,7 +129,7 @@
 
     {# ── Boutons d'action (selon permissions) ── #}
     {# ── Action buttons (based on permissions) ── #}
-    {% if can_assign or can_endorse %}
+    {% if request.user.is_authenticated or can_endorse %}
         <section aria-label="{% translate 'Actions' %}" class="mt-4" data-testid="badge-page-actions">
             <div class="badge-page-actions" role="group" aria-label="{% translate 'Actions' %}">
                 {# Bouton auto assignation : ouvre le formulaire existant dans le popup #}
@@ -160,12 +150,12 @@
 
                 {# Bouton Attribuer : ouvre le formulaire existant dans le popup #}
                 {# / Assign button: opens existing form in popup #}
-                {% if can_assign %}
+                {% if request.user.is_authenticated %}
                     <button
                             type="button"
                             class="btn btn-sm btn-outline-primary"
                             hx-get="{% url 'core:badge-assign' pk=badge.pk %}"
-                            hx-on:htmx:after-request="{% popup_open %}"
+                            hx-on:htmx:after-request="{% popup_open width="80%" %}"
                             hx-target="{% popup_content_id %}"
                             hx-swap="innerHTML"
                             data-testid="badge-page-assign-btn">
@@ -278,7 +268,7 @@
                         {% elif assignment.self_assign %}
                             {% blocktranslate %} Auto-assigné{% endblocktranslate %}
                         {% elif assignment.user %}
-                            {% blocktranslate with username=assignment.user.display_name %}par {{ username }}{% endblocktranslate %}
+                            {% blocktranslate with username=assignment.assigned_by.display_name %}par {{ username }}{% endblocktranslate %}
 
                         {% endif %}
                         {% if assignment.assigned_date %}

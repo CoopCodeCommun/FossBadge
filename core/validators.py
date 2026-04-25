@@ -23,9 +23,15 @@ class BadgeAssignmentValidator(serializers.Serializer):
             'invalid': 'Veuillez entrer un email valide',
         }
     )
-    assigned_by_structure = serializers.UUIDField()
+    assigned_by_structure = serializers.CharField(required=False, error_messages={
+        "required": _("Veuillez choisir une structure."),
+        "invalid": _("Cette structure n'est pas valide."),
+    })
+
     assigned_by_user = serializers.UUIDField()
     notes = serializers.CharField()
+
+    attributor_type = serializers.CharField()
 
     def validate_badge(self, value):
         try:
@@ -34,11 +40,31 @@ class BadgeAssignmentValidator(serializers.Serializer):
             raise serializers.ValidationError("Le badge n'existe pas")
         return value
 
+    def validate_attributor_type(self, value):
+        if value == "user" or value == "structure":
+            return value
+
+        raise serializers.ValidationError("Veuillez sélectionner une option valide")
+
     def validate_assigned_by_structure(self, value):
+        # If it is not a structure that attribute the badge do nothing, else check if the structure exist
+        if self.initial_data.get("attributor_type", None) != "structure":
+            return value
+
         try:
-            Structure.objects.get(pk=value)
-        except Exception:
+            # Check if the structure exist
+            structure = Structure.objects.get(pk=value)
+
+            # Check if the structure endorse the badge
+            badge = Badge.objects.get(pk=self.initial_data.get("badge", None))
+            is_structure_valid = badge.valid_structures.contains(structure)
+            if not is_structure_valid:
+                raise serializers.ValidationError("La structure que vous avez sélectionné n'endosse pas ce badge")
+        except serializers.ValidationError as e:
+            raise e
+        except Exception as e:
             raise serializers.ValidationError("La structure n'existe pas")
+
         return value
 
     def validate_assigned_by_user(self, value):
@@ -208,7 +234,8 @@ class CreateStructureValidator(serializers.Serializer):
 class CreateBadgeValidator(serializers.Serializer):
     """
     Validator for creating a badge and an associated icon
-    The request context MUST be populated.
+    The request context MUST be populated :
+    validator = CreateBadgeValidator(data=request.data,context={"request":request})
     """
 
     category_uuid = serializers.UUIDField(

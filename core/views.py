@@ -934,6 +934,8 @@ class BadgeViewSet(viewsets.ViewSet):
         """
         List all badges.
         """
+        return raise404(request)
+
         # Get search query
         search_query = request.GET.get('search', '')
         level_filter = request.GET.getlist('level', [])
@@ -985,6 +987,7 @@ class BadgeViewSet(viewsets.ViewSet):
         """
         Display a specific badge.
         """
+        return raise404(request)
         badge = get_object_or_404(Badge, pk=pk)
         holders = badge.get_holders()
 
@@ -1441,6 +1444,7 @@ class AssignmentViewSet(viewsets.ViewSet):
         """
         Display a specific assignment.
         """
+        return raise404(request)
         assignment = get_object_or_404(BadgeAssignment, pk=pk)
 
         return render(request, 'core/assignments/detail.html', {
@@ -1452,6 +1456,7 @@ class AssignmentViewSet(viewsets.ViewSet):
     @action(detail=False, methods=['get', 'post'], url_path='user-badge-assignments', url_name='user-badge-assignments')
     def list_user_badge_assignment(self, request):
 
+        return raise404(request)
         badge = request.GET["badge"]
         badge = get_object_or_404(Badge, pk=badge)
         user = request.GET["user"]
@@ -1486,6 +1491,7 @@ class StructureViewSet(viewsets.ViewSet):
         List all structures.
         """
         # Get search query
+        return raise404(request)
         search_query = request.GET.get('search', '')
         type_filter = request.GET.getlist('type', [])
         badge_filter = request.GET.get('badge', '')
@@ -1537,6 +1543,7 @@ class StructureViewSet(viewsets.ViewSet):
         """
         Display a specific structure.
         """
+        return raise404(request)
         structure = get_object_or_404(Structure, pk=pk)
 
         # Get badges issued by this structure
@@ -1694,6 +1701,7 @@ class UserViewSet(viewsets.ViewSet):
         Query Parameters:
             template (str): The template to use. Options: 'bootstrap' or 'classic' (default).
         """
+        return raise404(request)
         user = get_object_or_404(User, pk=pk)
 
         # Check which template to use
@@ -1728,6 +1736,7 @@ class UserViewSet(viewsets.ViewSet):
         """
         List all users.
         """
+        return raise404(request)
         # Get search query and filters
         search_query = request.GET.get('search', '')
         badge_filter = request.GET.get('badge', '')
@@ -1793,6 +1802,7 @@ class UserViewSet(viewsets.ViewSet):
         """
         Display a specific user profile.
         """
+        return raise404(request)
         user = get_object_or_404(User, pk=pk)
 
         # Get user's badges, badge assignments, and structures

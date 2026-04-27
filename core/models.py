@@ -477,9 +477,9 @@ class BadgeAssignment(models.Model):
     badge = models.ForeignKey(Badge, on_delete=models.CASCADE, related_name='assignments', verbose_name="Badge")
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='badge_assignments', verbose_name="Utilisateur")
     assigned_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, 
-                                   related_name='assigned_badges', verbose_name="Assigné par")
+                                   related_name='assigned_badges', verbose_name="Attribué par")
     assigned_structure = models.ForeignKey(Structure, on_delete=models.SET_NULL, null=True, blank=True,
-                                           related_name='assigned_badges', verbose_name="Assigné par")
+                                           related_name='assigned_badges', verbose_name="Attribué par")
     assigned_date = models.DateTimeField(default=timezone.now, verbose_name="Date d'attribution")
     notes = models.TextField(blank=True, null=True, verbose_name="Notes")
 

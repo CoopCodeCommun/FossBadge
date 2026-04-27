@@ -266,7 +266,7 @@
                         {% if assignment.assigned_structure %}
                             {% blocktranslate with structure_name=assignment.assigned_structure.name %}via {{ structure_name }}{% endblocktranslate %}
                         {% elif assignment.self_assign %}
-                            {% blocktranslate %} Auto-assigné{% endblocktranslate %}
+                            {% blocktranslate %} Auto-attribué{% endblocktranslate %}
                         {% elif assignment.user %}
                             {% blocktranslate with username=assignment.assigned_by.display_name %}par {{ username }}{% endblocktranslate %}
 

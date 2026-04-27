@@ -118,7 +118,7 @@ class HomeViewSet(viewsets.ViewSet):
         """
         Recherche unifiée sur badges, structures et personnes.
         Fouille dans tous les champs pertinents : noms, descriptions,
-        notes d'endorsement, badges assignés, etc.
+        notes d'endorsement, badges attribués, etc.
         Retourne un partiel HTML avec 3 colonnes de résultats.
 
         Unified search across badges, structures and people.
@@ -1339,10 +1339,10 @@ class BadgeViewSet(viewsets.ViewSet):
 
 
         if not created:
-            messages.add_message(request, messages.INFO, "L'utilisateur possède déjà ce badge assigné par cette structure")
+            messages.add_message(request, messages.INFO, "L'utilisateur possède déjà ce badge attribué par cette structure")
             return render(request, 'core/badge/partial/badge_assignment.html', context=context)
 
-        messages.add_message(request, messages.SUCCESS, 'Badge assigné !')
+        messages.add_message(request, messages.SUCCESS, 'Badge attribué !')
         return reload(request)
 
     @action(detail=True, methods=['get','post'])
@@ -1383,10 +1383,10 @@ class BadgeViewSet(viewsets.ViewSet):
         assignment, created = badge.self_assign(request.user,notes)
 
         if not created:
-            messages.add_message(request, messages.INFO, "Ce badge est déjà auto-assigné")
+            messages.add_message(request, messages.INFO, "Ce badge est déjà auto-attribué")
             return render(request, 'core/badge/partial/badge_assignment.html', context=context)
 
-        messages.add_message(request, messages.SUCCESS, 'Badge auto-assigné !')
+        messages.add_message(request, messages.SUCCESS, 'Badge auto-attribué !')
         return reload(request)
 
 

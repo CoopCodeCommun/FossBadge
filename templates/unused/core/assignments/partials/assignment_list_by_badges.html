@@ -15,7 +15,7 @@
             <div class="card text-center">
                 <div class="card-body">
                     {% if badge_with_badge_assignment.self_assigned is True %}
-                        <span class="badge bg-warning text-dark">Auto-assigné</span>
+                        <span class="badge bg-warning text-dark">Auto-attribué</span>
                     {% endif %}
                     {% if badge.icon %}
                         <div class="badge-icon-container">
@@ -34,7 +34,7 @@
                             <span class="badge bg-success">{{ badge.get_level_display }}</span>
                         {% endif %}
                     </p>
-                    <p>Assigné {{ assignments.count }} fois</p>
+                    <p>Attribué {{ assignments.count }} fois</p>
                     <p class="card-text text-muted">Crée par {{ badge.issuing_structure.name }}</p>
                     <a href="{% url 'core:assignment-user-badge-assignments' %}?badge={{ badge.pk }}&user={{ user.pk }}" class="btn btn-primary">Voir les attributions</a>
                 </div>

@@ -1,12 +1,12 @@
 {% extends 'base/base.html' %}
 {% load custom_tags popup_tags %}
 
-{% block title %}Badge {{ badge.name }} assigné à {{ user.username }}{% endblock %}
+{% block title %}Badge {{ badge.name }} attribué à {{ user.username }}{% endblock %}
 
 {% block content %}
     <div class="row">
         <div class="col-md-8">
-            <h1 class="display-4 mb-4">Badge "{{ badge.name }}" assigné {{ assignments.count }} fois à {{ user.username }}</h1>
+            <h1 class="display-4 mb-4">Badge "{{ badge.name }}" attribué {{ assignments.count }} fois à {{ user.username }}</h1>
         </div>
     </div>
 

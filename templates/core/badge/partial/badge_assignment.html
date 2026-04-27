@@ -41,19 +41,48 @@
             {% if errors.assigned_email %}
                 <p class="error">{{errors.assigned_email.0}}</p>
             {% endif %}
+            <hr>
 
-            <label for="structure-input" class="form-label mt-1">Structure qui assigne :</label>
-            <select id="structure-input" class="form-select mt-2" name="assigned_by_structure">
-                <option>--- Sélectionnez une Structure ---</option>>
-                {%for structure in structures %}
-                    <option {% if defaults.assigned_by_structure == structure.pk|stringformat:"s"  %} selected {%endif%} value="{{structure.pk}}">
-                        {{structure.name}}
-                    </option>
-                {%endfor%}
-            </select>
+            {% if can_structure_assign %}
 
-            {% if errors.assigned_by_structure %}
-                <p class="error">{{errors.assigned_by_structure.0}}</p>
+                <p class="form-label">Qui assigne ce badge ? Vous ou une structure ?</p>
+                <div class="form-group">
+                    <fieldset>
+                        <div>
+                            <input type="radio" name="attributor_type" id="as_user" class="d-none" value="user" {% if defaults.attributor_type == "user" %}checked{% endif %}>
+                            <label for="as_user" class="{% if defaults.attributor_type == "user" %}btn btn-primary btn-lg{% else %}popup-cancel-btn{% endif %}">Assigner en tant que {{ request.user.display_name }}</label>
+                            <input type="radio" name="attributor_type" id="as_structure" class="d-none" value="structure" {% if defaults.attributor_type == "structure" %}checked{% endif %}>
+                            <label for="as_structure" class="{% if defaults.attributor_type == "structure" %}btn btn-primary btn-lg{% else %}popup-cancel-btn{% endif %}">Assigner pour une structure</label>
+                        </div>
+                    </fieldset>
+                    {% if errors.attributor_type %}
+                        <p class="error">{{errors.attributor_type.0}}</p>
+                    {% endif %}
+                </div>
+
+                <div class="{% if defaults.attributor_type == "structure" %}showed{% endif %}" id="structure">
+                    <label for="structure-input" class="form-label mt-1">Structure qui assigne :</label>
+                    <select id="structure-input" class="form-select mt-2" name="assigned_by_structure">
+                        <option>--- Sélectionnez une Structure ---</option>>
+                        {%for structure in structures %}
+                            <option {% if defaults.assigned_by_structure == structure.pk|stringformat:"s"  %} selected {%endif%} value="{{structure.pk}}">
+                                {{structure.name}}
+                            </option>
+                        {%endfor%}
+                    </select>
+
+                    {% if errors.assigned_by_structure %}
+                        <p class="error">{{errors.assigned_by_structure.0}}</p>
+                    {% endif %}
+                </div>
+
+            {% else %}
+                {# If the user can't assign for a structure just add an hidden field setting the attributor type to "user" #}
+                <input type="hidden" name="attributor_type" value="user" />
+                <p class="alert-info">
+                    <span class="material-icons middle">info</span>
+                    Aucune de vos structures n'endosse ce badge, vous allez donc l'assigner en tant que "{{ request.user.display_name }}"
+                </p>
             {% endif %}
 
         {% endif %}
@@ -84,3 +113,69 @@
         </div>
     </form>
 </div>
+<style>
+    #structure{
+        max-height: 0;
+        overflow: hidden;
+        animation: hideTest 0.5s forwards;
+    }
+
+    #structure.showed{
+        animation: showTest 0.5s forwards;
+        max-height: 100px;
+    }
+
+    @keyframes showTest {
+        0%{
+            max-height: 0;
+        }
+        100%{
+            max-height: 100px;
+        }
+    }
+
+    @keyframes hideTest {
+        0%{
+            max-height: 100px;
+        }
+        100%{
+            max-height: 0;
+        }
+    }
+</style>
+<script>
+    // CSS classes for button style for the choices of creator
+    var selected_classes = "btn btn-primary btn-lg";
+    var not_selected_classes = "popup-cancel-btn";
+
+
+    function set_attributor_type(event){
+        // Get the inputs radio label
+        var user_label = document.querySelector("label[for='as_user']");
+        var structure_label = document.querySelector("label[for='as_structure']");
+
+        // Get the div containing the structure select
+        var structure_div = document.querySelector("#structure");
+
+        // Display the `structure_div` only if 'structure' input radio is selected
+        // And change the labels style accordingly
+        if(event.target.value === "user")
+        {
+            structure_div.classList.remove("showed")
+            user_label.className = selected_classes
+            structure_label.className = not_selected_classes
+        }
+        else if(event.target.value === "structure")
+        {
+            structure_div.classList.add("showed")
+            user_label.className = not_selected_classes
+            structure_label.className = selected_classes
+        }
+    }
+
+    var attributor_type = document.querySelectorAll("input[name='attributor_type']")
+    attributor_type.forEach((radio)=>{
+        radio.addEventListener("change",set_attributor_type)
+    })
+
+</script>

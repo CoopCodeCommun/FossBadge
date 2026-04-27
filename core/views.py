@@ -1257,11 +1257,17 @@ class BadgeViewSet(viewsets.ViewSet):
 
         # Assign the badge to the user
         endorsement, created = badge.endorse(endorsed_by, structure, notes)
+        BadgeCriteria.objects.get_or_create(badge=badge,
+                                     structure=structure,
+                                     defaults={
+                                         'criteria':validator.validated_data["criteria"]
+                                     })
 
         if created:
             messages.add_message(request, messages.SUCCESS, 'Badge endorsé !')
         else:
-            messages.add_message(request, messages.INFO, "Le badge était déjà endorsé")
+            messages.add_message(request, messages.INFO, "Le badge a déjà était endorsé par cette structure !")
+
         return reload(request)
 
     @action(detail=True, methods=['get','post'])

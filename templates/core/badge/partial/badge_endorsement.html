@@ -21,7 +21,16 @@
 
 
         {# Additional notes #}
+        <label for="criteria-input" class=" mt-2">Critère d'attribution :</label>
+        <p class="explanation">Quelles sont les critères à remplir pour recevoir ce badge dans votre structure ?</p>
+        <textarea id="criteria-input" class="form-control mt-2" name="criteria">{% if defaults.criteria %}{{defaults.criteria}}{%endif%}</textarea>
+        {% if errors.criteria %}
+            <p class="error">{{errors.criteria.0}}</p>
+        {% endif %}
+
+        {# Additional notes #}
         <label for="notes-input" class=" mt-2">Notes supplémentaire :</label>
+        <p class="explanation">Pourquoi endosser ce badge ?</p>
         <textarea id="notes-input" class="form-control mt-2" name="notes">{% if defaults.notes %}{{defaults.notes}}{%endif%}</textarea>
         {% if errors.notes %}
             <p class="error">{{errors.notes.0}}</p>

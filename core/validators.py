@@ -105,6 +105,7 @@ class BadgeEndorsementValidator(serializers.Serializer):
     structure = serializers.UUIDField()
     endorsed_by = serializers.UUIDField()
     notes = serializers.CharField()
+    criteria = serializers.CharField()
 
     def validate_badge(self, value):
         try:

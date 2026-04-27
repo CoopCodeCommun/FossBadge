@@ -432,9 +432,11 @@ class Badge(models.Model):
         """
         endorsement, created = BadgeEndorsement.objects.get_or_create(
             badge=self,
-            endorsed_by=endorsed_by,
             structure=structure,
-            notes=notes
+            defaults={
+                'notes':notes,
+                'endorsed_by': endorsed_by,
+            }
         )
 
         return endorsement, created

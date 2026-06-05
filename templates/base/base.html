@@ -21,7 +21,7 @@
     {% htmx_script %}
     <script src="{% static 'js/htmx-ext-response-targets@2.0.4.4' %}" defer></script>
 
-    {% popup_common %}
+    {% popup %}{% endpopup %}
 </head>
 <body hx-ext="response-targets" hx-headers='{"x-csrftoken": "{{ csrf_token }}"}'>
 

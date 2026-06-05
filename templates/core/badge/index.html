@@ -28,7 +28,7 @@
         {% if is_badge_editor %}
         <div class="badge-page-admin-actions" data-testid="badge-page-admin-actions">
             <button type="button"
-               class="btn btn-sm btn-outline-secondary"
+               class="btn btn-cancel"
                hx-get="{% url 'core:badge-edit' pk=badge.pk %}"
                hx-target="{% popup_content_id %}"
                hx-swap="innerHTML"
@@ -36,11 +36,6 @@
                data-testid="badge-page-edit-btn">
                 {% translate "Éditer" %}
             </button>
-{#            <a href="{% url 'core:badge-delete' pk=badge.pk %}"#}
-{#               class="btn btn-sm btn-outline-danger"#}
-{#               data-testid="badge-page-delete-btn">#}
-{#                {% translate "Supprimer" %}#}
-{#            </a>#}
         </div>
         {% endif %}
     </div>
@@ -137,7 +132,7 @@
                 {% if can_self_assign %}
                     <button
                             type="button"
-                            class="btn btn-sm home-invite-btn"
+                            class="btn btn-sm btn-user"
                             hx-get="{% url 'core:badge-self-assign' pk=badge.pk %}"
                             hx-on:htmx:after-request="{% popup_open %}"
                             hx-target="{% popup_content_id %}"
@@ -162,6 +157,14 @@
                         <span aria-hidden="true">&#9998;</span>
                         {% translate "Attribuer" %}
                     </button>
+{#                    <c-button theme="badge"#}
+{#                            hx-get="{% url 'core:badge-assign' pk=badge.pk %}"#}
+{#                            hx-on:htmx:after-request="{% popup_open width="80%" %}"#}
+{#                            hx-target="{% popup_content_id %}"#}
+{#                            hx-swap="innerHTML">#}
+{#                        <span aria-hidden="true">&#9998;</span>#}
+{#                        {% translate "Attribuer" %}#}
+{#                    </c-button>#}
                 {% endif %}
 
                 {# Bouton Endosser : ouvre le formulaire existant dans le popup #}
@@ -169,7 +172,7 @@
                 {% if can_endorse %}
                     <button
                             type="button"
-                            class="btn btn-sm btn-outline-primary"
+                            class="btn-badge"
                             hx-get="{% url 'core:badge-endorse' pk=badge.pk %}"
                             hx-on:htmx:after-request="{% popup_open %}"
                             hx-target="{% popup_content_id %}"
@@ -298,9 +301,6 @@
     {% endif %}
 
 </div>
-
-    {% popup %}{% endpopup %}
-
 {% endblock %}
 
 {% block extra_js %}

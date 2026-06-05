@@ -204,7 +204,7 @@
 
         {% if can_edit %}
         <a href="{% url 'core:course-edit' course.pk %}"
-           class="passeport-parcours-btn"
+           class="btn-parcours"
            data-testid="parcours-edit-btn">
             {% translate "Modifier le parcours" %}
         </a>
@@ -309,7 +309,6 @@
 
 </div>
 
-    {% popup %}{% endpopup %}
 
 {% endblock %}
 

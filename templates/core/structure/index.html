@@ -30,7 +30,7 @@
         {% if is_admin %}
         <div class="lieu-admin-actions" data-testid="lieu-admin-actions">
             <button type="button"
-               class="btn btn-sm btn-outline-secondary"
+               class="btn-cancel"
                hx-get="{% url 'core:structure-edit' pk=structure.pk %}"
                hx-target="{% popup_content_id %}"
                hx-swap="innerHTML"
@@ -111,11 +111,11 @@
             {# Bouton forger un badge (admin/éditeur) — à droite du titre / Forge badge button (admin/editor) — to the right of title #}
             {% if is_admin or is_editor %}
                 <button type="button"
-                        class="home-forge-btn"
+                        class="btn-badge"
                         hx-get="{% url 'core:create_badge' %}?structure={{ structure.pk }}"
                         hx-target="{% popup_content_id %}"
                         hx-swap="innerHTML"
-                        hx-on:htmx:after-request="{% popup_open %}"
+                        hx-on:htmx:after-request="{% popup_open width="80%" %}"
                         data-testid="btn-forge-badge">
                     <span aria-hidden="true">&#9874;</span>
                     {% translate "Forger un badge" %}
@@ -286,9 +286,9 @@
             {# Bouton inviter un utilisateur (admin/éditeur) — à droite du titre / Invite user button (admin/editor) — to the right of title #}
             {% if is_admin or is_editor %}
                 <button type="button"
-                        class="home-invite-btn"
+                        class="btn-user"
                         hx-get="{% url 'core:structure-invite' structure.pk %}"
-                        hx-on:htmx:after-request="{% popup_open %}"
+                        hx-on:htmx:after-request="{% popup_open width="40%" %}"
                         hx-target="{% popup_content_id %}"
                         hx-swap="innerHTML"
                         data-testid="btn-forge-badge">
@@ -345,7 +345,6 @@
 
 </div>
 
-{% popup width="60%" %}{% endpopup %}
 
 {% endblock %}
 

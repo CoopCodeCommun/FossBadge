@@ -87,9 +87,9 @@
                         <fieldset>
                             <div>
                                 <input type="radio" name="icon_type" id="icon_generate" class="d-none" value="generate" {% if defaults.icon_type == "generate" %}checked{% endif %}>
-                                <label for="icon_generate" class="{% if defaults.icon_type == "generate" %}btn btn-primary btn-lg{% else %}popup-cancel-btn{% endif %}">Générer une icône (automatique)</label>
+                                <label for="icon_generate" class="btn {% if defaults.icon_type == "generate" %}btn-primary btn-lg{% else %}btn-cancel{% endif %}">Générer une icône (automatique)</label>
                                 <input type="radio" name="icon_type" id="icon_import" class="d-none" value="import" {% if defaults.icon_type == "import" %}checked{% endif %}>
-                                <label for="icon_import" class="{% if defaults.icon_type == "import" %}btn btn-primary btn-lg{% else %}popup-cancel-btn{% endif %}">Importer une icône (manuel)</label>
+                                <label for="icon_import" class="btn {% if defaults.icon_type == "import" %}btn-primary btn-lg{% else %}btn-cancel{% endif %}">Importer une icône (manuel)</label>
                             </div>
                         </fieldset>
                         {% if errors.icon_type %}
@@ -169,9 +169,9 @@
                         <fieldset>
                             <div>
                                 <input type="radio" name="creator_type" id="as_user" class="d-none" value="user" {% if defaults.creator_type == "user" %}checked{% endif %}>
-                                <label for="as_user" class="{% if defaults.creator_type == "user" %}btn btn-primary btn-lg{% else %}popup-cancel-btn{% endif %}">Créer en tant que {{ request.user.display_name }}</label>
+                                <label for="as_user" class="btn {% if defaults.creator_type == "user" %}btn-primary btn-lg{% else %}btn-cancel{% endif %}">Créer en tant que {{ request.user.display_name }}</label>
                                 <input type="radio" name="creator_type" id="as_structure" class="d-none" value="structure" {% if defaults.creator_type == "structure" %}checked{% endif %}>
-                                <label for="as_structure" class="{% if defaults.creator_type == "structure" %}btn btn-primary btn-lg{% else %}popup-cancel-btn{% endif %}">Créer pour une structure</label>
+                                <label for="as_structure" class="btn {% if defaults.creator_type == "structure" %}btn-primary btn-lg{% else %}btn-cancel{% endif %}">Créer pour une structure</label>
                             </div>
                         </fieldset>
                         {% if errors.creator_type %}
@@ -410,7 +410,7 @@
                         {% translate "Créer le badge" %}
                     </button>
                     <button type="button"
-                            class="popup-cancel-btn"
+                            class="btn btn-cancel"
                             onclick="{% popup_close %}"
                             aria-label="{% translate 'Annuler' %}">
                         {% translate "Annuler" %}

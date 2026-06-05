@@ -794,10 +794,14 @@ class HomeViewSet(viewsets.ViewSet):
         5. Calcule les permissions (is_badge_editor, can_endorse)
         6. Rend la page complète core/badge_page/index.html
         """
-        badge = get_object_or_404(
-            Badge.objects.select_related('issuing_structure', 'issuing_structure__marker'),
-            uuid=badge_pk
-        )
+        try:
+            badge = get_object_or_404(
+                Badge.objects.select_related('issuing_structure', 'issuing_structure__marker'),
+                uuid=badge_pk
+            )
+        except Exception as e:
+            messages.error(request,"Ce badge n'existe pas")
+            return redirect(reverse('core:home-list'))
 
         # Structures qui endossent ce badge (sans la structure émettrice)
         # Structures that endorse this badge (excluding issuer)
@@ -1050,6 +1054,7 @@ class BadgeViewSet(viewsets.ViewSet):
         Supprime un badge existant. Seul un admin de la structure emettrice peut supprimer.
         / Delete an existing badge. Only admin of the issuing structure can delete.
         """
+        return raise404(request)
         badge = get_object_or_404(Badge, pk=pk)
 
         # Seul un admin de la structure emettrice peut supprimer un badge
@@ -1603,6 +1608,7 @@ class StructureViewSet(viewsets.ViewSet):
         """
         Delete an existing structure.
         """
+        return raise404(request)
         structure = get_object_or_404(Structure, pk=pk)
         if not structure.is_admin(request.user):
             return raise403(request)
@@ -1912,7 +1918,7 @@ class UserViewSet(viewsets.ViewSet):
 
             login(request, user)
 
-            messages.success(request, f"Connexion réussi !")
+            messages.success(request, f"Connexion réussie !")
 
             return redirect('core:home-list')
         except SignatureExpired:
@@ -1927,7 +1933,7 @@ class UserViewSet(viewsets.ViewSet):
     @action(detail=False, methods=['get'])
     def logout(self, request):
         logout(request)
-        messages.success(request, f"Déconnexion réussi")
+        messages.success(request, f"Déconnexion réussie")
         return redirect('core:home-list')
 
 class CourseViewSet(viewsets.ViewSet):
@@ -1950,6 +1956,7 @@ class CourseViewSet(viewsets.ViewSet):
 
     def retrieve(self, request, pk=None):
 
+        return raise404(request)
         course = Course.objects.get(pk=pk)
         can_edit = request.user.can_edit_course(course)
 
@@ -1961,6 +1968,7 @@ class CourseViewSet(viewsets.ViewSet):
 
     def list(self,request):
 
+        return raise404(request)
         template = "core/courses/list.html"
 
         if request.htmx:
@@ -2011,6 +2019,7 @@ class CourseViewSet(viewsets.ViewSet):
         """
         Create a new course
         """
+        return raise404(request)
 
         if not request.htmx:
             return raise403(request)
@@ -2149,6 +2158,3 @@ class CourseViewSet(viewsets.ViewSet):
         course_parent.children.add(course_child)
 
         return HttpResponse()
-
-
-

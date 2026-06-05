@@ -30,9 +30,9 @@
 
         {% if is_self %}
         <a href="{% url 'core:user-logout' %}"
-           class="btn btn-sm btn-outline-secondary"
+           class="btn btn-cancel"
            data-testid="passeport-logout-btn">
-            {% translate "Se d&eacute;connecter" %}
+            {% translate "Se déconnecter" %}
         </a>
         {% endif %}
     </div>
@@ -71,9 +71,9 @@
             <div class="mt-1 mb-1">
                 <button
                         type="button"
-                        class="home-invite-btn"
+                        class="btn-user"
                         hx-get="{% url 'core:edit-profile' pk=person.pk %}"
-                        hx-on:htmx:after-request="{% popup_open %}"
+                        hx-on:htmx:after-request="{% popup_open width="80%" %}"
                         hx-target="{% popup_content_id %}"
                         hx-swap="innerHTML"
                         data-testid="passeport-edit-profile-btn">
@@ -87,7 +87,7 @@
     {% if is_self %}
         <div class="mt-3">
             <button type="button"
-                    class="home-structure-btn"
+                    class="btn-structure"
                     hx-get="{% url 'core:create_association' %}"
                     hx-target="{% popup_content_id %}"
                     hx-swap="innerHTML"
@@ -98,7 +98,7 @@
             </button>
             {% if user.structures.count > 0 %}
                 <button type="button"
-                        class="home-forge-btn"
+                        class="btn-badge"
                         hx-get="{% url 'core:create_badge' %}"
                         hx-target="{% popup_content_id %}"
                         hx-swap="innerHTML"
@@ -123,14 +123,14 @@
                         <h2 class="passeport-dream-badge-display-title">{% translate "Mon badge de rêve" %}</h2>
                         {% if person == request.user %}
                             <a href="{% url 'core:course-edit' pk=person.dream_course.pk %}"
-                               class="passeport-parcours-btn"
-                               data-testid="passeport-parcours-btn">
+                               class="btn-parcours"
+                               data-testid="btn-parcours">
                                 {% translate "Modifier mon parcours" %}
                             </a>
                         {% elif person.has_dream_course and person.dream_course.items.count > 0 %}
                             <a href="{% url 'core:home-parcours-detail' course_pk=person.dream_course.pk %}"
-                               class="passeport-parcours-btn"
-                               data-testid="passeport-parcours-btn">
+                               class="btn-parcours"
+                               data-testid="btn-parcours">
                                 {% translate "Voir le parcours associé" %}
                             </a>
                         {% endif %}
@@ -385,25 +385,17 @@
     </section>
     {% endif %}
 
-    {# ── Bouton Éditer mon profil (si c'est son propre passeport) ── #}
-    {# ── Edit profile button (if viewing own passport) ── #}
-    {% if is_self %}
-
-
-    {# ── Lien discret "Désactiver mon compte" ── #}
-    {# ── Discreet "Deactivate my account" link ── #}
-    <div class="mt-4 mb-2">
-        <button class="passeport-deactivate-link" onclick="{% popup_open %}">
-            {% translate "Désactiver mon compte" %}
-        </button>
-    </div>
-    {% endif %}
+{#    {% if is_self %}#}
+        {# ── Lien discret "Désactiver mon compte" ── #}
+        {# ── Discreet "Deactivate my account" link ── #}
+{#        <div class="mt-4 mb-2">#}
+{#            <button class="passeport-deactivate-link" onclick="{% popup_open %}">#}
+{#                {% translate "Désactiver mon compte" %}#}
+{#            </button>#}
+{#        </div>#}
+{#    {% endif %}#}
 
 </div>
-
-    {% popup width="80%" %}
-{#        {% include "core/users/partials/disable_account_popup.html" %}#}
-    {% endpopup %}
 
 {% endblock %}
 

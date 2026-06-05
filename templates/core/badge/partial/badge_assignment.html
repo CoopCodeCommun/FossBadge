@@ -50,9 +50,9 @@
                     <fieldset>
                         <div>
                             <input type="radio" name="attributor_type" id="as_user" class="d-none" value="user" {% if defaults.attributor_type == "user" %}checked{% endif %}>
-                            <label for="as_user" class="{% if defaults.attributor_type == "user" %}btn btn-primary btn-lg{% else %}popup-cancel-btn{% endif %}">Assigner en tant que {{ request.user.display_name }}</label>
+                            <label for="as_user" class="btn {% if defaults.attributor_type == "user" %}btn-primary btn-lg{% else %}btn-cancel{% endif %}">Assigner en tant que {{ request.user.display_name }}</label>
                             <input type="radio" name="attributor_type" id="as_structure" class="d-none" value="structure" {% if defaults.attributor_type == "structure" %}checked{% endif %}>
-                            <label for="as_structure" class="{% if defaults.attributor_type == "structure" %}btn btn-primary btn-lg{% else %}popup-cancel-btn{% endif %}">Assigner pour une structure</label>
+                            <label for="as_structure" class="btn {% if defaults.attributor_type == "structure" %}btn-primary btn-lg{% else %}btn-cancel{% endif %}">Assigner pour une structure</label>
                         </div>
                     </fieldset>
                     {% if errors.attributor_type %}
@@ -98,6 +98,7 @@
 
 
         <div class="mt-3 d-flex align-items-center gap-2">
+
             <button class="btn btn-primary"
                     {% if self_assign %}
                     hx-post="{% url 'core:badge-self-assign' badge_pk %}"
@@ -109,7 +110,7 @@
                     hx-swap="innerHTML">
                 Envoyer</button>
 
-            <button class="btn btn-danger" onclick="{% popup_close %}" type="button">Annuler</button>
+            <button class="btn btn-cancel" onclick="{% popup_close %}" type="button">Annuler</button>
         </div>
     </form>
 </div>
@@ -145,8 +146,8 @@
 </style>
 <script>
     // CSS classes for button style for the choices of creator
-    var selected_classes = "btn btn-primary btn-lg";
-    var not_selected_classes = "popup-cancel-btn";
+    var selected_classes = "btn btn-primary ";
+    var not_selected_classes = "btn btn-cancel";
 
 
     function set_attributor_type(event){

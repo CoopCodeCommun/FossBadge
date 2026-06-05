@@ -410,7 +410,7 @@ section.hide{
     margin-bottom: 1rem;
 }
 
-.form-group label {
+.form-group label:not(.btn) {
     display: block;
     font-size: 0.85rem;
     font-weight: 500;

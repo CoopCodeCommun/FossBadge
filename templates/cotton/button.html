@@ -1,0 +1,27 @@
+<c-vars type="button" class="" theme="primary"/>
+
+<button class="btn {{ class }}
+{% if theme in '["primary","cancel","badge","structure","user"]' %}
+btn-{{ theme }}
+{% endif %}"
+
+{# Add additional attributes (htmx one etc.&) #}
+{{ attrs }}
+
+type="{{ type }}"
+>{{ slot }}</button>
+
+
+{% comment %}
+<button class="btn btn-primary"
+        {% if self_assign %}
+        hx-post="{% url 'core:badge-self-assign' badge_pk %}"
+        {% else %}
+        hx-post="{% url 'core:badge-assign' badge_pk %}"
+        {% endif %}
+
+        hx-target="#badge-assignment-form"
+        hx-swap="innerHTML">
+    Envoyer</button>
+<button class="btn btn-cancel" onclick="{% popup_close %}" type="button">Annuler</button>
+{% endcomment %}

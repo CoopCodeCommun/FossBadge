@@ -21,6 +21,7 @@ dependencies = [
     "django-leaflet>=0.33.0",
     "django-solo>=2.5.1",
     "sentry-sdk>=2.54.0",
+    "django-cotton>=2.6.2",
 ]
 
 [dependency-groups]

@@ -274,7 +274,7 @@ if (subtitle_input) {
 
 // CSS classes for button style for the choices of creator
 var selected_classes = "btn btn-primary btn-lg";
-var not_selected_classes = "popup-cancel-btn";
+var not_selected_classes = "btn btn-cancel";
 
 
 function set_creator_type(event){

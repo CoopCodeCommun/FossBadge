@@ -48,40 +48,6 @@ class BadgeGeneratorViewSet(viewsets.ViewSet):
     # Main generator page with all categories and levels.
     # ========================================================================
 
-    def list(self, request):
-        # On recupere les categories qui ont une abbreviation (les 8 du Dome).
-        # Les anciennes categories sans abbreviation ne sont pas affichees.
-        # Get categories with abbreviation (the 8 Dome categories).
-        # Old categories without abbreviation are not displayed.
-        all_categories = BadgeCategory.objects.exclude(abbreviation="")
-        all_levels = BadgeLevel.objects.all()
-
-        # On compte le nombre total de badges generes.
-        # Count total generated badges.
-        total_badges_generated = GeneratedBadge.objects.count()
-
-        # On prepare la liste des formes disponibles pour le template.
-        # Build shape list for the template.
-        all_available_shapes = []
-        for shape_key, shape_data in ALL_SHAPES.items():
-            all_available_shapes.append({
-                "key": shape_key,
-                "name": shape_data["name"],
-                "description": shape_data["description"],
-                "path": shape_data["path"],
-            })
-
-        structures = request.user.structures
-
-        return render(request, "badge_generator/badge_creation.html", {
-            "categories": all_categories,
-            "levels": all_levels,
-            "total_badges_generated": total_badges_generated,
-            "shapes": all_available_shapes,
-            "default_shape_key": DEFAULT_SHAPE_KEY,
-            "structures": structures,
-        })
-
     # ========================================================================
     # Previsualisation en direct du badge.
     # On genere le SVG a la volee pour montrer a l'utilisateur ce que ca donne.

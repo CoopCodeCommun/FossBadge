@@ -25,7 +25,7 @@
             </span>
             {% if request.user.is_authenticated %}
                 <button type="button"
-                        class="home-forge-btn"
+                        class="btn-badge"
                         hx-get="{% url 'core:create_badge' %}"
                         hx-target="{% popup_content_id %}"
                         hx-swap="innerHTML"
@@ -74,7 +74,7 @@
             {# / Offer badge creation to authenticated users. Pre-fills name from search. #}
             {% if user.is_authenticated %}
             <button type="button"
-                    class="home-forge-btn"
+                    class="btn-badge"
                     hx-get="{% url 'core:create_badge' %}?structure={{ structure.pk }}"
                     hx-target="{% popup_content_id %}"
                     hx-swap="innerHTML"
@@ -101,7 +101,7 @@
             </span>
             {% if request.user.is_authenticated %}
                 <button type="button"
-                    class="home-structure-btn"
+                    class="btn-structure"
                     hx-get="{% url 'core:create_association' %}"
                     hx-target="{% popup_content_id %}"
                     hx-swap="innerHTML"
@@ -198,4 +198,3 @@
 
 {% endwith %}
 
-{% popup width="80%" %}{% endpopup %}
